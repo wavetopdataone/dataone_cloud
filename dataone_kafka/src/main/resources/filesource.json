@@ -1,0 +1,9 @@
+{
+  "name": "file_source_11_1",
+  "config": {
+    "connector.class":"FileStreamSource",
+    "tasks.max":"1",
+    "file":"/usr/local/soft/app/kafka_2.12-2.3.0/test/user.sql",
+    "topic":"file_source_11_1"
+  }
+}
