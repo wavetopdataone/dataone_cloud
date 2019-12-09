@@ -23,7 +23,7 @@ public interface SysUserService  {
 
     Object sendEmail(String email);
     Object editPasswordByEmail(String email,String password);
-    Object codeEquals(String authCode);
+    Object codeEquals(String email,String authCode);
     //绑定邮箱
     Object bindEmail(String email,String emailPassword);
 //个人设置的个人详情

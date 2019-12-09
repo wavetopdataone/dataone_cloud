@@ -675,22 +675,32 @@ public class SysUserServiceImpl implements SysUserService {
         code = emailUtils.achieveCode();
         //判断输入的是用户名还是邮箱
         if(!PermissionUtils.flag(email)) {
-           List<SysUser> list= sysUserRepository.findAllByLoginName(email);
-           if(list!=null&&list.size()>0) {
-               email = list.get(0).getEmail();
-           }else{
-               return ToDataMessage.builder().status("0").message("用户不存在").build();
-           }
+            List<SysUser> list= sysUserRepository.findAllByLoginName(email);
+            if(list!=null&&list.size()>0) {
+                email = list.get(0).getEmail();
+            }else{
+                return ToDataMessage.builder().status("0").message("用户不存在").build();
+            }
+        }
+        ValueOperations<String, String> opsForValue=null;
+
+        try {
+            opsForValue = stringRedisTemplate.opsForValue();
+        } catch (Exception e) {
+            logger.error("*redis服务未连接");
+            e.printStackTrace();
         }
         sysUser = sysUserRepository.findByEmail(email);
         if(sysUser!=null){
             Optional<SysUser> sysUserOptional=sysUserRepository.findById(Long.valueOf(1));
-           boolean flag= emailUtils.sendAuthCodeEmail(sysUserOptional.get(),email,code);
-           if(flag){
-            return ToDataMessage.builder().status("1").message("验证码已发送").build();
-           }else{
-            return ToDataMessage.builder().status("0").message("发送失败").build();
-           }
+            opsForValue.set("codeold"+email,code);
+            boolean flag= emailUtils.sendAuthCodeEmail(sysUserOptional.get(),email,opsForValue.get("codeold"+email));
+            if(flag){
+                opsForValue.set("codenew"+email,opsForValue.get("codeold"+email),1,TimeUnit.MINUTES);
+                return ToDataMessage.builder().status("1").message("验证码已发送").build();
+            }else{
+                return ToDataMessage.builder().status("0").message("发送失败").build();
+            }
         }else{
             return ToDataMessage.builder().status("0").message("该用户没有注册").build();
         }
@@ -701,22 +711,27 @@ public class SysUserServiceImpl implements SysUserService {
     public Object editPasswordByEmail(String email, String password ) {
         SysUser sysUser=null;
         if(PermissionUtils.flag(email)){
-             sysUser= sysUserRepository.findByEmail(email);
+            sysUser= sysUserRepository.findByEmail(email);
         }else{
-           List<SysUser> sysUserList= sysUserRepository.findAllByLoginName(email);
-           sysUser=sysUserList.get(0);
+            List<SysUser> sysUserList= sysUserRepository.findAllByLoginName(email);
+            sysUser=sysUserList.get(0);
         }
         SysUser sysUserOld=sysUser;
+
+        Subject subject= SecurityUtils.getSubject();
+        Session session=subject.getSession();
         if(password!=null&&password!="") {
             String[] saltAndCiphertext = CredentialMatcher.encryptPassword(password);
             sysUser.setSalt(saltAndCiphertext[0]);
             sysUser.setPassword(saltAndCiphertext[1]);
             sysUserRepository.save(sysUser);
             SysUserlog sysUserlog=new SysUserlog();
-           Optional<SysDept> sysDept= sysDeptRepository.findById(sysUser.getDeptId());
-            sysUserlog.setUserdept(sysDept.get().getDeptName());
+            Optional<SysDept> sysDept= sysDeptRepository.findById(sysUser.getDeptId());
+            if(sysDept.get()!=null) {
+                sysUserlog.setUserdept(sysDept.get().getDeptName());
+                sysUserlog.setDeptName(sysDept.get().getDeptName());
+            }
             sysUserlog.setCreateDate(new Date());
-            sysUserlog.setDeptName(sysDept.get().getDeptName());
             sysUserlog.setDetail("修改密码");
             sysUserlog.setMethod("com.cn.wavetop.dataone.service.impl.SysUserServiceImpl.editPasswordByEmail");
             sysUserlog.setOperation("修改用户");
@@ -724,18 +739,28 @@ public class SysUserServiceImpl implements SysUserService {
             List<SysRole> roles=sysUserRepository.findUserById(sysUser.getId());
             sysUserlog.setRoleName(roles.get(0).getRoleName());
             sysUserlog.setUsername(sysUser.getLoginName());
-//            sysUserlog.setIp(ip);
+            sysUserlog.setIp(session.getHost());
             sysUserlogRepository.save(sysUserlog);
         }
         return ToDataMessage.builder().status("1").message("修改成功").build();
     }
 
     @Override
-    public Object codeEquals(String authCode) {
-        if(authCode.equals(code)){
+    public Object codeEquals(String email,String authCode) {
+        ValueOperations<String, String> opsForValue=null;
+        try {
+            opsForValue = stringRedisTemplate.opsForValue();
+        } catch (Exception e) {
+            logger.error("*redis服务未连接");
+            e.printStackTrace();
+        }
+        if(opsForValue.get("codenew"+email)==null){
+            return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
+        }
+        if(authCode.equals(opsForValue.get("codeold"+email))){
             return ToDataMessage.builder().status("1").message("验证码正确").build();
         }else{
-            return ToDataMessage.builder().status("0").message("验证码输入有误").build();
+            return ToDataMessage.builder().status("0").message("请输入正确的验证码").build();
         }
     }
 

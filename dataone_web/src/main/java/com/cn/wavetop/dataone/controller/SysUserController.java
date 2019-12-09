@@ -128,9 +128,9 @@ public class SysUserController {
     }
     @ApiOperation(value = "验证码是否正确",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "验证码是否正确")
     @PostMapping("/codeEquals")
-    public Object codeEquals(String authCode){
+    public Object codeEquals(String email,String authCode){
 
-        return sysUserService.codeEquals(authCode);
+        return sysUserService.codeEquals(email,authCode);
     }
     @ApiOperation(value = "忘记密码时修改密码",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "修改密码")
     @PostMapping("/editPasswordByEmail")
