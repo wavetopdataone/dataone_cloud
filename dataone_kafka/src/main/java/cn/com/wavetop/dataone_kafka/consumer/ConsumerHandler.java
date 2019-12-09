@@ -1,5 +1,6 @@
 package cn.com.wavetop.dataone_kafka.consumer;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.entity.vo.Message;
 import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -94,7 +95,7 @@ public class ConsumerHandler {
      * @param topic
      * @throws Exception
      */
-    public long execute(JdbcTemplate jdbcTemplate, String topic, int jobId, long writeData, RestTemplate restTemplate) throws Exception {
+    public long execute(JdbcTemplate jdbcTemplate, String topic, int jobId, long writeData, ToBackClient toBackClient) throws Exception {
         //kafka为空重连
 //        if (consumer != null) {
         int errorLogIndex = 0;
@@ -123,7 +124,8 @@ public class ConsumerHandler {
             } catch (Exception e) {
                 // todo 将错误队列写入数据库,将错误记录写入数据库
                 log.error(e.getMessage() + "::" + record.value());
-                restTemplate.getForObject("http://192.168.1.156:8000/toback/InsertLogError/" + jobId + "?optContext=" + record.value() + "&content=" + record.value(), Object.class);
+//                restTemplate.getForObject("http://192.168.1.156:8000/toback/InsertLogError/" + jobId + "?optContext=" + record.value() + "&content=" + record.value(), Object.class);
+                toBackClient.InsertLogError(jobId,record.value(),record.value());
                 errorLogIndex++;
             }
         }
@@ -147,7 +149,8 @@ public class ConsumerHandler {
 //            System.out.println("http://192.168.1.156:8000/toback/updateDisposeRateAndError/" + jobId + "?disposeRate="+(long)disposeRate+"&errorData="+errorLogIndex);
             if (disposeRate != 0 || errorLogIndex != 0) {
                 System.out.println("当前写入速率：" + disposeRate);
-                restTemplate.getForObject("http://192.168.1.156:8000/toback/updateDisposeRateAndError/" + jobId + "?disposeRate=" + (long) disposeRate + "&errorData=" + errorLogIndex, Object.class);
+//                restTemplate.getForObject("http://192.168.1.156:8000/toback/updateDisposeRateAndError/" + jobId + "?disposeRate=" + (long) disposeRate + "&errorData=" + errorLogIndex, Object.class);
+                toBackClient.updateDisposeRateAndError(jobId, disposeRate,errorLogIndex);
             }
         }
 

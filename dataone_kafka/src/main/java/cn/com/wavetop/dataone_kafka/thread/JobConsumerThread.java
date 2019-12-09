@@ -54,7 +54,7 @@ public class JobConsumerThread extends Thread {
         consumers = new ConsumerHandler("192.168.1.156:9092", "true", "60", "-1", "JobId-" + jodId, "JobId-" + jodId);
         try {
             while (stopMe) {
-                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, jodId, writeData, restTemplate);
+//                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, jodId, writeData, restTemplate);
                 // 不一样的时候 需要更新
                 if (lastWriteData != writeData) {
                     lastWriteData = writeData;

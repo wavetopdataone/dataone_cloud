@@ -1,5 +1,6 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.connect.TestModel;
 import cn.com.wavetop.dataone_kafka.connect.model.Schema;
@@ -32,6 +33,8 @@ import java.util.Map;
 public class JobProducerThread extends Thread {
     private HashMap<String, Schema> schemas = new HashMap(); // 存放目标表结构
 
+//    private ToBackClient toBackClient = (ToBackClient) SpringContextUtil.getBean("toBackClient");
+
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
 
@@ -39,7 +42,7 @@ public class JobProducerThread extends Thread {
 //    private static Map<String, JobConsumerThread> jobconsumers = new HashMap<>();
 
     // 任务id
-    private Integer jodId;
+    private Long jodId;
 
     // sql路径
     private String sqlPath;
@@ -55,12 +58,17 @@ public class JobProducerThread extends Thread {
     private long readData;  // 实时更新的
     private long lastReadData = 0;// 上次的记录
 
-    public JobProducerThread(Integer jodId, String sqlPath, long readData) {
+    public JobProducerThread(long jodId, String sqlPath, long readData) {
         this.jodId = jodId;
         this.sqlPath = sqlPath;
         this.readData = readData;
     }
-
+    public JobProducerThread(long jodId, String sqlPath, long readData,ToBackClient toBackClient) {
+        this.jodId = jodId;
+        this.sqlPath = sqlPath;
+        this.readData = readData;
+//        this.toBackClient =toBackClient;
+    }
 
     // 关闭线程的标识
     private boolean stopMe = true;
@@ -69,7 +77,9 @@ public class JobProducerThread extends Thread {
     public void run() {
 //        ArrayList<String> fileNames;
         // sync_range::1是全量，2是增量，3是增量+全量，4是存量
-        int sync_range = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_range/" + jodId, Integer.class);
+        int sync_range = restTemplate.getForObject("http://DATAONE-WEB/toback/find_range/" + jodId, Integer.class);
+
+//        int sync_range = (int) toBackClient.findRangeByJobId(jodId);
 
         while (stopMe) {
 
@@ -110,11 +120,14 @@ public class JobProducerThread extends Thread {
             //  不一样的时候 需要更新
             if (lastReadData != readData) {
                 lastReadData = readData;
-                List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class); // todo 待测
-                restTemplate.getForObject("http://192.168.1.156:8000/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
-//                System.out.println(destTables);
+                List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class); // todo 待测
+                restTemplate.getForObject("http://DATAONE-WEB/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
+//                List destTables = (List) toBackClient.monitoringTable(jodId);
+//                toBackClient.updateReadMonitoring(jodId, readData, destTables.get(0).toString().split("\\.")[1]);
+
+                //                System.out.println(destTables);
 //                System.out.println(Arrays.toString(((String)destTables.get(0)).split(".")));
-//                System.out.println("http://192.168.1.156:8000/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split(".")[1]);
+//                System.out.println("http://DATAONE-WEB/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split(".")[1]);
 
             }
             try {
@@ -295,8 +308,8 @@ public class JobProducerThread extends Thread {
     }
 
     public String readFile(String fileName, int index) {
-        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
-
+        SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
+//        SysDbinfo source = (SysDbinfo) toBackClient.findDbinfoById(jodId);
         Producer producer = new Producer(null); // 参数为配置信息
         boolean flag = false; // 标识是否添加了数据
         BufferedReader br = null;
@@ -319,9 +332,9 @@ public class JobProducerThread extends Thread {
 
                 } else {
 
-                    if (str.contains("CREATE")||str.contains("create")){
-                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
-                        schemas.put(schema.getName(),schema);
+                    if (str.contains("CREATE") || str.contains("create")) {
+                        Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
+                        schemas.put(schema.getName(), schema);
 
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
@@ -341,9 +354,11 @@ public class JobProducerThread extends Thread {
                 double readRate = (double) (((index - startIndex) / 3) / (endTime - startTime)) * 1000;
                 // TODO 存入数据库
                 if (readRate != 0) {
-                    restTemplate.getForObject("http://192.168.1.156:8000/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId, Object.class);
+                    restTemplate.getForObject("http://DATAONE-WEB/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId, Object.class);
+//                    toBackClient.monitoringTable((long) readRate, jodId);
+
                 }
-//                System.out.println(" http://192.168.1.156:8000/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId);
+//                System.out.println(" http://DATAONE-WEB/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId);
             }
 
 
@@ -380,7 +395,7 @@ public class JobProducerThread extends Thread {
     }
 
     // setter
-    public void setJodId(Integer jodId) {
+    public void setJodId(long jodId) {
         this.jodId = jodId;
     }
 
@@ -421,8 +436,11 @@ public class JobProducerThread extends Thread {
                     // _0.sql一旦生成则开始清空目标端数据
                     // 删除目标端表
 
-                    SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
-//        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
+                    SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
+
+//                    SysDbinfo source = (SysDbinfo) toBackClient.findDbinfoById(jodId);
+
+                    //        SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
                     System.out.println(source);
 
                     JdbcTemplate jdbcTemplate = null;
@@ -432,7 +450,10 @@ public class JobProducerThread extends Thread {
                         e.printStackTrace();
                     }
 
-                    List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class);
+                    List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
+//                    List destTables = (List) toBackClient.monitoringTable(jodId);
+
+//                    toBackClient.findDbinfoById(jodId);
                     String DROPTABLE;
                     for (Object destTable : destTables) {
                         DROPTABLE = "DROP TABLE IF EXISTS " + destTable;

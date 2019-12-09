@@ -1,9 +1,11 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
 import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,6 +19,9 @@ import java.util.Map;
  * 监听action目录线程
  */
 public class Action extends Thread {
+
+    @Autowired
+    private ToBackClient toBackClient;
 
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
@@ -36,8 +41,11 @@ public class Action extends Thread {
         stopMe = false;
     }
 
+
+
     @Override
     public void run() {
+        System.out.println(toBackClient);
         System.out.println(actionDir);
         int index = 1;
         while (stopMe) {
