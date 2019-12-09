@@ -2,6 +2,7 @@ package com.cn.wavetop.dataone;
 
 import com.cn.wavetop.dataone.config.SpringContextUtil;
 import com.cn.wavetop.dataone.controller.EmailClient;
+import com.sun.xml.bind.v2.runtime.output.SAXOutput;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -16,7 +17,7 @@ public class DataoneApplication {
         ConfigurableApplicationContext context = SpringApplication.run(DataoneApplication.class, args);
         new SpringContextUtil().setApplicationContext(context);
 
-
+        System.out.println("ddd");
         new EmailClient().start();
 //        new MonitoringClient().start();
     }
