@@ -15,7 +15,7 @@ public interface ErrorLogService {
 
     Object editErrorlog(ErrorLog errorLog);
 
-    Object deleteErrorlog(String ids);
+    Object deleteErrorlog(Long jobId,String ids);
 
     Object queryErrorlog(Long jobId);
     Object selErrorlogById(Long id);

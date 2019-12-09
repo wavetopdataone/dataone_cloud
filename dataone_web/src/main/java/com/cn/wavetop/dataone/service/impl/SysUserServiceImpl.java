@@ -671,8 +671,22 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public Object sendEmail(String email) {
+        ValueOperations<String, String> opsForValue=null;
+        String a=null;
+
+        try {
+            code = emailUtils.achieveCode();
+            opsForValue = stringRedisTemplate.opsForValue();
+             a=email;
+//            opsForValue.set(a,a);//如果是用户名发送邮件的话
+            opsForValue.set("codeold"+a,code);
+        } catch (Exception e) {
+            logger.error("*redis服务未连接");
+            e.printStackTrace();
+        }
+
         SysUser sysUser=null;
-        code = emailUtils.achieveCode();
+
         //判断输入的是用户名还是邮箱
         if(!PermissionUtils.flag(email)) {
             List<SysUser> list= sysUserRepository.findAllByLoginName(email);
@@ -682,21 +696,13 @@ public class SysUserServiceImpl implements SysUserService {
                 return ToDataMessage.builder().status("0").message("用户不存在").build();
             }
         }
-        ValueOperations<String, String> opsForValue=null;
 
-        try {
-            opsForValue = stringRedisTemplate.opsForValue();
-        } catch (Exception e) {
-            logger.error("*redis服务未连接");
-            e.printStackTrace();
-        }
         sysUser = sysUserRepository.findByEmail(email);
         if(sysUser!=null){
             Optional<SysUser> sysUserOptional=sysUserRepository.findById(Long.valueOf(1));
-            opsForValue.set("codeold"+email,code);
-            boolean flag= emailUtils.sendAuthCodeEmail(sysUserOptional.get(),email,opsForValue.get("codeold"+email));
+            boolean flag= emailUtils.sendAuthCodeEmail(sysUserOptional.get(),email,opsForValue.get("codeold"+a));
             if(flag){
-                opsForValue.set("codenew"+email,opsForValue.get("codeold"+email),1,TimeUnit.MINUTES);
+                opsForValue.set("codenew"+a,opsForValue.get("codeold"+a),1,TimeUnit.MINUTES);
                 return ToDataMessage.builder().status("1").message("验证码已发送").build();
             }else{
                 return ToDataMessage.builder().status("0").message("发送失败").build();

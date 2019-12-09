@@ -70,9 +70,9 @@ public class ErrorLogController {
 
     @ApiImplicitParam(name = "id", value = "id", dataType = "long")
     @PostMapping("/delete_errorlog")
-    public Object delete_errorlog(String ids) {
+    public Object delete_errorlog(Long jobId,String ids) {
         System.out.println(ids);
-        return service.deleteErrorlog(ids);
+        return service.deleteErrorlog( jobId,ids);
     }
     @ApiOperation(value = "根据任务ID查询错误队列，表名，错误量", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
@@ -91,7 +91,7 @@ public class ErrorLogController {
        String []id=ids.split(",");
         //消息列表
        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
-       Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate("导出了错误队列").jobId(jobId).build();
+       Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"导出了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
        userlogRespository.save(build2);
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd ");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式

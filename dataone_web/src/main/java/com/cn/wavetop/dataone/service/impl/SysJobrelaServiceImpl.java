@@ -195,7 +195,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                             System.out.println(sysUserJobrela+"----------");
                         }
                         //python的操作流程
-                        Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(jobName).operate("添加了任务").jobId(save.getId()).build();
+                        Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(jobName).operate(PermissionUtils.getSysUser().getLoginName()+"创建了任务"+jobName).jobId(save.getId()).build();
                         userlogRespository.save(build);
                         SysJobrela s = repository.findByJobName(jobName);
                         //添加任务日志
@@ -358,7 +358,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                             jobIds.add(save.getId());
                         }
                     }
-                    Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.getJobName()).operate("修改了任务").jobId(data.getId()).build();
+                    Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"修改了任务"+sysJobrela.getJobName()).jobId(data.getId()).build();
                     userlogRespository.save(build);
 
 
@@ -412,7 +412,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 if (JobrelabyId != null) {
                     String jobStatus = JobrelabyId.getJobStatus();
                     if (!"1".equals(jobStatus)) {
-                        Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(JobrelabyId.getJobName()).operate("删除").jobId(JobrelabyId.getId()).build();
+                        Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(JobrelabyId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"删除了任务"+JobrelabyId.getJobName()).jobId(JobrelabyId.getId()).build();
                         userlogRespository.save(build);
                         repository.deleteById(id);
                         sysJobinfoRespository.deleteByJobId(id);
@@ -652,7 +652,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 if ("0".equals(jobStatus) || "2".equals(jobStatus) || "3".equals(jobStatus)) {
                     byId.setJobStatus("11"); // 1代表运行中，11代表开始动作
                     repository.save(byId);
-                    Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("启动任务").jobId(id1).build();
+                    Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"启动任务"+byId.getJobName()).jobId(id1).build();
                     userlogRespository.save(build);
                     try {
                         Thread.sleep(2000);
@@ -661,7 +661,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                         StackTraceElement stackTraceElement = e.getStackTrace()[0];
                         logger.error("*"+stackTraceElement.getLineNumber()+e);
                     }
-                    Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("启动任务成功").jobId(id1).build();
+                    Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"启动任务"+byId.getJobName()+"成功").jobId(id1).build();
                     userlogRespository.save(build2);
                     //添加任务日志
                     logUtil.addJoblog(byId, "com.cn.wavetop.dataone.service.impl.start", "启动任务");
@@ -698,7 +698,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if ("1".equals(jobStatus)) {
                 byId.setJobStatus("21"); //  2 代表暂停中，21代表暂停动作
                 repository.save(byId);
-                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("暂停任务").jobId(id).build();
+                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("暂停任务"+byId.getJobName()).jobId(id).build();
                 userlogRespository.save(build);
                 try {
                     Thread.sleep(2000);
@@ -707,7 +707,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     StackTraceElement stackTraceElement = e.getStackTrace()[0];
                     logger.error("*"+stackTraceElement.getLineNumber()+e);
                 }
-                Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("暂停任务成功").jobId(id).build();
+                Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"暂停任务"+byId.getJobName()+"成功").jobId(id).build();
                 userlogRespository.save(build2);
                 //添加任务日志
                 logUtil.addJoblog(byId, "com.cn.wavetop.dataone.service.impl.pause", "暂停任务");
@@ -739,7 +739,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if (!"1".equals(jobStatus)) {
                 byId.setJobStatus("31"); // 3代表终止，31 代表停止功能
                 repository.save(byId);
-                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("停止任务").jobId(id).build();
+                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"停止任务"+byId.getJobName()).jobId(id).build();
                 userlogRespository.save(build);
                 try {
                     Thread.sleep(2000);
@@ -750,7 +750,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 }
 
 
-                Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("停止任务成功").jobId(id).build();
+                Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"停止任务"+byId.getJobName()+"成功").jobId(id).build();
                 userlogRespository.save(build2);
                 //添加任务日志
                 logUtil.addJoblog(byId, "com.cn.wavetop.dataone.service.impl.end", "终止任务");

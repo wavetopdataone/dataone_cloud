@@ -1,6 +1,8 @@
 package com.cn.wavetop.dataone.service.impl;
 
 import com.cn.wavetop.dataone.dao.ErrorLogRespository;
+import com.cn.wavetop.dataone.dao.SysJobrelaRespository;
+import com.cn.wavetop.dataone.dao.UserLogRepository;
 import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.service.ErrorLogService;
@@ -29,6 +31,10 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
 
     @Autowired
     private ErrorLogRespository repository;
+    @Autowired
+    private UserLogRepository userLogRepository;
+    @Autowired
+    private SysJobrelaRespository sysJobrelaRespository;
     @Override
     public Object getErrorlogAll() {
 
@@ -71,6 +77,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                         if(context!=null&&!"".equals(context)){
                             predicates.add(cb.like(root.get("optContext").as(String.class), "%"+context+"%"));
                         }
+                        predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
 
                         criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
                         criteriaQuery.orderBy(cb.desc(root.get("optTime")));
@@ -85,6 +92,19 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 map.put("status","1");
                 map.put("data",sysUserlogPage);
                 map.put("totalCount",sysUserlogPage.size());
+                Userlog build2=null;
+                //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
+                //todo 要不要在这里加上所有的错误队列判断
+                if (sysUserlogPage.size()>=100000) {
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
+                   Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
+                   sysJobrela.get().setJobStatus("21");//改为暂停
+                    sysJobrelaRespository.save(sysJobrela.get());
+                    userLogRepository.save(build2);
+                }else if(sysUserlogPage.size()>=90000&&sysUserlogPage.size()<=100000){
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已接近上限").jobId(jobId).build();
+                    userLogRepository.save(build2);
+                }
             } catch (Exception e) {
                 StackTraceElement stackTraceElement = e.getStackTrace()[0];
                 logger.error("*"+stackTraceElement.getLineNumber()+e);
@@ -149,7 +169,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
 
     @Transactional
     @Override
-    public Object deleteErrorlog(String ids) {
+    public Object deleteErrorlog(Long jobId,String ids) {
         HashMap<Object, Object> map = new HashMap();
         String []id=ids.split(",");
         // 查看该任务是否存在，存在删除任务，返回数据给前端
@@ -159,6 +179,10 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 map.put("status", 1);
                 map.put("message", "删除成功");
         }
+        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
+
+        Userlog  build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"忽略了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
+        userLogRepository.save(build2);
         return map;
     }
     //根据任务id查询表名，行数，和错误的数据量
