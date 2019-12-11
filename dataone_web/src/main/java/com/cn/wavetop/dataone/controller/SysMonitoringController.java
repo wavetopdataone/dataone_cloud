@@ -1,10 +1,10 @@
 package com.cn.wavetop.dataone.controller;
 
+import com.cn.wavetop.dataone.dao.ErrorLogRespository;
 import com.cn.wavetop.dataone.dao.SysDataChangeRepository;
 import com.cn.wavetop.dataone.dao.SysMonitoringRepository;
-import com.cn.wavetop.dataone.entity.SysDataChange;
-import com.cn.wavetop.dataone.entity.SysMonitoring;
-import com.cn.wavetop.dataone.entity.SysRela;
+import com.cn.wavetop.dataone.dao.SysRealTimeMonitoringRepository;
+import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.service.SysRelaService;
 import com.cn.wavetop.dataone.util.DateUtil;
@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,10 @@ public class SysMonitoringController {
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private SysDataChangeRepository sysDataChangeRepository;
-
+    @Autowired
+    private  SysRealTimeMonitoringRepository sysRealTimeMonitoringRepository;
+    @Autowired
+    private ErrorLogRespository errorLogRespository;
 
     @ApiOperation(value = "查看全部", protocols = "HTTP", produces = "application/json", notes = "查看全部")
     @RequestMapping("/monitoring_all")
@@ -93,58 +97,48 @@ public class SysMonitoringController {
     }
 
 
-    @Scheduled(cron = "0 58 23 * * ?")
+    @Scheduled(cron = "0 15 9 * * ?")
     public void saveDataChange() {
         SysDataChange dataChange = null;
         HashMap<Object, Double> map = new HashMap<>();
+        List<SysRealTimeMonitoring> list=new ArrayList<>();
+        List<ErrorLog> errorLogs=new ArrayList<>();
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
         long errorData = 0;//错误量
         long readData = 0;//读取量
         long writeData = 0;//写入量
-        long readRate = 0;//读取速率
-        long disposeRate = 0;//处理速率
-        long lastReadData = 0;//前面天数的读取总量
-        long lastWriteData = 0;//前面天数的写入总量
-        long lastErrorData = 0;//前面天数的错误总量
-//        String nowTime = df.format(new Date());//当前时间
+        double readRate = 0;//读取速率
+        double disposeRate = 0;//处理速率
         String nowDate = dfs.format(new Date());//几号
-//        String hour = nowDate.substring(0, 2);
-//        String minue = nowDate.substring(3, 5);
+        //todo 因为现在是凌晨抽取，那凌晨抽就要昨天的数据，所以要用yesterday
         String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
-        String weekDay = DateUtil.todate(nowDate);//星期几
-//        String now = "";
-//        String last = "";
-////            if ("23".equals(hour)&&"59".equals(minue)) {
-////                System.out.println(new Date() + "起始时间：");
-//        last = df.format(new Date());
-        List<Long> jobIdList = sysMonitoringRepository.selJobId();//查询所有jobid
+        String weekDay = DateUtil.todate(yesterDay);//星期几
+        List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId();//查询所有jobid
         if (jobIdList != null && jobIdList.size() > 0) {
             for (Long jobId : jobIdList) {
                 //根据jobid查询读写错误，处理写入值
-                map = (HashMap<Object, Double>) sysMonitoringService.showMonitoring(jobId);
-                dataChange = new SysDataChange();
-                dataChange = sysDataChangeRepository.findByJobIdAndCreateTime(jobId, DateUtil.StringToDate(yesterDay));
-                //如果前一天有值
-                if (dataChange != null) {
-                    lastReadData = map.get("read_datas").longValue();//前面天数的读取总量
-                    lastWriteData = map.get("write_datas").longValue();//前面天数的写入总量
-                    lastErrorData = map.get("error_datas").longValue();//前面天数的错误总量
-                    readData = map.get("read_datas").longValue() - dataChange.getLastReadData();
-                    writeData = map.get("write_datas").longValue() - dataChange.getLastWriteData();
-                    errorData = map.get("error_datas").longValue() - dataChange.getLastErrorData();
-                } else {
-                    readData = map.get("read_datas").longValue();
-                    writeData = map.get("write_datas").longValue();
-                    errorData = map.get("error_datas").longValue();
-                    lastReadData = map.get("read_datas").longValue();//前面天数的读取总量
-                    lastWriteData = map.get("write_datas").longValue();//前面天数的写入总量
-                    lastErrorData = map.get("error_datas").longValue();//前面天数的错误总量
+                list=sysRealTimeMonitoringRepository.findByJobId(jobId, DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                if(list!=null&&list.size()>0) {
+                    for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
+                        if (sysRealTimeMonitoring.getReadAmount() == null) {
+                            sysRealTimeMonitoring.setReadAmount((long) 0);
+                        }
+                        if (sysRealTimeMonitoring.getWriteAmount() == null) {
+                            sysRealTimeMonitoring.setWriteAmount((long) 0);
+                        }
+                        readData += sysRealTimeMonitoring.getReadAmount();
+                        writeData += sysRealTimeMonitoring.getWriteAmount();
+                    }
                 }
-                readRate = map.get("read_rate").longValue();
-                disposeRate = map.get("dispose_rate").longValue();
+                errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                errorData=errorLogs.size();
+                //todo 这个峰值，不知道能否自动映射进我们实体类
+                List<SysRealTimeMonitoring> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                readRate = sysRealTimeMonitorings.get(0).getReadRate();
+                disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
                 SysDataChange dataChange2 = new SysDataChange();
-                dataChange2.setCreateTime(DateUtil.StringToDate(nowDate));
+                dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
                 dataChange2.setDisposeRate(disposeRate);
                 dataChange2.setJobId(jobId);
                 dataChange2.setWeekDay(weekDay);
@@ -152,10 +146,8 @@ public class SysMonitoringController {
                 dataChange2.setReadData(readData);
                 dataChange2.setWriteData(writeData);
                 dataChange2.setReadRate(readRate);
-                dataChange2.setLastReadData(lastReadData);
-                dataChange2.setLastWriteData(lastWriteData);
-                dataChange2.setLastErrorData(lastErrorData);
                 sysDataChangeRepository.save(dataChange2);
+                sysRealTimeMonitoringRepository.deleteByJobId(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
             }
         }
 

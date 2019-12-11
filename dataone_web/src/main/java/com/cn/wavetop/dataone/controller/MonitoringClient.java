@@ -63,21 +63,13 @@ public class MonitoringClient extends Thread {
                         dataChange = new SysDataChange();
                         dataChange = sysDataChangeRepository.findByJobIdAndCreateTime(jobId, DateUtil.StringToDate(yesterDay));
                         //如果前一天有值
-                        if (dataChange != null) {
-                            lastReadData = map.get("read_datas").longValue();//前面天数的读取总量
-                            lastWriteData = map.get("write_datas").longValue();//前面天数的写入总量
-                            lastErrorData = map.get("error_datas").longValue();//前面天数的错误总量
-                            readData = map.get("read_datas").longValue() - dataChange.getLastReadData();
-                            writeData = map.get("write_datas").longValue() - dataChange.getLastWriteData();
-                            errorData = map.get("error_datas").longValue() - dataChange.getLastErrorData();
-                        } else {
+
                             readData = map.get("read_datas").longValue();
                             writeData = map.get("write_datas").longValue();
                             errorData = map.get("error_datas").longValue();
                             lastReadData = map.get("read_datas").longValue();//前面天数的读取总量
                             lastWriteData = map.get("write_datas").longValue();//前面天数的写入总量
                             lastErrorData = map.get("error_datas").longValue();//前面天数的错误总量
-                        }
                         readRate = map.get("read_rate").longValue();
                         disposeRate = map.get("dispose_rate").longValue();
                         SysDataChange dataChange2 = new SysDataChange();
@@ -89,14 +81,13 @@ public class MonitoringClient extends Thread {
                         dataChange2.setReadData(readData);
                         dataChange2.setWriteData(writeData);
                         dataChange2.setReadRate(readRate);
-                        dataChange2.setLastReadData(lastReadData);
-                        dataChange2.setLastWriteData(lastWriteData);
-                        dataChange2.setLastErrorData(lastErrorData);
                         sysDataChangeRepository.save(dataChange2);
                     }
                 }
 
-            }
+
+
+        }
             try {
                 System.out.println(new Date() + "结束时间：");
                 now=df.format(new Date());
@@ -104,6 +95,7 @@ public class MonitoringClient extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+
+    }
     }
 }

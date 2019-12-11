@@ -32,6 +32,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     private SysDataChangeRepository sysDataChangeRepository;
     @Autowired
     private SysJobrelaRespository sysJobrelaRespository;
+    @Autowired
+    private ErrorLogRespository errorLogRespository;
     @Override
     public Object findAll() {
         List<SysMonitoring> sysUserList = sysMonitoringRepository.findAll();
@@ -182,6 +184,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         long index = 0;
         long index1 = 0;
         HashMap<Object, Object> map = new HashMap();
+        List<ErrorLog> errorLogs=errorLogRespository.findByJobId(job_id);
+        errorDatas=errorLogs.size();
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
                 if (sysMonitoring.getSqlCount() == null) {
@@ -198,7 +202,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 }
                 readData += sysMonitoring.getReadData();
                 writeData += sysMonitoring.getWriteData();
-                errorDatas += sysMonitoring.getErrorData();
                 if (sysMonitoring.getReadRate() == null || sysMonitoring.getReadRate() == 0) {
                     sysMonitoring.setReadRate((long) 0);
                     index++;
@@ -269,14 +272,12 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                         } else {
                             sysMonitoringList1.get(0).setDestTable(sysMonitoringList1.get(0).getSourceTable());
                         }
+                        //从错误队列里面取得每张表的错误总数
+                        List<ErrorLog> errorLogList= errorLogRespository.findByJobIdAndDestName(job_id,sysMonitoringList1.get(0).getDestTable());
+                        sysMonitoringList1.get(0).setErrorData(Long.valueOf(errorLogList.size()));
                         sysMonitoringRepository.save(sysMonitoringList1.get(0));
                     }
-////                    for (SysTablerule sysTablerule:sysTablerules){
-////                        System.out.println(sysMonitoringList1);
-////                        sysMonitoringList1.get(0).setDestTable(sysTablerule.getDestTable());
-////                        SysMonitoring S= sysMonitoringRepository.save(sysMonitoringList1.get(0));
-////                        System.out.println(S);
-////                    }
+
                 }
                 sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
                 return ToData.builder().status("1").data(sysMonitoringList).build();

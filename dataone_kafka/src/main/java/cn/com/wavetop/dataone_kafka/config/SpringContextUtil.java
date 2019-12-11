@@ -3,7 +3,10 @@ package cn.com.wavetop.dataone_kafka.config;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
- 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.util.Locale;
  
 /**
@@ -59,6 +62,14 @@ public class SpringContextUtil implements ApplicationContextAware {
         if (applicationContext == null) {
             throw new IllegalStateException("applicaitonContext未注入");
         }
+    }
+    /**
+     * 用类来获取bean
+     * @param c
+     * @return
+     */
+    public static <T> T getBean(Class<T> c){
+        return (T) applicationContext.getBean(c);
     }
  
 }
