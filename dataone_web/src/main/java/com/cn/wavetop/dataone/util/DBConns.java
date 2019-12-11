@@ -47,6 +47,15 @@ public class DBConns {
         return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
     }
 
+    /**DBConns
+     * 获取达梦数据库对象
+     */
+    public static Connection getDaMengConn(SysDbinfo sysDbinfo) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        String url = "jdbc:dm://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+"/"+sysDbinfo.getDbname();
+        Class.forName("dm.jdbc.driver.DmDriver");
+        DriverManager.setLoginTimeout(10);
+        return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
+    }
 
     /**
      * 释放资源
@@ -289,6 +298,16 @@ public class DBConns {
                             list.add(tableName);
                         }
                     }else {
+                        list.add(tableName);
+                    }
+                }
+            }else if (sysDbinfo.getType() == 4){
+                conn = DBConns.getDaMengConn(sysDbinfo);
+                ps = conn.prepareStatement(sql);
+                rs = ps.executeQuery();
+                while (rs.next()){
+                    tableName = rs.getString(1);
+                    if(tableName.equals(destName)){
                         list.add(tableName);
                     }
                 }
