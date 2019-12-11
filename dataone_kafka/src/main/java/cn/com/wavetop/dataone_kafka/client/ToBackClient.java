@@ -4,11 +4,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(value = "DATAONE-WEB")
-//@RequestMapping("/toback")
 @Component
 public interface ToBackClient {
 
@@ -28,14 +26,14 @@ public interface ToBackClient {
      * @param Id
      * @return
      */
-    @GetMapping("/find_range/{Id}")
+    @GetMapping("/toback/find_range/{Id}")
     public Object findRangeByJobId(@PathVariable long Id) ;
     /**
      * 更新读监听数据
      * @param Id
      * @param readData
      */
-    @GetMapping("/readmonitoring/{Id}")
+    @GetMapping("/toback/readmonitoring/{Id}")
     public void updateReadMonitoring(@PathVariable long Id, @RequestParam final Long readData,@RequestParam final String table);
 
 
@@ -44,7 +42,7 @@ public interface ToBackClient {
      * @param Id
      * @param writeData
      */
-    @GetMapping("/writemonitoring/{Id}")
+    @GetMapping("/toback/writemonitoring/{Id}")
     public void updateWriteMonitoring(@PathVariable long Id,@RequestParam Long writeData,String table);
 
     /**
@@ -52,7 +50,7 @@ public interface ToBackClient {
      * @param Id
      * @param
      */
-    @GetMapping("/find_destTable/{Id}")
+    @GetMapping("/toback/find_destTable/{Id}")
     public Object monitoringTable(@PathVariable long Id);
 
     /**
@@ -60,7 +58,7 @@ public interface ToBackClient {
      * @para
      * @param
      */
-    @GetMapping("/updateReadRate/{readRate}")
+    @GetMapping("/toback/updateReadRate/{readRate}")
     public void monitoringTable(@PathVariable Long readRate,@RequestParam final Long jobId);
 
     /**
@@ -71,7 +69,7 @@ public interface ToBackClient {
      * @param disposeRate
      * @param errorData
      */
-    @GetMapping("/updateDisposeRateAndError/{jobId}")
+    @GetMapping("/toback/updateDisposeRateAndError/{jobId}")
     public void updateDisposeRateAndError(@PathVariable int jobId, @RequestParam final double disposeRate, @RequestParam final int errorData);
 
     /**
@@ -82,12 +80,12 @@ public interface ToBackClient {
      * @param optContext
      * @param content
      */
-    @GetMapping("/InsertLogError/{jobId}")
+    @GetMapping("/toback/InsertLogError/{jobId}")
     public void InsertLogError(@PathVariable int jobId, @RequestParam final Object optContext, @RequestParam final Object content);
 
     /**
      * kafka需要的同步数据
      */
-    @GetMapping("/kafkaFiled/{jobId}")
+    @GetMapping("/toback/kafkaFiled/{jobId}")
     public Object kafkaFiled(@PathVariable Long jobId);
 }

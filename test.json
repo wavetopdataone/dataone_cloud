@@ -1,0 +1,12 @@
+{
+  "schema": {
+    "type": "struct",
+    "optional": false,
+    "name": "person"
+  },
+  "payload": {
+    "pid": 2,
+    "asd": "2",
+    "age": "ha"
+  }
+}

@@ -122,10 +122,10 @@ public class SysMonitoringController {
                 if(list!=null&&list.size()>0) {
                     for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
                         if (sysRealTimeMonitoring.getReadAmount() == null) {
-                            sysRealTimeMonitoring.setReadAmount((long) 0);
+                            sysRealTimeMonitoring.setReadAmount( 0);
                         }
                         if (sysRealTimeMonitoring.getWriteAmount() == null) {
-                            sysRealTimeMonitoring.setWriteAmount((long) 0);
+                            sysRealTimeMonitoring.setWriteAmount( 0);
                         }
                         readData += sysRealTimeMonitoring.getReadAmount();
                         writeData += sysRealTimeMonitoring.getWriteAmount();
