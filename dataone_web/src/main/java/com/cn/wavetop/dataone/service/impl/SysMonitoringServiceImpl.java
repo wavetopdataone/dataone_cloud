@@ -253,6 +253,11 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Transactional
     @Override
     public Object tableMonitoring(long job_id) {
+        Map<Object,Object> map=new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
+        SysMonitoring sysMonitoring2=null;
+        SysMonitoring sysMonitoring3=null;
         try {
             List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
             List<SysTablerule> sysTablerules = new ArrayList<SysTablerule>();
@@ -262,7 +267,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 for (SysMonitoring sysMonitoring : sysMonitoringList) {
                     sysTablerules = sysTableruleRepository.findBySourceTableAndJobId(sysMonitoring.getSourceTable(), sysMonitoring.getJobId());
                     sysMonitoringList1 = sysMonitoringRepository.findBySourceTableAndJobId(sysMonitoring.getSourceTable(), sysMonitoring.getJobId());
-                    System.out.println(sysTablerules);
                     //如果目的表没有，去tablerule中找（找到的一定是修改过的）目标表，插到监控表里
                     // 如果tablerule中没有则代表源表和目的表是一致的;
                     if (sysMonitoringList1 != null && sysMonitoringList1.size() > 0) {
@@ -280,7 +284,25 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
                 }
                 sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
-                return ToData.builder().status("1").data(sysMonitoringList).build();
+                for(SysMonitoring sysMonitoring:sysMonitoringList){
+                    sysMonitoring2=new SysMonitoring();
+                    sysMonitoring3=new SysMonitoring();
+                    //源端
+                    sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
+                    sysMonitoring2.setReadData(sysMonitoring.getReadData());
+                    sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
+                    sysMonitoringList2.add(sysMonitoring2);
+                    //目的端
+                    sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
+                    sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
+                    sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
+                    sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+                    sysMonitoringList3.add(sysMonitoring3);
+                }
+                map.put("status","1");
+                map.put("data1",sysMonitoringList2);
+                map.put("data2",sysMonitoringList3);
+                return map;
             } else {
                 return ToDataMessage.builder().status("0").message("没有查到数据").build();
             }
@@ -297,7 +319,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         Date date = new Date();
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
 
-//        SimpleDateFormat df = new SimpleDateFormat("MM-dd");// 设置日期格式
+        SimpleDateFormat df = new SimpleDateFormat("MM-dd");// 设置日期格式
 
         Map<String, List<String>> map = new HashMap<>();
         Map<Object, Double> map2 = new HashMap<>();
@@ -305,7 +327,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         List<String> list2 = new ArrayList<>();
         List<String> list3 = new ArrayList<>();
         List<String> list4 = new ArrayList<>();
-        List<String> list5 = new ArrayList<>();
         String ab = dfs.format(date);
         String cd = dfs.format(date);
         String sum = "-" + num;
@@ -314,8 +335,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         for (int i = r; i < 0; i++) {
             String ef = DateUtil.dateAdd(cd, i);
             list1.add(ef);
-            String str = ef.substring(5, 7) + "." + ef.substring(8, 10);
-            list2.add(str);//09.25
+            list2.add(df.format(ef));//09.25
         }
         System.out.println(DateUtil.StringToDate(ab));
         List<SysDataChange> sysDataChanges = sysDataChangeRepository.findByJobIdAndTime(jobId, DateUtil.StringToDate(ab));
@@ -325,30 +345,27 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                     String time = String.valueOf(sysDataChange.getCreateTime());
                     if (time.substring(0, 10).equals(list1.get(i))) {
 //                      list2.add(String.valueOf(sysDataChange.getCreateTime()));
-                        list3.add(String.valueOf(sysDataChange.getReadData()));
-                        list4.add(String.valueOf(sysDataChange.getWriteData()));
-                        list5.add(String.valueOf(sysDataChange.getErrorData()));
+                        list3.add(String.valueOf(sysDataChange.getReadRate()));
+                        list4.add(String.valueOf(sysDataChange.getDisposeRate()));
+
                     } else {
                         list3.add("0");
                         list4.add("0");
-                        list5.add("0");
                     }
                 }
             }
             map2 = (HashMap<Object, Double>) showMonitoring(jobId);
             System.out.println(map2);
-            String nowdate = dfs.format(new Date());
-            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
-            list2.add(strss);
-            list3.add(String.valueOf(map2.get("read_datas")));
-            list4.add(String.valueOf(map2.get("write_datas")));
-            list5.add(String.valueOf(map2.get("error_datas")));
+            String nowdate = df.format(new Date());
+//            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
+            list2.add(nowdate);
+            list3.add(String.valueOf(map2.get("read_rate")));
+            list4.add(String.valueOf(map2.get("dispose_rate")));
 
             map.put("data1", list1);
             map.put("data2", list2);
             map.put("data3", list3);
             map.put("data4", list4);
-            map.put("data5", list5);
             System.out.println(map);
         }
         return map;
@@ -402,6 +419,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Transactional
     @Override
     public Object dataChangeView(long job_id, Integer date) {
+        Integer data = date-1;
         HashMap<String, List> map1 = new HashMap<>();
         HashMap<String, List> map2 = new HashMap<>();
         HashMap<String, List> map3 = new HashMap<>();
@@ -415,14 +433,14 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         List<Long> errors = new ArrayList<>();
         //获取日历对象
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -6);
+        calendar.add(Calendar.DATE, -data);
        /* //获取每天的时间
         Date time = calendar.getTime();
         //获取每天
         String dayd= new SimpleDateFormat("yyyy-MM-dd").format(time);
         SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id,dayd);*/
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < date; i++) {
             Long x = 0L;
             //获取每天的时间
             Date time = calendar.getTime();
@@ -435,7 +453,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            if (i < 6) {
+            if (i < data) {
                 SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
                 System.out.println("sysDataChange = " + sysDataChange);
                 if (null != sysDataChange) {

@@ -2,6 +2,7 @@ package cn.com.wavetop.dataone_kafka;
 
 import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
+import cn.com.wavetop.dataone_kafka.consumer.CustomNewConsumer2;
 import cn.com.wavetop.dataone_kafka.thread.version2.Action;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -29,13 +30,13 @@ public class DataoneKafkaApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(DataoneKafkaApplication.class, args);
         new SpringContextUtil().setApplicationContext(context);  //获取bean  为了注入kafkaTemplate
+       new CustomNewConsumer2().start();
 
 
-
-        Action action = new Action();   // 主线程
-//        action.start();  开启线程
-//        直接让主线程跑
-        action.run();//当前main线程跑
+//        Action action = new Action();   // 主线程
+////        action.start();  开启线程
+////        直接让主线程跑
+//        action.run();//当前main线程跑
 
 //        new JobConsumerThread(80).start(); // 测试消费者
     }

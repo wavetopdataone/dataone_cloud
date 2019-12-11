@@ -5,6 +5,7 @@ import com.cn.wavetop.dataone.dao.SysDataChangeRepository;
 import com.cn.wavetop.dataone.dao.SysMonitoringRepository;
 import com.cn.wavetop.dataone.dao.SysRealTimeMonitoringRepository;
 import com.cn.wavetop.dataone.entity.*;
+import com.cn.wavetop.dataone.entity.vo.SysMonitorRateVo;
 import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.service.SysRelaService;
 import com.cn.wavetop.dataone.util.DateUtil;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,7 +99,8 @@ public class SysMonitoringController {
     }
 
 
-    @Scheduled(cron = "0 15 9 * * ?")
+    @Transactional
+    @Scheduled(cron = "0 25 10 * * ?")
     public void saveDataChange() {
         SysDataChange dataChange = null;
         HashMap<Object, Double> map = new HashMap<>();
@@ -122,10 +125,10 @@ public class SysMonitoringController {
                 if(list!=null&&list.size()>0) {
                     for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
                         if (sysRealTimeMonitoring.getReadAmount() == null) {
-                            sysRealTimeMonitoring.setReadAmount((long) 0);
+                            sysRealTimeMonitoring.setReadAmount(0);
                         }
                         if (sysRealTimeMonitoring.getWriteAmount() == null) {
-                            sysRealTimeMonitoring.setWriteAmount((long) 0);
+                            sysRealTimeMonitoring.setWriteAmount(0);
                         }
                         readData += sysRealTimeMonitoring.getReadAmount();
                         writeData += sysRealTimeMonitoring.getWriteAmount();
@@ -134,7 +137,7 @@ public class SysMonitoringController {
                 errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
                 errorData=errorLogs.size();
                 //todo 这个峰值，不知道能否自动映射进我们实体类
-                List<SysRealTimeMonitoring> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                List<SysMonitorRateVo> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
                 readRate = sysRealTimeMonitorings.get(0).getReadRate();
                 disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
                 SysDataChange dataChange2 = new SysDataChange();
