@@ -2,7 +2,7 @@ package cn.com.wavetop.dataone_kafka.thread;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.producer.Producer;
 import cn.com.wavetop.dataone_kafka.utils.FileUtils;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

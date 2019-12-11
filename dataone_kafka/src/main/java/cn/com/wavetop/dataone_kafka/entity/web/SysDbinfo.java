@@ -1,4 +1,4 @@
-package cn.com.wavetop.dataone_kafka.entity;
+package cn.com.wavetop.dataone_kafka.entity.web;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

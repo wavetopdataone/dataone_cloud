@@ -8,16 +8,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(value = "DATAONE-WEB")
-@RequestMapping("/toback")
+//@RequestMapping("/toback")
 @Component
 public interface ToBackClient {
+
+
+
 
     /**
      * 根据jobid查询数据信息
      * @param jobId
      * @return
      */
-    @GetMapping("/findById/{jobId}")
+    @GetMapping("/toback/findById/{jobId}")
     public Object findDbinfoById( @PathVariable Long jobId) ;
 
     /**

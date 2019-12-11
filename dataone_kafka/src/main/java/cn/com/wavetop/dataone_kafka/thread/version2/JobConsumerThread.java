@@ -3,7 +3,7 @@ package cn.com.wavetop.dataone_kafka.thread.version2;
 import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 

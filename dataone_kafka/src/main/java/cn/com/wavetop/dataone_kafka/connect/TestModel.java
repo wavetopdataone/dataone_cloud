@@ -19,7 +19,7 @@ public class TestModel {
         Schema schema = mysqlToSchema("DECLARE V_SQL LONG;BEGIN V_SQL:='CREATE TABLE \"TEST\".\"employees\" (\"id\" NUMBER(19),\"fname\" VARCHAR2(30),\"lname\" VARCHAR2(30),\"birth\" VARCHAR2(64),\"hired\" date,\"separated\" date,\"job_code\" NUMBER(19),\"store_id\" NUMBER(19) )';EXECUTE IMMEDIATE V_SQL;EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END; ", 1);
 //        System.out.println(schema);
 //        getStringTime(1575455606000L);
-        System.out.println(schema);
+//        System.out.println(schema);
         HashMap<String, Schema> schemas = new HashMap<>();
         schemas.put(schema.getName(), schema);
         toJsonString2("INSERT INTO \"TEST\".\"employees\"(\"id\",\"fname\",\"lname\",\"birth\",\"hired\",\"separated\",\"job_code\",\"store_id\") VALUES ('59641','chen59641','haixiang59641','2019-10-09 23:17:40',TO_DATE('2019-10-09 00:00:00','YYYY-MM-DD HH24:MI:SS'),TO_DATE('2019-10-09 00:00:00','YYYY-MM-DD HH24:MI:SS'),'1','59641')", schemas, 1);
@@ -88,11 +88,11 @@ public class TestModel {
                 filedType = "int16";
             } else if (filedType.equalsIgnoreCase("INT")) {
                 filedType = "int32";
-            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("NUMBER")) {
+            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("NUMBER")|| filedType.contains("DECIMAL")) {
                 filedType = "int64";
             } else if (filedType.equalsIgnoreCase("FLOAT")) {
                 filedType = "float32";
-            } else if (filedType.equalsIgnoreCase("DOUBLE")|| filedType.contains("DECIMAL")) {
+            } else if (filedType.equalsIgnoreCase("DOUBLE")) {
                 filedType = "float64";
             } else if (filedType.contains("VARCHAR")) {
                 filedType = "string";
@@ -269,4 +269,6 @@ public class TestModel {
         System.out.println(s);
         return s;
     }
+
+
 }

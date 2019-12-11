@@ -1,6 +1,7 @@
 package cn.com.wavetop.dataone_kafka;
 
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.connect.ConfigOracleSink;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.utils.HttpClientKafkaUtil;
 import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
@@ -18,19 +19,33 @@ import java.util.Map;
 public class Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static void main(String[] args) throws IOException {
-
+    public static void main(String[] args) {
         SysDbinfo source = SysDbinfo.builder()
-                .host("192.168.1.140")
-                .dbname("test")
-                .user("test")
-                .password("123456")
+                .host("192.168.103.238")
+                .dbname("test2")
+                .user("test2")
+                .password("test2")
                 .port(1521L)
                 .type(1L)
                 .schema("TEST")
                 .build();
-        JdbcTemplate register = SpringJDBCUtils.register(source);
-        System.out.println(register);
+        String test = new ConfigOracleSink(1, "TEST", source).toJsonConfig();
+        System.out.println(test);
+    }
+
+//    public static void main(String[] args) throws IOException {
+//
+//        SysDbinfo source = SysDbinfo.builder()
+//                .host("192.168.1.140")
+//                .dbname("test")
+//                .user("test")
+//                .password("123456")
+//                .port(1521L)
+//                .type(1L)
+//                .schema("TEST")
+//                .build();
+//        JdbcTemplate register = SpringJDBCUtils.register(source);
+//        System.out.println(register);
 //        register.execute("DECLARE V_SQL LONG;BEGIN V_SQL:='CREATE TABLE \"TEST\".\"employees\" (\"id\" NUMBER(19),\"fname\" VARCHAR2(30),\"lname\" VARCHAR2(30),\"birth\" VARCHAR2(64),\"hired\" date,\"separated\" date,\"job_code\" NUMBER(19),\"store_id\" NUMBER(19) )';EXECUTE IMMEDIATE V_SQL;EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END; ");
 //        Map<String, Object> name = new HashMap<>();
 //        Map<String, String> config = new HashMap<>();
@@ -55,6 +70,6 @@ public class Test {
 //
 //        s = HttpClientKafkaUtil.getConnectorsDetails("192.168.1.187", 8083);
 //        System.out.println(s);
-
-    }
+//
+//    }
 }

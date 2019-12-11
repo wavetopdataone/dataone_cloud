@@ -1,6 +1,6 @@
 package cn.com.wavetop.dataone_kafka.entity.vo;
 
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

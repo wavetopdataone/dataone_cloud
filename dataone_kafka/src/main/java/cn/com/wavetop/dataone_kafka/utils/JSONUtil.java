@@ -1,7 +1,6 @@
 package cn.com.wavetop.dataone_kafka.utils;
 
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
-import com.alibaba.fastjson.JSONObject;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
