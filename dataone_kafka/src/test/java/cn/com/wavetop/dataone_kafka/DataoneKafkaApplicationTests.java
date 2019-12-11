@@ -1,17 +1,12 @@
 package cn.com.wavetop.dataone_kafka;
 
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
-import cn.com.wavetop.dataone_kafka.entity.vo.Message;
-import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

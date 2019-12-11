@@ -1,11 +1,11 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class JobConsumerThread extends Thread {
     // 任务id
-    private Integer jodId;
+    private long jodId;
 
     // 关闭线程的标识
     private boolean stopMe = true;
@@ -24,7 +24,9 @@ public class JobConsumerThread extends Thread {
 
 
     // 注入
-    RestTemplate restTemplate = (RestTemplate) SpringContextUtil.getBean("restTemplate");
+//    RestTemplate restTemplate = (RestTemplate) SpringContextUtil.getBean("restTemplate");
+
+    private ToBackClient toBackClient = (ToBackClient) SpringContextUtil.getBean("toBackClient");
 
     public JobConsumerThread(Integer jodId, long writeData) {
         this.jodId = jodId;
@@ -41,8 +43,10 @@ public class JobConsumerThread extends Thread {
 
 //        restTemplate.getForObject("192.168.1.1");
 
-        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
 //        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
+        SysDbinfo source = (SysDbinfo) toBackClient.findDbinfoById(Long.valueOf(jodId));
+
+        //        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
         System.out.println(source);
 
         JdbcTemplate jdbcTemplate = null;
@@ -54,17 +58,22 @@ public class JobConsumerThread extends Thread {
         consumers = new ConsumerHandler("192.168.1.156:9092", "true", "60", "-1", "JobId-" + jodId, "JobId-" + jodId);
         try {
             while (stopMe) {
-                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, jodId, writeData, restTemplate);
+                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, (int) jodId, writeData, toBackClient);
                 // 不一样的时候 需要更新
                 if (lastWriteData != writeData) {
                     lastWriteData = writeData;
                     if (writeData != 0) {
                         // todo 写入量  待测
-                        List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class);
+                        List destTables = (List) toBackClient.monitoringTable(jodId);
+
+//                        List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class);
 //                        System.out.println(destTables + "consumer");
 //                        System.out.println(destTables.get(0).toString().split("\\.")[1]);
-                        restTemplate.getForObject("http://192.168.1.156:8000/toback/writemonitoring/" + jodId + "?writeData=" + writeData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
-//                        System.out.println("http://192.168.1.156:8000/toback/writemonitoring/" + jodId + "?writeData=" + writeData + "&table=" + destTables.get(0).toString().split(".")[1]);
+//                        restTemplate.getForObject("http://192.168.1.156:8000/toback/writemonitoring/" + jodId + "?writeData=" + writeData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
+
+                        toBackClient.updateWriteMonitoring(jodId,writeData,destTables.get(0).toString().split("\\.")[1]);
+
+                        //                        System.out.println("http://192.168.1.156:8000/toback/writemonitoring/" + jodId + "?writeData=" + writeData + "&table=" + destTables.get(0).toString().split(".")[1]);
 
                     }
                 }

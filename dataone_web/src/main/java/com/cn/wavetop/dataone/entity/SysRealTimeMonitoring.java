@@ -7,12 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * @Author yongz
+ * @Date 2019/12/10、15:47
+ */
 @Entity // 标识实体
 @Builder
 @NoArgsConstructor
@@ -22,14 +23,15 @@ public class SysRealTimeMonitoring {
     @Id // 标识主键
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 自定义生成
     private Long id;
-    private Double readRate;//读取速率
-    private Double writeRate;//写入速率
-    private Long readAmount;//读取量
-    private Long writeAmount;//写入量
+    private Long jobId;
+    private String destTable;
+    @Column(name="read_rate", columnDefinition="DOUBLE default 0.00")
+    private Double readRate;
+    @Column(name="write_rate", columnDefinition="DOUBLE default 0.00")
+    private Double writeRate;
+    private Integer readAmount;
+    private Integer writeAmount;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date optTime;
-    private Long jobId;
-    private String destTable;
-
 }

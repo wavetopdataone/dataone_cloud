@@ -1,9 +1,6 @@
 package cn.com.wavetop.dataone_kafka.utils;
 
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 

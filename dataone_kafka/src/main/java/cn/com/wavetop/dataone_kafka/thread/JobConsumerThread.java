@@ -2,7 +2,7 @@ package cn.com.wavetop.dataone_kafka.thread;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
@@ -54,7 +54,7 @@ public class JobConsumerThread extends Thread {
         consumers = new ConsumerHandler("192.168.1.156:9092", "true", "60", "-1", "JobId-" + jodId, "JobId-" + jodId);
         try {
             while (stopMe) {
-                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, jodId, writeData, restTemplate);
+//                writeData = consumers.execute(jdbcTemplate, "JodId_" + jodId, jodId, writeData, restTemplate);
                 // 不一样的时候 需要更新
                 if (lastWriteData != writeData) {
                     lastWriteData = writeData;

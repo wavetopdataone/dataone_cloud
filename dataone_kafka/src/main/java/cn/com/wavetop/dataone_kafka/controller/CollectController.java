@@ -1,5 +1,6 @@
 package cn.com.wavetop.dataone_kafka.controller;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.thread.TestReadConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +22,19 @@ public class CollectController {
     @Autowired
     private TestReadConfig testReadConfig;
 
+    @Autowired
+    private ToBackClient toBackClient;
+
     @GetMapping(value = "/haha")
     public String testPut() {
       return  testReadConfig.put();
+    }
+
+    @GetMapping(value = "/feign")
+    public Object testFeign() {
+        Object dbinfoById = toBackClient.findDbinfoById(2L);
+        System.out.println(dbinfoById);
+        return  dbinfoById;
     }
 
     @GetMapping(value = "/send/{message}")

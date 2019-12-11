@@ -2,11 +2,9 @@ package cn.com.wavetop.dataone_kafka.thread;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.producer.Producer;
 import cn.com.wavetop.dataone_kafka.utils.FileUtils;
 import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,8 +15,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @Author yongz

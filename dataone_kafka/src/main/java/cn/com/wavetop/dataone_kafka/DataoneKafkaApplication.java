@@ -1,11 +1,13 @@
 package cn.com.wavetop.dataone_kafka;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.thread.version2.Action;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 
 import org.springframework.cloud.client.SpringCloudApplication;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +21,8 @@ public class DataoneKafkaApplication {
 
     @Autowired
     private static RestTemplate restTemplate;
-
+    @Autowired
+    private  ToBackClient toBackClient;
 
 
     public static void main(String[] args) throws Exception {
@@ -38,6 +41,7 @@ public class DataoneKafkaApplication {
     }
 
     @Bean
+    @LoadBalanced
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }

@@ -15,9 +15,7 @@ import org.springframework.web.client.RestTemplate;
  * @Author yongz
  * @Date 2019/11/5、17:18
  */
-@RestController
-@RequestMapping("/user")
-@DefaultProperties(defaultFallback = "fallbackMethod") //  第二种熔断方式 全局熔断
+ //  第二种熔断方式 全局熔断
 public class UserController {
     //    @Autowired
 //    private RestTemplate restTemplate;

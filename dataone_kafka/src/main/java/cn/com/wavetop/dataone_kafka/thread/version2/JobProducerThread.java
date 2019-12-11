@@ -1,16 +1,20 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
+import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
+import cn.com.wavetop.dataone_kafka.connect.ConfigSink;
 import cn.com.wavetop.dataone_kafka.connect.TestModel;
 import cn.com.wavetop.dataone_kafka.connect.model.Schema;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.producer.Producer;
-import cn.com.wavetop.dataone_kafka.utils.FileUtils;
-import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
-import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
+import cn.com.wavetop.dataone_kafka.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.client.RestTemplate;
@@ -28,9 +32,11 @@ import java.util.Map;
  * @Author yongz
  * @Date 2019/11/18、9:37
  */
-
 public class JobProducerThread extends Thread {
+
     private HashMap<String, Schema> schemas = new HashMap(); // 存放目标表结构
+
+//    private ToBackClient toBackClient = (ToBackClient) SpringContextUtil.getBean("toBackClient");
 
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
@@ -39,7 +45,7 @@ public class JobProducerThread extends Thread {
 //    private static Map<String, JobConsumerThread> jobconsumers = new HashMap<>();
 
     // 任务id
-    private Integer jodId;
+    private Long jodId;
 
     // sql路径
     private String sqlPath;
@@ -55,12 +61,18 @@ public class JobProducerThread extends Thread {
     private long readData;  // 实时更新的
     private long lastReadData = 0;// 上次的记录
 
-    public JobProducerThread(Integer jodId, String sqlPath, long readData) {
+    public JobProducerThread(long jodId, String sqlPath, long readData) {
         this.jodId = jodId;
         this.sqlPath = sqlPath;
         this.readData = readData;
     }
 
+    public JobProducerThread(long jodId, String sqlPath, long readData, ToBackClient toBackClient) {
+        this.jodId = jodId;
+        this.sqlPath = sqlPath;
+        this.readData = readData;
+//        this.toBackClient =toBackClient;
+    }
 
     // 关闭线程的标识
     private boolean stopMe = true;
@@ -69,30 +81,27 @@ public class JobProducerThread extends Thread {
     public void run() {
 //        ArrayList<String> fileNames;
         // sync_range::1是全量，2是增量，3是增量+全量，4是存量
-        int sync_range = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_range/" + jodId, Integer.class);
+        int sync_range = restTemplate.getForObject("http://DATAONE-WEB/toback/find_range/" + jodId, Integer.class);
+
+//        int sync_range = (int) toBackClient.findRangeByJobId(jodId);
 
         while (stopMe) {
 
             File file = null;
             switch (sync_range) {
                 case 1:
-//                    System.out.println("执行全量任务:" + jodId);
                     fullRang(); // 全量
-//                    System.out.println("执行全量任务:" + jodId);
-//                    file = new File(sqlPath + "/full_offset");
-//                    universalRang(file, "FULL", "_0.sql", true);
                     break;
 
                 case 2:
-//                    incrementRang();// 增量
-//                    System.out.println("执行增量任务:" + jodId);
+
                     file = new File(sqlPath + "/increment_offset");
                     universalRang(file, "INCREMENT", "_1.sql", true);
                     break;
 
                 case 3:
 
-//                    System.out.println("执行全量+增量任务:" + jodId);
+
                     fullAndIncrementRang(); // 增量+全量
                     break;
 
@@ -108,15 +117,12 @@ public class JobProducerThread extends Thread {
             }
 
             //  不一样的时候 需要更新
-            if (lastReadData != readData) {
-                lastReadData = readData;
-                List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class); // todo 待测
-                restTemplate.getForObject("http://192.168.1.156:8000/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
-//                System.out.println(destTables);
-//                System.out.println(Arrays.toString(((String)destTables.get(0)).split(".")));
-//                System.out.println("http://192.168.1.156:8000/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split(".")[1]);
-
-            }
+//            if (lastReadData != readData) {
+//                lastReadData = readData;
+//               // List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class); // todo 待测
+//               // restTemplate.getForObject("http://DATAONE-WEB/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
+//
+//            }
             try {
 
                 Thread.sleep(1000); // 每秒监听一次
@@ -126,20 +132,13 @@ public class JobProducerThread extends Thread {
             }
         }
 
-////          当生产者线程被停掉时也将关闭消费者线程！
-//        try {
-//            Thread.sleep(2000);  // 2秒后关掉任务消费线程
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        jobconsumers.get("consumer_job_" + jodId).stopMe();
 
     }
 
 
     public void test(String[] args) {
         File file = new File(sqlPath + "/full_offset"); // 创建文件记录java读取的位置
-//        universalRang(file, "FULL", true);
+
     }
 
 
@@ -152,7 +151,6 @@ public class JobProducerThread extends Thread {
      */
     private void universalRang(File file, String rang, String startSql, Boolean flag) {
         ArrayList<String> fileNames = TestGetFiles.getAllFileName(sqlPath);
-//        File file = new File(sqlPath + "/full_offset"); // 创建文件记录java读取的位置
         if (!file.exists()) {
             try {
                 file.createNewFile();   // 创建文件记录java读取的位置
@@ -169,14 +167,10 @@ public class JobProducerThread extends Thread {
                     continue;
                 }
                 if ((fileName.contains(rang) && fileName.contains(startSql))) {
-//                    System.out.println("真的进来了啊。没错啊！");
+
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), file);  // 读取文件，并更新offset信息
-                        // 任务既然到了这里了，则说明已经有数据生成了，既然有数据生成了，则需要开启消费者线程！
-//                        if (flag) {  // flag 为了让增量+全量的时候，增量部分就不用在开线程去读了
-//                            jobconsumers.put("consumer_job_" + jodId, new JobConsumerThread(jodId, 0));
-//                            jobconsumers.get("consumer_job_" + jodId).start();
-//                        }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -229,7 +223,6 @@ public class JobProducerThread extends Thread {
         }
         String[] full_offsetContent = FileUtils.readTxtFile(full_offset).split("----");
 
-//            System.out.println(Arrays.toString(offsetContent));
         // 判断全量文件是否有内容！！！
         if (full_offsetContent.length <= 1) {
             // 判断有没有全量文件，有则开始读全量文件
@@ -240,9 +233,7 @@ public class JobProducerThread extends Thread {
                 if ((fileName.contains("FULL") && fileName.contains("_0.sql"))) {
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), full_offset);  // 读取文件，并更新offset信息
-                        // 任务既然到了这里了，则说明已经有数据生成了，既然有数据生成了，则需要开启消费者线程！
-//                        jobconsumers.put("consumer_job_" + jodId, new JobConsumerThread(jodId, 0));
-//                        jobconsumers.get("consumer_job_" + jodId).start();
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -268,9 +259,7 @@ public class JobProducerThread extends Thread {
             String befor = full_offsetContent[0].substring(0, full_offsetContent[0].lastIndexOf("_") + 1);
             int i = Integer.parseInt(full_offsetContent[0].substring(full_offsetContent[0].lastIndexOf("_") + 1, full_offsetContent[0].indexOf(".sql"))) + 1;
             String fileName_ = befor + i + ".sql";
-//            String befor = offsetContent[0].substring(0, offsetContent[0].lastIndexOf("_") +1);
-//            int i = Integer.parseInt(offsetContent[0].substring(offsetContent[0].lastIndexOf("_") +1, offsetContent[0].indexOf(".sql"))) + 1;
-//            String fileName_ = befor + i + ".sql";
+
             if (new File(fileName_).exists()) {
                 try {
                     FileUtils.writeTxtFile(readFile(fileName_, 0), full_offset);
@@ -295,8 +284,11 @@ public class JobProducerThread extends Thread {
     }
 
     public String readFile(String fileName, int index) {
-        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
+        HashMap<String, Integer> tableTotal = new HashMap<>();
+        HashMap<String, Double> tableMonito = new HashMap<>();
+        int total = 0;  // 记录总量
 
+        SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
         Producer producer = new Producer(null); // 参数为配置信息
         boolean flag = false; // 标识是否添加了数据
         BufferedReader br = null;
@@ -319,31 +311,76 @@ public class JobProducerThread extends Thread {
 
                 } else {
 
-                    if (str.contains("CREATE")||str.contains("create")){
-                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
-                        schemas.put(schema.getName(),schema);
+                    if (str.contains("CREATE") || str.contains("create")) {
+                        // 出现create就创建connect sink等待消费，还要获取schema  todo
+                        Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
+                        schemas.put(schema.getName(), schema);
+
+                        String s = new ConfigSink(jodId, schema.getName(), source).toJsonConfig();
+//                        System.out.println(s);
 
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
-//                        producer.sendMsg("JobId-" + jodId, str);
+                        total++;
+
                         String s = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
                         log.info(s);
                         readData++; // insert就++
+                        String insert_table = PrassingUtil.get_insert_table(str);
+                        if (insert_table.contains("'") || insert_table.contains("\"")) {
+                            insert_table = insert_table.substring(1, insert_table.length() - 1);
+                        }
+                        producer.sendMsg("task-" + jodId + "-" + insert_table, s);
+
+                        Integer tableIndex = tableTotal.get(insert_table);
+                        System.out.println(insert_table);
+                        if (tableIndex == null) {
+                            tableIndex = 0;
+                        }
+                        tableIndex++;
+
+                        tableTotal.put(insert_table, tableIndex);
+
+
                     }
-                    index++; //读取一行+1
-                    index++; //读取一行+1
-                    index++; //读取一行+1
                 }
 
             }
             long endTime = System.currentTimeMillis();   //获取结束读取时间
-            if ((endTime - startTime) != 0 && (index - startIndex) != 0) {
-                double readRate = (double) (((index - startIndex) / 3) / (endTime - startTime)) * 1000;
-                // TODO 存入数据库
-                if (readRate != 0) {
-                    restTemplate.getForObject("http://192.168.1.156:8000/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId, Object.class);
+            double runtime = (endTime - startTime) / 1000;
+            System.out.println(total);
+            System.out.println(runtime);
+            if (runtime == 0.0) {
+                runtime = 0.001;
+            }
+            if (total != 0) {
+
+                // 单表运行速率及运行量  TODO
+                for (String tableName : tableTotal.keySet()) {
+                    tableMonito.put(tableName, tableTotal.get(tableName) / runtime);
+                    tableTotal.get(tableName);
+                    String tableMonitoJson = JSONUtil.toJSONString(tableMonito);
+                    String tableTotalJson = JSONUtil.toJSONString(tableTotal);
+                    System.out.println(tableMonitoJson);
+                    System.out.println(tableTotalJson);
+
+
+                    HashMap<Object, Object> Monito = new HashMap<>();
+                    Monito.put("tableMonito", tableMonito);
+                    Monito.put("tableTotal", tableTotal);
+                    System.out.println(Monito);
+
+                    //创建请求头
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
+                    HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
+                    System.out.println(JSONUtil.toJSONString(Monito));
+                    restTemplate.postForEntity(url, entity, String.class);
+
+                    Monito.clear();
+                    Monito = null;
                 }
-//                System.out.println(" http://192.168.1.156:8000/toback/updateReadRate/" + (long) readRate + "?jobId=" + jodId);
             }
 
 
@@ -357,9 +394,11 @@ public class JobProducerThread extends Thread {
             e.printStackTrace();
             System.out.println(e.getMessage());
         }
-
+        tableTotal.clear();
+        tableTotal = null;
+        tableMonito.clear();
+        tableMonito = null;
         return content.toString();
-
 
     }
 
@@ -373,14 +412,11 @@ public class JobProducerThread extends Thread {
     // 重启当前线程,并重启消费者线程
     public void startMe(int jodId) {
         stopMe = true;
-//        long writeData = jobconsumers.get("consumer_job_" + jodId).getWriteData();
-//        System.out.println("startMe:jobId" + jodId + "---writeData:" + writeData);
-//        jobconsumers.put("consumer_job_" + jodId, new JobConsumerThread(jodId, writeData));
-//        jobconsumers.get("consumer_job_" + jodId).start();
+
     }
 
     // setter
-    public void setJodId(Integer jodId) {
+    public void setJodId(long jodId) {
         this.jodId = jodId;
     }
 
@@ -421,8 +457,7 @@ public class JobProducerThread extends Thread {
                     // _0.sql一旦生成则开始清空目标端数据
                     // 删除目标端表
 
-                    SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
-//        SysDbinfo source = restTemplate.getForObject("http://192.168.1.156:8000/toback/findById/" + jodId, SysDbinfo.class);
+                    SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
                     System.out.println(source);
 
                     JdbcTemplate jdbcTemplate = null;
@@ -432,7 +467,8 @@ public class JobProducerThread extends Thread {
                         e.printStackTrace();
                     }
 
-                    List destTables = restTemplate.getForObject("http://192.168.1.156:8000/toback/find_destTable/" + jodId, List.class);
+                    List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
+
                     String DROPTABLE;
                     for (Object destTable : destTables) {
                         DROPTABLE = "DROP TABLE IF EXISTS " + destTable;
@@ -443,10 +479,6 @@ public class JobProducerThread extends Thread {
                     DROPTABLE = null;
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), file);  // 读取文件，并更新offset信息
-                        // 任务既然到了这里了，则说明已经有数据生成了，既然有数据生成了，则需要开启消费者线程！
-//
-//                        jobconsumers.put("consumer_job_" + jodId, new JobConsumerThread(jodId, 0));
-//                        jobconsumers.get("consumer_job_" + jodId).start();
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -510,11 +542,6 @@ public class JobProducerThread extends Thread {
                 if ((fileName.contains("INCREMENT") && fileName.contains("_0.sql"))) {
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), file);  // 读取文件，并更新offset信息
-                        // 任务既然到了这里了，则说明已经有数据生成了，既然有数据生成了，则需要开启消费者线程！
-//
-//                        jobconsumers.put("consumer_job_" + jodId, new JobConsumerThread(jodId, 0));
-//
-//                        jobconsumers.get("consumer_job_" + jodId).start();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
