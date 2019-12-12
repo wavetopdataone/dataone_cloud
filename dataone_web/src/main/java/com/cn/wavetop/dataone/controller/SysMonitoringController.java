@@ -82,10 +82,11 @@ public class SysMonitoringController {
     public Object tableMonitoring(long job_id){
         return sysMonitoringService.tableMonitoring(job_id);
     }
+    @ApiOperation(value = "速率折线图数据", protocols = "POST", produces = "application/json", notes = "速率折线图数据")
     @PostMapping("/syncMonitoring")
-    public  Object SyncMonitoring(Long jobId,String num){
+    public  Object SyncMonitoring(Long jobId,String date){
 
-        return sysMonitoringService.SyncMonitoring(jobId,num);
+        return sysMonitoringService.SyncMonitoring(jobId,date);
     }
     /**
      * 折线图数据
@@ -100,7 +101,7 @@ public class SysMonitoringController {
 
 
     @Transactional
-    @Scheduled(cron = "0 25 10 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void saveDataChange() {
         SysDataChange dataChange = null;
         HashMap<Object, Double> map = new HashMap<>();
@@ -141,7 +142,7 @@ public class SysMonitoringController {
                 readRate = sysRealTimeMonitorings.get(0).getReadRate();
                 disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
                 SysDataChange dataChange2 = new SysDataChange();
-                dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
+                dataChange2.setCreateTime(errorLogs.get(0).getOptTime());
                 dataChange2.setDisposeRate(disposeRate);
                 dataChange2.setJobId(jobId);
                 dataChange2.setWeekDay(weekDay);

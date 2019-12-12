@@ -960,7 +960,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 } else {
                     sysUserJobVo.setOperate("查看详情");
                 }
-                sysUserJobVo.setJobStatus(sysUserJobVo.getJobStatus());//任务状态
+                sysUserJobVo.setJobStatus(sysJobrela.getJobStatus());//任务状态
                 stringBuffer.setLength(0);
                 sysUserJobVoList.add(sysUserJobVo);
             }
@@ -1002,6 +1002,13 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                         stringBuffer.append(",");
                     }
                 }
+                //操作详情
+                if (sysJobrela.getJobStatus().equals("5")) {
+                    sysUserJobVo.setOperate("等待完善");
+                } else {
+                    sysUserJobVo.setOperate("查看详情");
+                }
+                sysUserJobVo.setJobStatus(sysJobrela.getJobStatus());//任务状态
                 sysUserJobVo.setJobId(sysJobrela.getId());
                 sysUserJobVo.setJobName(sysJobrela.getJobName());
                 sysUserJobVo.setUserName(String.valueOf(stringBuffer));

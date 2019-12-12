@@ -350,6 +350,15 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional
     @Override
     public Object addSysUser(SysUser sysUser,String id){
+        String orderId="1";
+        String key = "checkInsurance_"+sysUser.getLoginName();
+        boolean flag = stringRedisTemplate.getConnectionFactory().getConnection().setNX(key.getBytes(), orderId.getBytes());
+         if(!flag){
+             return ToDataMessage.builder().status("0").message(sysUser.getLoginName()+"已存在").build();
+         }
+        stringRedisTemplate.expire(key, 5, TimeUnit.SECONDS);
+
+
         Long ids=Long.valueOf(id);
         if(!PermissionUtils.flag(sysUser.getEmail())){
             return ToDataMessage.builder().status("0").message("邮箱不正确").build();

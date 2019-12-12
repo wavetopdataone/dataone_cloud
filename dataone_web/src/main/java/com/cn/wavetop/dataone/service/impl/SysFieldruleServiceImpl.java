@@ -92,6 +92,54 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         }
         return flag;
     }
+    //验证源端目标端是否存在表
+    public Object VerifyDb(Long job_id,String source_name,String dest_name){
+        SysDbinfo sysDbinfo = new SysDbinfo();//源端
+        SysDbinfo sysDbinfo2 = new SysDbinfo();//目标端
+        //查詢关联的数据库连接表jobrela
+        List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
+        //查询到数据库连接
+        if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
+            sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
+            sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());
+        } else {
+            return ToDataMessage.builder().status("0").message("该任务没有连接").build();
+        }
+        //若目标端存在此表则提示用户
+        String sqlss = "";
+        if (sysDbinfo2.getType() == 1) {
+            //oracle
+            sqlss = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo2.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
+        } else if (sysDbinfo2.getType() == 2) {
+            //mysql
+            sqlss = "show tables";
+        } else if (sysDbinfo2.getType() == 3) {
+            //sqlserver
+            sqlss = "select name from sysobjects where xtype='u'";
+        }
+        //查询目标端是否出现此表
+        List<String> tablename = DBConns.existsTableName(sysDbinfo2, sqlss, source_name, dest_name);
+        String sssql = "";
+        if (sysDbinfo.getType() == 1) {
+            //oracle
+            sssql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo2.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
+        } else if (sysDbinfo.getType() == 2) {
+            //mysql
+            sssql = "show tables";
+        }
+        //查詢源端是否存在此表名
+        List<String> sourcetablename = DBConns.existsTableName(sysDbinfo, sssql, source_name, dest_name);
+        //查看目的端是否存在表名
+        if (tablename != null && tablename.size() > 0) {
+            return ToDataMessage.builder().status("0").message("目的端表名" + dest_name + "已经存在").build();
+        }
+        //查看源端是否存在表名
+        if (sourcetablename != null && sourcetablename.size() > 0) {
+            return ToDataMessage.builder().status("0").message("源端表名" + dest_name + "已经存在").build();
+        }
+        return ToDataMessage.builder().status("1").build();
+    }
+
 
     @Transactional
     @Override
@@ -103,14 +151,10 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         List<SysFieldrule> list = new ArrayList<>();
         String sql = "";
         String[] split;
-        try {
             if (list_data != null && source_name != null && dest_name != null && !"undefined".equals(list_data) && !"undefined".equals(dest_name)) {
-
                 split = list_data.replace("$", "@").split(",@,");
-
                 SysTablerule byJobIdAndSourceTable = new SysTablerule();
                 SysTablerule byJobIdAndSourceTable2 = null;
-
                 SysDbinfo sysDbinfo = new SysDbinfo();//源端
                 SysDbinfo sysDbinfo2 = new SysDbinfo();//目标端
                 //查詢关联的数据库连接表jobrela
@@ -118,42 +162,8 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 //查询到数据库连接
                 if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
                     sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
-                    sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());
                 } else {
                     return ToDataMessage.builder().status("0").message("该任务没有连接").build();
-                }
-                //若目标端存在此表则提示用户
-                String sqlss = "";
-                if (sysDbinfo2.getType() == 1) {
-                    //oracle
-                    sqlss = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo2.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
-                } else if (sysDbinfo2.getType() == 2) {
-                    //mysql
-                    sqlss = "show tables";
-                } else if (sysDbinfo2.getType() == 3) {
-                    //sqlserver
-                    sqlss = "select name from sysobjects where xtype='u'";
-                }
-                System.out.print(sysDbinfo2 + "-------------");
-                //查询目标端是否出现此表
-                List<String> tablename = DBConns.existsTableName(sysDbinfo2, sqlss, source_name, dest_name);
-                String sssql = "";
-                if (sysDbinfo.getType() == 1) {
-                    //oracle
-                    sssql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo2.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
-                } else if (sysDbinfo.getType() == 2) {
-                    //mysql
-                    sssql = "show tables";
-                }
-                //查詢源端是否存在此表名
-                List<String> sourcetablename = DBConns.existsTableName(sysDbinfo, sssql, source_name, dest_name);
-                //查看目的端是否存在表名
-                if (tablename != null && tablename.size() > 0) {
-                    return ToDataMessage.builder().status("0").message("目的端表名" + dest_name + "已经存在").build();
-                }
-                //查看源端是否存在表名
-                if (sourcetablename != null && sourcetablename.size() > 0) {
-                    return ToDataMessage.builder().status("0").message("源端表名" + dest_name + "已经存在").build();
                 }
                 //查询是否关联的有子任务
                 List<SysJobrelaRelated> sysJobrelaRelateds = sysJobrelaRelatedRespository.findByMasterJobId(job_id);
@@ -166,31 +176,10 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                             sysTableruleRespository.deleteByJobIdAndSourceTable(sysJobrelaRelated.getSlaveJobId(), source_name);
                             sysFieldruleRepository.deleteByJobIdAndSourceName(sysJobrelaRelated.getSlaveJobId(), source_name);
                             sysFilterTableRepository.deleteByJobIdAndFilterTable(sysJobrelaRelated.getSlaveJobId(), source_name);
-                            kafkaDestFieldRepository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
-                            kafkaDestTableRepository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
                         }
                     }
                 }
-                //删除kafka主任务的标规则
-                kafkaDestTableRepository.deleteByJobId(job_id);
-                KafkaDestTable kafkaDestTable = new KafkaDestTable();
-                kafkaDestTable.setJobId(job_id);
-                System.out.println(sysDbinfo2.getId().intValue()+"-----------------");
-                kafkaDestTable.setDestDbid(sysDbinfo2.getId());
-                kafkaDestTable.setDestTable(dest_name);
-                System.out.println(kafkaDestTable+"----------------");
-                kafkaDestTableRepository.save(kafkaDestTable);
-                if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
-                    KafkaDestTable kafkaDestTable1 = null;
-                    for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                        kafkaDestTable1 = new KafkaDestTable();
-                        kafkaDestTable1.setJobId(sysJobrelaRelated.getSlaveJobId());
-                        kafkaDestTable1.setDestDbid(sysDbinfo2.getId());
-                        kafkaDestTable1.setDestTable(dest_name);
-                        System.out.println(kafkaDestTable1+"----------------");
-                        kafkaDestTableRepository.save(kafkaDestTable1);
-                    }
-                }
+
                 //删除主任务的表规则
                 sysTableruleRespository.deleteByJobIdAndSourceTable(job_id, source_name);
                 //若源端表和目标端不一致则添加表规则
@@ -247,50 +236,11 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 }
                 //删除主任务字段规则
                 sysFieldruleRepository.deleteByJobIdAndSourceName(job_id, source_name);
-                //删除kafka字段规则
-                kafkaDestFieldRepository.deleteByJobId(job_id);
-                //查询kafka需要的表名称
-                KafkaDestTable kafkaDestTable2 = kafkaDestTableRepository.findByJobIdAndDestTable(job_id,dest_name);
-                KafkaDestField kafkaDestField=null;
                 for (String s : split) {
                     String[] ziduan = s.split(",");
-                    System.out.println(s+"xieuxizi");
-                    System.out.println(ziduan[5]+"-----------");
-
-                    //添加kafka字段规则
-                    //todo 暂时使用源端的，后续要换目标端
-                     kafkaDestField = new KafkaDestField();
-                    kafkaDestField.setJobId(job_id);
-                    System.out.println(ziduan[5]+"----------------");
                     if(ziduan[5]==null||"".equals(ziduan[5])){
                         ziduan[5]="0";
                     }
-                    kafkaDestField.setFieldLength(Double.valueOf(ziduan[5]));
-                    kafkaDestField.setFieldName(ziduan[1]);
-                    kafkaDestField.setFieldNotnull(ziduan[4]);
-                    kafkaDestField.setFieldType(ziduan[2]);
-                    kafkaDestField.setKafkaDestId(kafkaDestTable2.getId());
-                    System.out.println(kafkaDestField+"--------------");
-                    KafkaDestField kafkaDestField2= kafkaDestFieldRepository.save(kafkaDestField);
-                    System.out.println(kafkaDestField2+"--------------");
-
-                    System.out.println(sysJobrelaRelateds+"--------------");
-
-                    if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
-                        KafkaDestField kafkaDestField1 = null;
-                        for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                            kafkaDestField1 = new KafkaDestField();
-                            kafkaDestField1.setJobId(sysJobrelaRelated.getSlaveJobId());
-                            kafkaDestField1.setFieldLength(Double.valueOf(ziduan[5]));
-                            kafkaDestField1.setFieldName(ziduan[1]);
-                            kafkaDestField1.setFieldNotnull(ziduan[4]);
-                            kafkaDestField1.setFieldType(ziduan[2]);
-                            kafkaDestField1.setKafkaDestId(kafkaDestTable2.getId());
-                            kafkaDestFieldRepository.save(kafkaDestField1);
-                        }
-                    }
-                    System.out.println("xuezihao--------------------");
-
                     //若字段改变则存入字段规则表
 //                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[5].equals(ziduan[8])) {
                     if (!ziduan[0].equals(ziduan[1])) {
@@ -303,8 +253,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                                 .accuracy(ziduan[5])
                                 .sourceName(source_name)
                                 .destName(dest_name).varFlag(Long.valueOf(2)).build();
-                        System.out.println(build+"xuezihao--------------------");
-
                         sysFieldrules.add(repository.save(build));
 
                         //若有子任务也保存规则
@@ -436,13 +384,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 map.put("status", 1);
                 map.put("message", "保存成功");
             }
-        }catch (Exception e){
-            StackTraceElement stackTraceElement = e.getStackTrace()[0];
-            logger.error("*添加任务配置异常"+stackTraceElement.getLineNumber()+e);
-
-            map.put("status", 0);
-            map.put("message", "发生异常");
-        }
         return map;
     }
 
@@ -460,6 +401,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         return map;
     }
 
+    //查看源端表字段
     @Override
     public Object linkTableDetails(SysDbinfo sysDbinfo, String tablename, Long job_id) {
         HashMap<Object, Object> map = new HashMap<>();
@@ -550,7 +492,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         map.put("data", list);
         return map;
     }
-
+    //查看目标端表字段
     @Override
     public Object DestlinkTableDetails(SysDbinfo sysDbinfo, String tablename, Long job_id) {
         HashMap<Object, Object> map = new HashMap<>();
@@ -571,6 +513,16 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             //先把类型转换为目标端的类型
             for(int i=0;i<data.size();i++){
                 sysFiledTypeList=new ArrayList<>();
+                //若果目的表字段有值就不换，无值就把源端的
+                if(data.get(i).getDestFieldName()==null||"".equals(data.get(i).getDestFieldName())){
+                     data.get(i).setDestFieldName(data.get(i).getFieldName());
+                 }
+                 //oracle转化大写
+//                if(sysDbinfo2.getType()==1){
+//                    data.get(i).setDestFieldName(data.get(i).getDestFieldName().toUpperCase());
+//                }else{
+//                    data.get(i).setDestFieldName(data.get(i).getDestFieldName());
+//                }
                 if(sysDbinfo.getType()!=sysDbinfo2.getType()) {
                     //去找到映射的字段类型
                     sysFiledTypeList = sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()), String.valueOf(sysDbinfo2.getType()), data.get(i).getType().toUpperCase());
@@ -611,4 +563,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         }
         return map;
     }
+
+
+
 }

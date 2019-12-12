@@ -62,4 +62,11 @@ public class SysFieldruleController {
     public Object DestlinkTableDetails(@RequestBody SysDbinfo sysDbinfo,String tablename,Long job_id) {
         return service.DestlinkTableDetails(sysDbinfo,tablename,job_id);
     }
+    @ApiOperation(value = "验证源端目的端是否存在表", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "验证源端目的端是否存在表")
+    @ApiImplicitParam
+    @PostMapping("/VerifyDb")
+    public Object VerifyDb(Long job_id,String source_name,String dest_name) {
+        return service.VerifyDb(job_id,source_name,dest_name);
+    }
+
 }
