@@ -116,6 +116,9 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         } else if (sysDbinfo2.getType() == 3) {
             //sqlserver
             sqlss = "select name from sysobjects where xtype='u'";
+        }else if (sysDbinfo2.getType() == 4) {
+            //dameng select distinct object_name TABLE_SCHEMA from all_objects where object_type = 'SCH'
+            sqlss = "SELECT TABLE_NAME FROM USER_TABLES";
         }
         //查询目标端是否出现此表
         List<String> tablename = DBConns.existsTableName(sysDbinfo2, sqlss, source_name, dest_name);
