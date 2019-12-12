@@ -47,6 +47,7 @@ public class DBConns {
         return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
     }
 
+
     /**DBConns
      * 获取达梦数据库对象
      */

@@ -1,7 +1,7 @@
 package cn.com.wavetop.dataone_kafka;
 
 import cn.com.wavetop.dataone_kafka.client.ErrorClient;
-import cn.com.wavetop.dataone_kafka.entity.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

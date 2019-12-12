@@ -41,7 +41,7 @@ public class SysDbinfoController {
 
     @ApiImplicitParam
     @PostMapping("/check_dbinfo")
-    public Object check_dbinfo(long id  ) {
+    public Object check_dbinfo(long id) {
         return service.checkDbinfoById(id);
     }
 
