@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.shiro.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -178,5 +179,14 @@ public class SysLogController  {
 
         }
 
+    /**
+     * 定时任务每周一早上六点删除日志,把超过十万条的都删了
+     * @return 0 0 21 * * ?    0 0 6 ? * MON
+     */
+    //@ApiOperation(value = "每周一早上六点删除日志",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "条件查询操作日志")
+    @Scheduled(cron = "0 0 6 ? * MON")
+    public void deleteLog() {
+        sysLogService.deleteLog();
+    }
 
 }

@@ -1,8 +1,6 @@
 package com.cn.wavetop.dataone.service.impl;
 
-import com.cn.wavetop.dataone.dao.SysDeptRepository;
-import com.cn.wavetop.dataone.dao.SysLogRepository;
-import com.cn.wavetop.dataone.dao.SysUserRepository;
+import com.cn.wavetop.dataone.dao.*;
 import com.cn.wavetop.dataone.entity.SysDept;
 import com.cn.wavetop.dataone.entity.SysLog;
 import com.cn.wavetop.dataone.entity.SysUser;
@@ -13,6 +11,7 @@ import com.cn.wavetop.dataone.service.SysUserService;
 import com.cn.wavetop.dataone.service.SysUserlogService;
 import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.PermissionUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
@@ -194,6 +194,19 @@ public class SysLogServiceImpl implements SysLogService {
         }
         return map;
     }
-
+    @Autowired
+    private SysLoginlogRepository sysLoginlogRepository;
+    @Autowired
+    private SysUserlogRepository sysUserlogRepository;
+    /**
+     * 定时任务每周一早上六点删除日志,把超过十万条的都删了
+     */
+    @Transactional
+    @Override
+    public void deleteLog() {
+        sysLogRepository.deleteLog();
+        sysLoginlogRepository.deleteLog();
+        sysUserlogRepository.deleteLog();
+    }
 
 }

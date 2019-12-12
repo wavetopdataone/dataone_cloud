@@ -7,8 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -22,6 +25,8 @@ public interface SysUserlogRepository extends JpaRepository<SysUserlog,Long>, Jp
 
     List<SysUserlog> findByDeptName(String deptName,Pageable pageable);
     List<SysUserlog> findByDeptNameOrderByCreateDateDesc(String deptName);
-
-
+    @Transactional
+    @Modifying
+    @Query(value = "delete from sys_userlog where id not in (select t.id from (select * from sys_log order by id desc limit 100000) as t)",nativeQuery = true)
+    void deleteLog();
 }
