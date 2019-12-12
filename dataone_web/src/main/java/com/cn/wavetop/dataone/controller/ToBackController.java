@@ -2,10 +2,10 @@ package com.cn.wavetop.dataone.controller;
 
 import com.cn.wavetop.dataone.dao.*;
 import com.cn.wavetop.dataone.entity.*;
-import com.cn.wavetop.dataone.service.SysJobinfoService;
-import com.cn.wavetop.dataone.service.SysJobrelaService;
-import com.cn.wavetop.dataone.service.SysMonitoringService;
+import com.cn.wavetop.dataone.service.*;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,11 +30,16 @@ public class ToBackController {
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private ErrorLogRespository errorLogRespository;
+    @Autowired
+    private ErrorLogService errorLogService;
 
     @Autowired
     private KafkaDestFieldRepository kafkaDestFieldRepository;
     @Autowired
     private KafkaDestTableRepository kafkaDestTableRepository;
+
+    @Autowired
+    private SysTableruleService sysTableruleService;
     /**
      * 根据jobid查询数据信息
      * @param jobId
@@ -181,4 +186,32 @@ public class ToBackController {
        }
        return map;
     }
+
+    /**
+     * 插入错误信息
+     */
+    @PostMapping("/insertErrorLog")
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errorinfo){
+
+        errorLogService.insertError(jobId,sourceTable,destTable,time,errorinfo);
+    }
+
+    /**
+     * 查询源端表名
+     * @param jobId
+     * @return
+     */
+    @ApiImplicitParam
+    @GetMapping("/selecttable")
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable) {
+        return sysTableruleService.selectTable(jobId,destTable);
+    }
+
+    /**
+     * 将错误信息4状态填入到监控表
+     */
+    /*@PostMapping("/insertstatus")
+    public void insertStatus(@RequestParam Integer status){
+        sysMonitoringService.insertStatus(status);
+    }*/
 }

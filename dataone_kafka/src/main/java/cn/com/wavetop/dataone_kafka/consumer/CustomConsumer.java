@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -226,8 +227,8 @@ public class CustomConsumer extends Thread {
         consumer.subscribe(Arrays.asList("error-queue-logs"));
         while(true){
             String topic=null;
-            String partition;
-            String offset;
+            Integer partition;
+            Long offset;
             String errorinfo;
             ConsumerRecords<String, String> records =
                     consumer.poll(10000);
@@ -259,17 +260,21 @@ public class CustomConsumer extends Thread {
                     }
                 }
                 topic = map.get("topic");
-                partition = map.get("partition");
-                offset = map.get("offset");
+                partition = Integer.valueOf(map.get("partition"));
+                offset = Long.valueOf(map.get("offset"));
                 if (payload.contains("Exception")){
                     String[] split = payload.split(":");
                     if (split.length>0){
-                        errorinfo = split[1];
+                        errorinfo = split[0];
                         System.out.println("split = " + split);
                     }
 
                 }
-//                consumer.subscribe(Arrays.asList(topic));
+                Map<TopicPartition, Long> hashMap = new HashMap<>();
+                hashMap.put(new TopicPartition(topic, partition,offset),offset);
+
+                consumer.subscribe(Arrays.asList(topic));
+
             }
 
 

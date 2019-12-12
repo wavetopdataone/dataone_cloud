@@ -60,6 +60,15 @@ public class SpringContextUtil implements ApplicationContextAware {
             throw new IllegalStateException("applicaitonContext未注入");
         }
     }
+
+    /**
+     * 用类来获取bean
+     * @param c
+     * @return
+     */
+    public static <T> T getBean(Class<T> c){
+        return (T) applicationContext.getBean(c);
+    }
  
 }
 

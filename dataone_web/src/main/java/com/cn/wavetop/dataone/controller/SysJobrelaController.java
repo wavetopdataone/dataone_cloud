@@ -2,7 +2,6 @@ package com.cn.wavetop.dataone.controller;
 
 
 import com.cn.wavetop.dataone.entity.SysJobrela;
-import com.cn.wavetop.dataone.service.SysJobinfoService;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
 import com.cn.wavetop.dataone.service.SysUserJobrelaService;
 import io.swagger.annotations.ApiImplicitParam;
@@ -167,5 +166,6 @@ public class SysJobrelaController {
     public Object copyJob(Long jobId) {
         return service.copyJob(jobId);
     }
+
 
 }

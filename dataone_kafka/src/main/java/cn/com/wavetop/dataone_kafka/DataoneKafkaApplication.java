@@ -1,11 +1,13 @@
 package cn.com.wavetop.dataone_kafka;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
+import cn.com.wavetop.dataone_kafka.consumer.CustomConsumer;
 import cn.com.wavetop.dataone_kafka.thread.version2.Action;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 
 import org.springframework.cloud.client.SpringCloudApplication;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 //@SpringBootApplication
 @SpringCloudApplication
-@EnableFeignClients
+@EnableFeignClients(basePackages = "cn.com.wavetop.dataone_kafka.client")
 public class DataoneKafkaApplication {
 
 
@@ -29,11 +31,13 @@ public class DataoneKafkaApplication {
 
 
 
-        Action action = new Action();   // 主线程
+        /*Action action = new Action();   // 主线程
 //        action.start();  开启线程
 //        直接让主线程跑
-        action.run();//当前main线程跑
-
+        action.run();*///当前main线程跑
+        CustomConsumer customConsumer = new CustomConsumer();
+        Thread thread = new Thread(customConsumer);
+        thread.start();
 //        new JobConsumerThread(80).start(); // 测试消费者
     }
 

@@ -2,6 +2,8 @@ package com.cn.wavetop.dataone.service;
 
 import com.cn.wavetop.dataone.entity.ErrorLog;
 
+import java.util.Date;
+
 /**
  * @Author yongz
  * @Date 2019/10/11、11:17
@@ -19,4 +21,8 @@ public interface ErrorLogService {
 
     Object queryErrorlog(Long jobId);
     Object selErrorlogById(Long id);
+
+
+
+    void insertError(Long jobId,String sourceTable, String destTable, Date time,String errorinfo);
 }

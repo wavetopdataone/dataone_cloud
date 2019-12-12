@@ -414,14 +414,16 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         List<Long> errors = new ArrayList<>();
         //获取日历对象
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -6);
+        //传入的天数减一
+        Integer data = date-1;
+        calendar.add(Calendar.DATE, -data);
        /* //获取每天的时间
         Date time = calendar.getTime();
         //获取每天
         String dayd= new SimpleDateFormat("yyyy-MM-dd").format(time);
         SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id,dayd);*/
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < date; i++) {
             Long x = 0L;
             //获取每天的时间
             Date time = calendar.getTime();
@@ -434,7 +436,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            if (i < 6) {
+            if (i < data) {
                 SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
                 System.out.println("sysDataChange = " + sysDataChange);
                 if (null != sysDataChange) {
@@ -501,4 +503,14 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         list.add(map4);
         return list;
     }
+
+
+    /**
+     * 将错误信息4状态填入到监控表
+     * 4为发生异常的状态
+     */
+    /*@Override
+    public void insertStatus(Long jobId,String destTable) {
+        sysMonitoringRepository.updateStatus(jobId,destTable);
+    }*/
 }

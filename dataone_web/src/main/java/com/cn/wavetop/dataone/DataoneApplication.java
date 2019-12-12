@@ -9,7 +9,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SpringCloudApplication
-@EnableDiscoveryClient
+/*@EnableFeignClients*/
 public class DataoneApplication {
 
     public static void main(String[] args) {

@@ -350,8 +350,25 @@ public class SysTableruleServiceImpl implements SysTableruleService {
 
 
     }
-
-
+    @Autowired
+    private SysMonitoringRepository sysMonitoringRepository;
+    /**
+     * 查询源端表名
+     * @param jobId
+     * @return
+     */
+    @Override
+    public String selectTable(Long jobId,String destTable) {
+        List<String> sourceTables = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
+        if (sourceTables != null && sourceTables.size() >0){
+            for (String sourceTable : sourceTables) {
+                System.out.println("sourceName = " + sourceTable);
+                sysMonitoringRepository.updateStatus(jobId,sourceTable);
+                return sourceTable;
+            }
+        }
+        return "无源端表名";
+    }
 
 
 }

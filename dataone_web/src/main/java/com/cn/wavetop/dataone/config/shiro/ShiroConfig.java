@@ -91,6 +91,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys_user/sendEmail/**", "anon");
         filterChainDefinitionMap.put("/sys_user/codeEquals/**", "anon");
         filterChainDefinitionMap.put("/sys_user/editPasswordByEmail/**", "anon");
+        filterChainDefinitionMap.put("/errorlog/**", "anon");
+
 
 //        filterChainDefinitionMap.put("/sys_monitoring/**", "anon");
 

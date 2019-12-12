@@ -247,12 +247,12 @@
             <artifactId>Dm7JdbcDriver17</artifactId>
             <version>7.6.0.77</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-openfeign-core</artifactId>
             <version>2.1.3.RELEASE</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>

@@ -99,6 +99,8 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
                     }
                 else if(sysDbinfo.getType()==3){
                     conn=DBConns.getSqlserverConn(sysDbinfo);
+                }else if(sysDbinfo.getType()==4){
+                    conn=DBConns.getDaMengConn(sysDbinfo);
                 }
 
                     if (conn != null) {

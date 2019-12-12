@@ -192,4 +192,19 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         map.put("status","1");
         return map;
     }
+
+    /**
+     * 插入错误信息
+     */
+    @Transactional
+    @Override
+    public void insertError(Long jobId,String sourceTable, String destTable, Date time,String errorinfo) {
+        ErrorLog errorLog = new ErrorLog();
+        errorLog.setJobId(jobId);
+        errorLog.setSourceName(sourceTable);
+        errorLog.setDestName(destTable);
+        errorLog.setOptTime(time);
+        errorLog.setContent(errorinfo);
+        repository.save(errorLog);
+    }
 }
