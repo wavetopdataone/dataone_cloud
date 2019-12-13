@@ -7,6 +7,7 @@ import com.cn.wavetop.dataone.entity.vo.CountAndTime;
 import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysMonitoringService;
+import com.cn.wavetop.dataone.util.DBConns;
 import com.cn.wavetop.dataone.util.DateUtil;
 import org.checkerframework.checker.units.qual.A;
 import org.hibernate.dialect.Sybase11Dialect;
@@ -37,6 +38,12 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     private ErrorLogRespository errorLogRespository;
     @Autowired
     private SysLogRepository sysLogRepository;
+    @Autowired
+    private SysFilterTableRepository sysFilterTableRepository;
+    @Autowired
+    private SysJobrelaRespository sysJobrelaRepository;
+    @Autowired
+    private SysDbinfoRespository sysDbinfoRespository;
     @Override
     public Object findAll() {
         List<SysMonitoring> sysUserList = sysMonitoringRepository.findAll();
@@ -147,46 +154,13 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
     @Override
     public Object findLike(String source_table, long job_id) {
-        Map<Object,Object> map=new HashMap<>();
-        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
-        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
-        SysMonitoring sysMonitoring2=null;
-        SysMonitoring sysMonitoring3=null;
+        Map<Object, Object> map = new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
+        SysMonitoring sysMonitoring2 = null;
+        SysMonitoring sysMonitoring3 = null;
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findBySourceTableContainingAndJobId(source_table, job_id);
-       if(sysMonitoringList!=null&&sysMonitoringList.size()>0) {
-           for (SysMonitoring sysMonitoring : sysMonitoringList) {
-               sysMonitoring2 = new SysMonitoring();
-               sysMonitoring3 = new SysMonitoring();
-               //源端
-               sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
-               sysMonitoring2.setReadData(sysMonitoring.getReadData());
-               sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
-               sysMonitoringList2.add(sysMonitoring2);
-               //目的端
-               sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
-               sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
-               sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
-               sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
-               sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
-               sysMonitoringList3.add(sysMonitoring3);
-           }
-           map.put("status","1");
-           map.put("data1",sysMonitoringList2);
-           map.put("data2",sysMonitoringList3);
-       }else{
-           map.put("status","0");
-           map.put("data","暂无数据");
-       }
-        return map;
-    }
-    public Object statusMonitoring(Long job_id,Integer jobStatus){
-        Map<Object,Object> map=new HashMap<>();
-        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
-        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
-        SysMonitoring sysMonitoring2=null;
-        SysMonitoring sysMonitoring3=null;
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndJobStatus(job_id,jobStatus);
-        if(sysMonitoringList!=null&&sysMonitoringList.size()>0) {
+        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
                 sysMonitoring2 = new SysMonitoring();
                 sysMonitoring3 = new SysMonitoring();
@@ -203,12 +177,46 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
                 sysMonitoringList3.add(sysMonitoring3);
             }
-            map.put("status","1");
-            map.put("data1",sysMonitoringList2);
-            map.put("data2",sysMonitoringList3);
-        }else{
-            map.put("status","0");
-            map.put("data","暂无数据");
+            map.put("status", "1");
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
+        } else {
+            map.put("status", "0");
+            map.put("data", "暂无数据");
+        }
+        return map;
+    }
+
+    public Object statusMonitoring(Long job_id, Integer jobStatus) {
+        Map<Object, Object> map = new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
+        SysMonitoring sysMonitoring2 = null;
+        SysMonitoring sysMonitoring3 = null;
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndJobStatus(job_id, jobStatus);
+        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
+            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                sysMonitoring2 = new SysMonitoring();
+                sysMonitoring3 = new SysMonitoring();
+                //源端
+                sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
+                sysMonitoring2.setReadData(sysMonitoring.getReadData());
+                sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
+                sysMonitoringList2.add(sysMonitoring2);
+                //目的端
+                sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
+                sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
+                sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
+                sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+                sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
+                sysMonitoringList3.add(sysMonitoring3);
+            }
+            map.put("status", "1");
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
+        } else {
+            map.put("status", "0");
+            map.put("data", "暂无数据");
         }
         return map;
     }
@@ -236,9 +244,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Override
     public Object showMonitoring(long job_id) {
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
-           String date=dfs.format(new Date());
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByIdAndDate(job_id,DateUtil.StringToDate(date));
-        List<SysLog> sysLogList=sysLogRepository.findByJobIdAndOperation(job_id,"添加任务");
+        String date = dfs.format(new Date());
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByIdAndDate(job_id, DateUtil.StringToDate(date));
+        List<SysLog> sysLogList = sysLogRepository.findByJobIdAndOperation(job_id, "添加任务");
         //StringBuffer sum=new StringBuffer();
         double sum = 0;
         double errorDatas = 0;
@@ -250,8 +258,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         long index = 0;
         long index1 = 0;
         HashMap<Object, Object> map = new HashMap();
-        List<ErrorLog> errorLogs=errorLogRespository.findByJobId(job_id);
-        errorDatas=errorLogs.size();
+        List<ErrorLog> errorLogs = errorLogRespository.findByJobId(job_id);
+        errorDatas = errorLogs.size();
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
                 if (sysMonitoring.getSqlCount() == null) {
@@ -297,9 +305,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("read_rate", readRate);
             map.put("dispose_rate", disposeRate);
             map.put("synchronous", synchronous);
-            if(sysLogList!=null&&sysLogList.size()>0) {
+            if (sysLogList != null && sysLogList.size() > 0) {
                 map.put("create_time", sysLogList.get(0).getCreateDate());
-            }else{
+            } else {
                 map.put("create_time", new Date());
             }
             map.put("status", "1");
@@ -311,15 +319,16 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("read_rate", "0");
             map.put("dispose_rate", "0");
             map.put("synchronous", "0");
-            if(sysLogList!=null&&sysLogList.size()>0) {
+            if (sysLogList != null && sysLogList.size() > 0) {
                 map.put("create_time", sysLogList.get(0).getCreateDate());
-            }else{
+            } else {
                 map.put("create_time", new Date());
-            }            map.put("status", "1");
+            }
+            map.put("status", "1");
 
         }
         //把同步速率更新到任务表用于首页的显示
-       SysJobrela sysJobrela= sysJobrelaRespository.findById(job_id);
+        SysJobrela sysJobrela = sysJobrelaRespository.findById(job_id);
         sysJobrela.setJobRate(synchronous);
         sysJobrelaRespository.save(sysJobrela);
         return map;
@@ -328,16 +337,16 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Transactional
     @Override
     public Object tableMonitoring(long job_id) {
-        Map<Object,Object> map=new HashMap<>();
-        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
-        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
-        SysMonitoring sysMonitoring2=null;
-        SysMonitoring sysMonitoring3=null;
+        Map<Object, Object> map = new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
+        SysMonitoring sysMonitoring2 = null;
+        SysMonitoring sysMonitoring3 = null;
         try {
             List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
             List<SysTablerule> sysTablerules = new ArrayList<SysTablerule>();
             List<SysMonitoring> sysMonitoringList1 = new ArrayList<SysMonitoring>();
-            SysJobrela sysJobrela=sysJobrelaRespository.findById(job_id);
+            SysJobrela sysJobrela = sysJobrelaRespository.findById(job_id);
             if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
                 for (SysMonitoring sysMonitoring : sysMonitoringList) {
                     sysTablerules = sysTableruleRepository.findBySourceTableAndJobId(sysMonitoring.getSourceTable(), job_id);
@@ -352,19 +361,19 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                             sysMonitoringList1.get(0).setDestTable(sysMonitoringList1.get(0).getSourceTable());
                         }
                         //从错误队列里面取得每张表的错误总数
-                        List<ErrorLog> errorLogList= errorLogRespository.findByJobIdAndDestName(job_id,sysMonitoringList1.get(0).getDestTable());
+                        List<ErrorLog> errorLogList = errorLogRespository.findByJobIdAndDestName(job_id, sysMonitoringList1.get(0).getDestTable());
                         sysMonitoringList1.get(0).setErrorData(Long.valueOf(errorLogList.size()));
-                         //每张表的同步状态
-                        if(sysMonitoringList1.get(0).getJobStatus()==null){
+                        //每张表的同步状态
+                        if (sysMonitoringList1.get(0).getJobStatus() == null) {
                             sysMonitoringList1.get(0).setJobStatus(0);
                         }
                         //todo 判断有问题，如果一张表完了
-                        if(sysMonitoringList1.get(0).getJobStatus()!=4){
-                            if(sysMonitoringList1.get(0).getErrorData()+sysMonitoringList1.get(0).getWriteData()<sysMonitoringList1.get(0).getReadData()&&!"2".equals(sysJobrela.getJobStatus())&&!"21".equals(sysJobrela.getJobStatus())){
+                        if (sysMonitoringList1.get(0).getJobStatus() != 4) {
+                            if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() < sysMonitoringList1.get(0).getReadData() && !"2".equals(sysJobrela.getJobStatus()) && !"21".equals(sysJobrela.getJobStatus())) {
                                 sysMonitoringList1.get(0).setJobStatus(1);//运行中
-                            }else if(sysMonitoringList1.get(0).getErrorData()+sysMonitoringList1.get(0).getWriteData()==sysMonitoringList1.get(0).getReadData()){
+                            } else if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() == sysMonitoringList1.get(0).getReadData()) {
                                 sysMonitoringList1.get(0).setJobStatus(3);//已完成
-                            }else if("2".equals(sysJobrela.getJobStatus())||"21".equals(sysJobrela.getJobStatus())){
+                            } else if ("2".equals(sysJobrela.getJobStatus()) || "21".equals(sysJobrela.getJobStatus())) {
                                 sysMonitoringList1.get(0).setJobStatus(2);//暂停中
                             }
                         }
@@ -373,9 +382,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
                 }
                 sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
-                for(SysMonitoring sysMonitoring:sysMonitoringList){
-                    sysMonitoring2=new SysMonitoring();
-                    sysMonitoring3=new SysMonitoring();
+                for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                    sysMonitoring2 = new SysMonitoring();
+                    sysMonitoring3 = new SysMonitoring();
                     //源端
                     sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
                     sysMonitoring2.setReadData(sysMonitoring.getReadData());
@@ -389,9 +398,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                     sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
                     sysMonitoringList3.add(sysMonitoring3);
                 }
-                map.put("status","1");
-                map.put("data1",sysMonitoringList2);
-                map.put("data2",sysMonitoringList3);
+                map.put("status", "1");
+                map.put("data1", sysMonitoringList2);
+                map.put("data2", sysMonitoringList3);
                 return map;
             } else {
                 return ToDataMessage.builder().status("0").message("没有查到数据").build();
@@ -478,7 +487,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
      */
     @Transactional
     @Override
-    public void  updateWriteMonitoring(long id, Long writeData, String table) {
+    public void updateWriteMonitoring(long id, Long writeData, String table) {
 //        String table = "TEST";
 
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdTable(id, table);
@@ -508,7 +517,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Transactional
     @Override
     public Object dataChangeView(long job_id, Integer date) {
-        Integer data = date-1;
+        Integer data = date - 1;
         HashMap<String, List> map1 = new HashMap<>();
         HashMap<String, List> map2 = new HashMap<>();
         HashMap<String, List> map3 = new HashMap<>();
@@ -608,5 +617,49 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         list.add(map3);
         list.add(map4);
         return list;
+    }
+
+    //写入设置显示同步表的接口
+    public Object selTable(Long jobId) {
+        StringBuffer stringBuffer = new StringBuffer("");
+        SysTablerule tablerule = new SysTablerule();
+        List<String> stringList=new ArrayList<String>();
+        String sql="";
+        SysDbinfo sysDbinfo=new SysDbinfo();
+        List<SysTablerule> list=new ArrayList<SysTablerule>();
+
+        //查詢关联的数据库连接表jobrela
+        SysJobrela sysJobrelaList=sysJobrelaRepository.findById((long)jobId);
+        //查询到数据库连接
+        if(sysJobrelaList!=null) {
+            sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.getSourceId().longValue());
+        }else{
+            return ToDataMessage.builder().status("0").message("该任务没有连接").build();
+        }
+        if(sysDbinfo.getType()==2){
+            //mysql
+            sql = "show tables";
+        }else if(sysDbinfo.getType()==1){
+            //oracle
+            sql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
+        }
+
+        List<SysFilterTable> sysFilterTables = sysFilterTableRepository.findJobId(jobId);
+        if (sysFilterTables != null && sysFilterTables.size() > 0) {
+            for (SysFilterTable sysFilterTable : sysFilterTables) {
+                stringBuffer.append(sysFilterTable.getFilterTable());
+                stringBuffer.append(",");
+            }
+            tablerule.setSourceTable(stringBuffer.toString());
+            stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
+
+            tablerule=new SysTablerule();
+        }else{
+            stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
+        }
+        for(String s:stringList){
+            list.add(SysTablerule.builder().sourceTable(s).build());
+        }
+        return ToData.builder().status("1").data(list).build();
     }
 }

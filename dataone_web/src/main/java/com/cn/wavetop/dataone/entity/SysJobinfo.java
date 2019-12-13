@@ -37,7 +37,7 @@ public class SysJobinfo {
   private Long dataEnc;
   private String maxSourceRead;
   private Long destWriteConcurrentNum;
-
+  private Long sourceReadConcurrentNum;
   private String maxDestWrite;
   private Long destCaseSensitive;
   @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -111,6 +111,15 @@ public class SysMonitoringController {
     public  Object statusMonitoring(Long job_id,Integer jobStatus){
         return sysMonitoringService.statusMonitoring(job_id,jobStatus);
     }
+    /**
+     * 监控页写入设置查询同步表
+     */
+    @ApiOperation(value = "监控页写入设置查询同步表", protocols = "POST", produces = "application/json", notes = "监控页写入设置查询同步表")
+    @PostMapping("/selTable")
+   public Object selTable(Long jobId){
+       return sysMonitoringService.selTable(jobId);
+   }
+
 
     /**
      * 抽取速率读写量

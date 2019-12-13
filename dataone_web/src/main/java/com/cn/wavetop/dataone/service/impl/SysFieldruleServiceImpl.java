@@ -407,6 +407,16 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
     //查看源端表字段
     @Override
     public Object linkTableDetails(SysDbinfo sysDbinfo, String tablename, Long job_id) {
+        if(sysDbinfo==null){
+            //查詢关联的数据库连接表jobrela
+            List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
+            //查询到数据库连接
+            if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
+                sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
+            } else {
+                return ToDataMessage.builder().status("0").message("该任务没有连接").build();
+            }
+        }
         HashMap<Object, Object> map = new HashMap<>();
         Long type = sysDbinfo.getType();
         String sql = "";
@@ -506,6 +516,16 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         List<SysFieldrule> list = sysFieldruleRepository.findByJobIdAndSourceNameAndVarFlag(job_id, tablename, Long.valueOf(2));
         List<SysDesensitization> sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTable(job_id, tablename);
         try {
+            if(sysDbinfo==null){
+                //查詢关联的数据库连接表jobrela
+                List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
+                //查询到数据库连接
+                if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
+                    sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
+                } else {
+                    return ToDataMessage.builder().status("0").message("该任务没有连接").build();
+                }
+            }
             List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
             //查询目的数据库连接
             SysDbinfo  sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());

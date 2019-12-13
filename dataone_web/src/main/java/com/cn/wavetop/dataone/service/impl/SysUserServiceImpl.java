@@ -255,14 +255,15 @@ public class SysUserServiceImpl implements SysUserService {
                     sysLog.setDeptName(deptName);
                 }
             }
+            //获取角色信息
+            List<SysRole> sysRoles= sysUserRepository.findUserById(PermissionUtils.getSysUser().getId());
+            String roleName = "";
+            if(sysRoles!=null&&sysRoles.size()>0) {
+                roleName = sysRoles.get(0).getRoleName();
+                sysLog.setRoleName(roleName);
+            }
         }
-        //获取角色信息
-        List<SysRole> sysRoles= sysUserRepository.findUserById(PermissionUtils.getSysUser().getId());
-        String roleName = "";
-        if(sysRoles!=null&&sysRoles.size()>0) {
-            roleName = sysRoles.get(0).getRoleName();
-            sysLog.setRoleName(roleName);
-        }
+
         sysLog.setIp(subject.getSession().getHost());
         sysLog.setMethod("com.cn.wavetop.dataone.controller.SysUserController.loginOut");
         Object[] args=null;

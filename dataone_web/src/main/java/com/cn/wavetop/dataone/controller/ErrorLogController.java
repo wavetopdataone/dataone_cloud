@@ -53,7 +53,11 @@ public class ErrorLogController {
     public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
         return service.getCheckError(jobId,tableName,type,startTime,endTime,context);
     }
-
+    @ApiOperation(value = "查询错误队列类型", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询错误队列类型")
+    @PostMapping("/selType")
+    public Object selType() {
+        return service.selType();
+    }
     @ApiImplicitParam
     @PostMapping("/add_errorlog")
     public Object add_errorlog( @RequestBody ErrorLog errorLog) {
@@ -74,6 +78,7 @@ public class ErrorLogController {
         System.out.println(ids);
         return service.deleteErrorlog( jobId,ids);
     }
+
     @ApiOperation(value = "根据任务ID查询错误队列，表名，错误量", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
     public Object query_errorlog(Long jobId) {

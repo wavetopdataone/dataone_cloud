@@ -75,7 +75,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
 
                         }
                         if(context!=null&&!"".equals(context)){
-                            predicates.add(cb.like(root.get("optContext").as(String.class), "%"+context+"%"));
+                            predicates.add(cb.like(root.get("content").as(String.class), "%"+context+"%"));
                         }
                         predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
 
@@ -101,7 +101,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                    sysJobrela.get().setJobStatus("21");//改为暂停
                     sysJobrelaRespository.save(sysJobrela.get());
                     userLogRepository.save(build2);
-                }else if(sysUserlogPage.size()>=90000&&sysUserlogPage.size()<=100000){
+                }else if(sysUserlogPage.size()>=90000&&sysUserlogPage.size()<100000){
                      build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已接近上限").jobId(jobId).build();
                     userLogRepository.save(build2);
                 }
@@ -216,4 +216,19 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         map.put("status","1");
         return map;
     }
+    //查询错误类型
+    public Object selType(){
+      List<ErrorLog> errorLogs=repository.findAll();
+      List<String> list=new ArrayList<>();
+      if(errorLogs!=null&&errorLogs.size()>0) {
+          for (ErrorLog errorLog : errorLogs) {
+              if(errorLog.getOptType()!=null) {
+                  list.add(errorLog.getOptType());
+              }
+          }
+      }
+      return ToData.builder().status("1").data(list).build();
+
+    }
+
 }

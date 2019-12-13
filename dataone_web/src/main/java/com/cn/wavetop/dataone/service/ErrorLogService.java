@@ -19,4 +19,5 @@ public interface ErrorLogService {
 
     Object queryErrorlog(Long jobId);
     Object selErrorlogById(Long id);
+    Object selType();
 }

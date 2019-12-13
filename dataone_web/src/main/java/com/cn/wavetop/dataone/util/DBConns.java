@@ -146,6 +146,7 @@ public class DBConns {
             System.out.println("類型錯誤");
             return list;
         }
+        System.out.println(list+"weishenme aaaaa");
         Iterator<String>  iterator=list.iterator();
         while (iterator.hasNext()) {
             String num = iterator.next();

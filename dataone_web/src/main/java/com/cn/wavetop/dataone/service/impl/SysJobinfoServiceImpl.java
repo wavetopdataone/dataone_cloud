@@ -89,6 +89,8 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                 data.setBeginTime(jobinfo.getBeginTime());
                 data.setDataEnc(jobinfo.getDataEnc());
                 data.setDestCaseSensitive(jobinfo.getDestCaseSensitive());
+                data.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
+
                 data.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
                 data.setEndTime(jobinfo.getEndTime());
                 data.setMaxDestWrite(jobinfo.getMaxDestWrite());
@@ -126,7 +128,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             datas.setJobId(sysJobrelaRelated.getSlaveJobId());
                             datas.setBeginTime(jobinfo.getBeginTime());
                             datas.setDataEnc(jobinfo.getDataEnc());
-
+                            datas.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
                             datas.setDestCaseSensitive(jobinfo.getDestCaseSensitive());
                             datas.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
                             datas.setEndTime(jobinfo.getEndTime());
@@ -169,6 +171,11 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             sysJobinfo1.setReadFrequency(jobinfo.getReadFrequency());
                             sysJobinfo1.setSyncRange(jobinfo.getSyncRange());
                             sysJobinfo1.setSyncWay(jobinfo.getSyncWay());
+                        //todo 读取写入并发量和速率限制
+                        sysJobinfo1.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
+                        sysJobinfo1.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
+                        sysJobinfo1.setMaxDestWrite(jobinfo.getMaxDestWrite());
+                        sysJobinfo1.setMaxSourceRead(jobinfo.getMaxSourceRead());
                             if(jobinfo.getReadBegin()==1) {
                                 sysJobinfo1.setSourceType(jobinfo.getSourceType());
                             if (jobinfo.getSourceType().equals("1")) {
