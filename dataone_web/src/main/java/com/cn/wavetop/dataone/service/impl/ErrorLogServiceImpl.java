@@ -43,6 +43,8 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     //条件查询
     @Override
     public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
+        System.out.println(jobId+tableName+type+startTime+context+endTime+"-------------------hahah");
+
         // Pageable page = PageRequest.of(current - 1, size, Sort.Direction.DESC, "id");
         List<ErrorLog> sysErrorlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
@@ -59,22 +61,22 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                     public Predicate toPredicate(Root<ErrorLog> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
                         List<Predicate> predicates = new ArrayList<>();
                         //大于或等于传入时间
-                        if(startTime!=null&&!"".equals(startTime)) {
+                        if(startTime!=null&&!"null".equals(startTime)) {
                             predicates.add(cb.greaterThanOrEqualTo(root.get("optTime").as(String.class),startTime));
                         }
                         //小于或等于传入时间
-                        if(endTime!=null&&!"".equals(endTime)) {
+                        if(endTime!=null&&!"null".equals(endTime)) {
                             predicates.add(cb.lessThanOrEqualTo(root.get("optTime").as(String.class), finalEndDate));
                         }
-                        if(type!=null&&!"".equals(type)){
+                        if(type!=null&&!"null".equals(type)){
                             predicates.add(cb.equal(root.get("optType").as(String.class), type));
 
                         }
-                        if(tableName!=null&&!"".equals(tableName)){
+                        if(tableName!=null&&!"null".equals(tableName)){
                             predicates.add(cb.equal(root.get("sourceName").as(String.class), tableName));
 
                         }
-                        if(context!=null&&!"".equals(context)){
+                        if(context!=null&&!"null".equals(context)){
                             predicates.add(cb.like(root.get("content").as(String.class), "%"+context+"%"));
                         }
                         predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
@@ -91,7 +93,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 List<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi);
                 map.put("status","1");
                 map.put("data",sysUserlogPage);
-                map.put("totalCount",sysUserlogPage.size());
+                map.put("total",sysUserlogPage.size());
                 Userlog build2=null;
                 //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
                 //todo 要不要在这里加上所有的错误队列判断
@@ -190,6 +192,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     public Object queryErrorlog(Long jobId) {
         HashMap<Object, Object> map = new HashMap();
         Set<String> set=new HashSet<>();
+        List<Object> list=new ArrayList<>();
+        List<Integer> lenths=new ArrayList<>();
+        List<ErrorLog> errorLogs=null;
         List<ErrorLog> data = repository.findByJobId(jobId);
         //todo 根据任务id查询出有多少张表出现错误
         if (data != null&&data.size()>0) {
@@ -198,10 +203,17 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                     set.add(errorLog.getSourceName());
                 }
             }
+            for(String tableName:set){
+                errorLogs=new ArrayList<>();
+                errorLogs= repository.findByJobIdAndSourceName(jobId,tableName);
+                lenths.add(errorLogs.size());
+            }
+            list.add(set);
+            list.add(lenths);
             map.put("status", 1);
             map.put("data", data);
             map.put("total", data.size());
-            map.put("table",set);//表名
+            map.put("table",list);//表名
         } else {
             map.put("status", 0);
             map.put("message", "任务不存在");

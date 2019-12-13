@@ -50,8 +50,8 @@ public class ErrorLogController {
 
     @ApiOperation(value = "根据表名，时间查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据表名，时间查询错误队列")
     @PostMapping("/check_errorlog")
-    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
-        return service.getCheckError(jobId,tableName,type,startTime,endTime,context);
+    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String content) {
+        return service.getCheckError(jobId,tableName,type,startTime,endTime,content);
     }
     @ApiOperation(value = "查询错误队列类型", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询错误队列类型")
     @PostMapping("/selType")
