@@ -194,7 +194,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         //todo 根据任务id查询出有多少张表出现错误
         if (data != null&&data.size()>0) {
             for(ErrorLog errorLog:data){
-                if(errorLog.getSourceName()!=null) {
+                if(errorLog.getSourceName()!=null&&!"".equals(errorLog.getSourceName())) {
                     set.add(errorLog.getSourceName());
                 }
             }
@@ -221,15 +221,17 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     //查询错误类型
     public Object selType(){
       List<ErrorLog> errorLogs=repository.findAll();
-      List<String> list=new ArrayList<>();
+      Set<String> set=new HashSet<>();
       if(errorLogs!=null&&errorLogs.size()>0) {
           for (ErrorLog errorLog : errorLogs) {
-              if(errorLog.getOptType()!=null) {
-                  list.add(errorLog.getOptType());
+              if(errorLog.getOptType()!=null&&!"".equals(errorLog.getOptType())) {
+                  set.add(errorLog.getOptType());
               }
           }
       }
-      return ToData.builder().status("1").data(list).build();
+        List<String> list = new ArrayList<>(set);
+
+        return ToData.builder().status("1").data(list).build();
 
     }
 
