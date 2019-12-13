@@ -193,7 +193,8 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         HashMap<Object, Object> map = new HashMap();
         Set<String> set=new HashSet<>();
         List<Object> list=new ArrayList<>();
-        List<Integer> lenths=new ArrayList<>();
+        List<String> listsss=null;
+
         List<ErrorLog> errorLogs=null;
         List<ErrorLog> data = repository.findByJobId(jobId);
         //todo 根据任务id查询出有多少张表出现错误
@@ -205,11 +206,12 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
             }
             for(String tableName:set){
                 errorLogs=new ArrayList<>();
+                listsss=new ArrayList<>();
                 errorLogs= repository.findByJobIdAndSourceName(jobId,tableName);
-                lenths.add(errorLogs.size());
+                listsss.add(tableName);
+                listsss.add(String.valueOf(errorLogs.size()));
+                list.add(listsss);
             }
-            list.add(set);
-            list.add(lenths);
             map.put("status", 1);
             map.put("data", data);
             map.put("total", data.size());
