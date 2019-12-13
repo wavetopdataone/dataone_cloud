@@ -194,7 +194,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         //todo 根据任务id查询出有多少张表出现错误
         if (data != null&&data.size()>0) {
             for(ErrorLog errorLog:data){
-                set.add(errorLog.getSourceName());
+                if(errorLog.getSourceName()!=null) {
+                    set.add(errorLog.getSourceName());
+                }
             }
             map.put("status", 1);
             map.put("data", data);
