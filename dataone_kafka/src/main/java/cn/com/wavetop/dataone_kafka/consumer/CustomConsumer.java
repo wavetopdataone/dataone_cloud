@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,8 +22,125 @@ public class CustomConsumer extends Thread {
 
     @Override
     public void run() {
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "192.168.1.156:9092");
+        props.put("group.id", "test1");
+        props.put("enable.auto.commit", "false");
+        props.put("auto.commit.interval.ms", "1000");
+        HashMap<String, String> map = new HashMap<>();
+        props.put("auto.offset.reset", "earliest");
+        props.put("key.deserializer",
+                "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer",
+                "org.apache.kafka.common.serialization.StringDeserializer");
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        //订阅错误队列信息
+        consumer.subscribe(Arrays.asList("error-queue-logs"));
+        try{
+            while(true){
+                String topic=null;
+                int partition=0;
+                Long offset=0L;
+                String message=null;
+                ConsumerRecords<String, String> records =
+                        consumer.poll(10000);
+                for (ConsumerRecord<String, String> record : records) {
+                    String errortype=null;
+                    String value = record.value();
+                /*
+                和错误日志里的信息是相同的
+                {"schema":{"type":"string","optional":false},"payload":"\tat org.apache.kafka.connect.json.JsonConverter.toConnectData(JsonConverter.java:348)"}
+                * */
+                    JSONObject jsonObject = JSONObject.parseObject(value);
+                    String payload = (String)jsonObject.get("payload");
+                    //System.out.println("payload = " + payload);
+                    boolean error = payload.contains("ERROR Error");
+                    if (error){
+                        String[] split = payload.split("\\{");
+                        if (split.length > 1) {
+                            String string = split[1];
+                            String[] split1 = string.split("}");
+                            if (split1.length > 1) {
+                                String s = split1[0];
+                                String[] split2 = s.split(",");
+                                if (split2.length > 0) {
+                                    for (String s1 : split2) {
+                                        String[] split3 = s1.split("=");
+                                        map.put(split3[0].trim(), split3[1].trim());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (map.get("topic")!=null){
+
+                        topic = map.get("topic").replace("'","");
+                    }
+                    Long jobId = 0L;
+                    String destTable = null;
+                    if (topic != null){
+                        String[] split = topic.split("-");
+                        jobId = Long.valueOf(split[1]);
+                        destTable = split[2];
+                    }
+                    if (map.get("partition") != null){
+                        partition = Integer.valueOf(map.get("partition"));
+                    }
+                    if (map.get("offset") != null){
+                        offset = Long.valueOf(map.get("offset"));
+                    }
+                    Date time = null;
+                    if (map.get("timestamp")!=null){
+                        Long timestamp = Long.valueOf(map.get("timestamp"));
+                        try {
+                            time = simpleDateFormat.parse(simpleDateFormat.format(new Date(timestamp)));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (payload.contains("Exception")){
+                        String[] split = payload.split(":");
+                        if (split.length>0){
+                            errortype = split[0];
+                            //System.out.println("split = " + split);
+                        }
+                    }
+                    //这里是两行为一个周期,当topic和errorinfo不为空时,将所有的信息发送到数据库
+                    if (null != topic && null!=errortype){
+
+                        //远程调用查询源端表名
+                        String sourceTable = toBackClient.selectTable(jobId, destTable,time);
+                        message = CustomNewConsumer.topicPartion(topic, partition, offset);
+                        System.out.println("sourceTable = " + sourceTable);
+                        //远程调用插入错误日志信息
+                        toBackClient.insertError(jobId,sourceTable,destTable,time,errortype,message);
+
+                    }
+                }
+            }
+        }catch (Exception e){
+            throw new RuntimeException("commit failed");
+        }finally {
+            try {
+                consumer.commitSync();//关闭消费者前，使用commitSync，直到提交成成功或者发生无法恢复的错误
+            }finally {
+                consumer.close();
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+        /*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
@@ -81,7 +199,7 @@ public class CustomConsumer extends Thread {
                     }
                 }
             }
-        }
+        }*/
     }
         /*File actionDir = new File("D:\\wangcheng\\dataone");
         // 调用打印目录方法
@@ -209,8 +327,8 @@ public class CustomConsumer extends Thread {
         printDir(actionDir);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");*/
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        /*ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);*/
+        /*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
         props.put("group.id", "test1");
@@ -223,21 +341,22 @@ public class CustomConsumer extends Thread {
         props.put("value.deserializer",
                 "org.apache.kafka.common.serialization.StringDeserializer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-
+        //订阅错误队列信息
         consumer.subscribe(Arrays.asList("error-queue-logs"));
         while(true){
             String topic=null;
-            Integer partition;
-            Long offset;
-            String errorinfo;
+            int partition=0;
+            Long offset=0L;
+            String message=null;
             ConsumerRecords<String, String> records =
                     consumer.poll(10000);
             for (ConsumerRecord<String, String> record : records) {
+                String errorinfo=null;
                 String value = record.value();
-                /*
-                和错误日志里的信息是相同的
-                {"schema":{"type":"string","optional":false},"payload":"\tat org.apache.kafka.connect.json.JsonConverter.toConnectData(JsonConverter.java:348)"}
-                * */
+
+                //和错误日志里的信息是相同的
+                //{"schema":{"type":"string","optional":false},"payload":"\tat org.apache.kafka.connect.json.JsonConverter.toConnectData(JsonConverter.java:348)"}
+
                 JSONObject jsonObject = JSONObject.parseObject(value);
                 String payload = (String)jsonObject.get("payload");
                 System.out.println("payload = " + payload);
@@ -259,26 +378,72 @@ public class CustomConsumer extends Thread {
                         }
                     }
                 }
-                topic = map.get("topic");
-                partition = Integer.valueOf(map.get("partition"));
-                offset = Long.valueOf(map.get("offset"));
+                if (map.get("topic")!=null){
+
+                    topic = map.get("topic").replace("'","");
+                }
+                Long jobId = 0L;
+                String destTable = null;
+                if (topic != null){
+                    String[] split = topic.split("-");
+                    jobId = Long.valueOf(split[1]);
+                    destTable = split[2];
+                }
+                if (map.get("partition") != null){
+                    partition = Integer.valueOf(map.get("partition"));
+                }
+                if (map.get("offset") != null){
+                    offset = Long.valueOf(map.get("offset"));
+                }
                 if (payload.contains("Exception")){
                     String[] split = payload.split(":");
                     if (split.length>0){
                         errorinfo = split[0];
                         System.out.println("split = " + split);
                     }
+                }
+                //这里是两行为一个周期,当topic和errorinfo不为空时,将所有的信息发送到数据库
+                if (null != topic && null!=errorinfo){
+                    //Map<TopicPartition, Long> hashMap = new HashMap<>();
+                    //message = CustomNewConsumer.topicPartion(topic, partition, offset);
+                    //System.out.println("error = " + error);
+                    //TopicPartition topicPartition = new TopicPartition(topic, partition);
+
+                    //consumer.subscribe(Arrays.asList(topic));
+                    //consumer.seek(topicPartition,offset);
+                    //records = consumer.poll(10000);
+                    //for (ConsumerRecord<String, String> consumerRecord : records) {
+                    //    message = consumerRecord.value();
+                    //    System.out.println("consumerRecord = " + message);
+                    //}
+//                    TopicPartition topicPartition = new TopicPartition(topic, partition);
+//                    consumer.assign(Arrays.asList(topicPartition));
+//                    //consumer.subscribe(Arrays.asList(topic));
+//                    consumer.seek(topicPartition,offset);
+//                    records = null;
+//
+//                    while(true) {
+//                        records = consumer.poll(100);
+//                        if(!records.isEmpty()) {
+//                            break;
+//                        }
+//                    }
+//                    System.out.println(records.count());
+//                    Iterator<ConsumerRecord<String, String>> iterable = records.iterator();
+//                    int index = 0;
+//                    while(index<1 && iterable.hasNext()) {
+//                        //System.out.println("王成============================"+iterable.next().toString());
+//                        message = iterable.next().value();
+//                        index++;
+//                    }
+                    String sourceTable="test";
+                    Date date = new Date();
+                    message = CustomNewConsumer.topicPartion(topic, partition, 1L);
+                    //toBackClient.insertError(jobId,sourceTable,destTable,date,errorinfo);
 
                 }
-                Map<TopicPartition, Long> hashMap = new HashMap<>();
-                hashMap.put(new TopicPartition(topic, partition,offset),offset);
-
-                consumer.subscribe(Arrays.asList(topic));
-
             }
-
-
-        }
+        }*/
 
 
 

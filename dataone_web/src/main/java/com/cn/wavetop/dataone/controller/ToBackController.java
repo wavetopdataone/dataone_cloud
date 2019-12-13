@@ -191,20 +191,25 @@ public class ToBackController {
      * 插入错误信息
      */
     @PostMapping("/insertErrorLog")
-    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errorinfo){
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errortype,
+                            @RequestParam String message){
 
-        errorLogService.insertError(jobId,sourceTable,destTable,time,errorinfo);
+        errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message);
     }
 
     /**
      * 查询源端表名
+     * 将错误状态4填入到monitoring表中
+     * 将错误信息填入到userlog中
      * @param jobId
+     * @param destTable
+     * @param time
      * @return
      */
     @ApiImplicitParam
     @GetMapping("/selecttable")
-    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable) {
-        return sysTableruleService.selectTable(jobId,destTable);
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam Date time) {
+        return sysTableruleService.selectTable(jobId,destTable,time);
     }
 
     /**

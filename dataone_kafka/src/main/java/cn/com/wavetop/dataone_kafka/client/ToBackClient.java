@@ -92,14 +92,17 @@ public interface ToBackClient {
      *插入错误数据信息
      */
     @PostMapping("/toback/insertErrorLog")
-    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errorinfo);
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errortype,
+                            @RequestParam String message);
 
 
     /**
      * 查询源端表名
+     * 将错误状态4填入到monitoring表中
+     * 将错误信息填入到userlog中
      */
     @GetMapping("/toback/selecttable")
-    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable);
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam Date time);
 
     /**
      * 将错误信息4状态填入到监控表

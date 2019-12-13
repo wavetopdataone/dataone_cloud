@@ -198,13 +198,14 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
      */
     @Transactional
     @Override
-    public void insertError(Long jobId,String sourceTable, String destTable, Date time,String errorinfo) {
+    public void insertError(Long jobId,String sourceTable, String destTable, Date time,String errortype,String message) {
         ErrorLog errorLog = new ErrorLog();
         errorLog.setJobId(jobId);
         errorLog.setSourceName(sourceTable);
         errorLog.setDestName(destTable);
         errorLog.setOptTime(time);
-        errorLog.setContent(errorinfo);
+        errorLog.setOptType(errortype);
+        errorLog.setContent(message);
         repository.save(errorLog);
     }
 }

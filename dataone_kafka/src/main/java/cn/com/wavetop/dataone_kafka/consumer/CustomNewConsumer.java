@@ -1,5 +1,6 @@
 package cn.com.wavetop.dataone_kafka.consumer;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import cn.com.wavetop.dataone_kafka.client.ToBackClient;
@@ -8,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CustomNewConsumer {
@@ -58,4 +60,83 @@ public class CustomNewConsumer {
 				System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
 		}
 	}
+	//获取另一个消息队列的信息
+	public static String topicPartion(String topic,int partition,Long offset) {
+		//SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		/*ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);*/
+		/*Properties props = new Properties();
+		props.put("bootstrap.servers", "192.168.1.156:9092");
+		props.put("group.id", "test");
+		props.put("enable.auto.commit", "false");
+		props.put("auto.commit.interval.ms", "1000");
+		HashMap<String, String> map = new HashMap<>();
+		props.put("auto.offset.reset", "earliest");
+		props.put("key.deserializer",
+				"org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("value.deserializer",
+				"org.apache.kafka.common.serialization.StringDeserializer");
+		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+		//Map<TopicPartition, Long> hashMap = new HashMap<>();
+		TopicPartition topicPartition = new TopicPartition(topic, partition);
+
+		consumer.assign(Arrays.asList(topicPartition));
+		//consumer.subscribe(Arrays.asList(topic));
+		consumer.seek(topicPartition,offset);
+		String message=null;
+		ConsumerRecords<String, String> records = null;
+		while(true) {
+			records = consumer.poll(100);
+			if(!records.isEmpty()) {
+				break;
+			}
+		}
+		System.out.println(records.count());
+		Iterator<ConsumerRecord<String, String>> iterable = records.iterator();
+		int index = 0;
+		while(index<1 && iterable.hasNext()) {
+			System.out.println("王成============================"+iterable.next().toString());
+			message = iterable.next().value();
+			index++;
+		}
+		return message;*/
+
+
+		Properties props = new Properties();
+		props.put("bootstrap.servers", "192.168.1.156:9092");
+		props.put("group.id", "test1");
+		props.put("enable.auto.commit", "false");
+		props.put("auto.commit.interval.ms", "1000");
+		props.put("auto.offset.reset", "earliest");
+		props.put("key.deserializer",
+				"org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("value.deserializer",
+				"org.apache.kafka.common.serialization.StringDeserializer");
+		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+		//error-queue-logs
+		TopicPartition topicPartition = new TopicPartition(topic, partition);
+		consumer.assign(Arrays.asList(topicPartition));
+		//consumer.subscribe(Arrays.asList(topic));
+		consumer.seek(topicPartition,offset);
+
+		ConsumerRecords<String, String> records = null;
+		while(true) {
+			records = consumer.poll(100);
+			if(!records.isEmpty()) {
+				break;
+			}
+		}
+		//System.out.println(records.count());
+		Iterator<ConsumerRecord<String, String>> iterable = records.iterator();
+		int index = 0;
+		String value = null;
+		while(index<1 && iterable.hasNext()) {
+			//System.out.println("王成============================"+iterable.next().toString());
+			value = iterable.next().value();
+			//System.out.println("王成 =========================== " + value);
+			index++;
+		}
+		return value;
+	}
+
 }

@@ -5,6 +5,7 @@ import com.cn.wavetop.dataone.entity.SysTablerule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
@@ -21,6 +22,6 @@ public interface SysTableruleRepository extends JpaRepository<SysTablerule,Long>
     @Query("delete from SysTablerule where jobId = :job_id")
     int deleteByJobId(long job_id);
 
-    @Query(value = "select source_table from sys_tablerule st where job_id =jobId and dest_table = destTable",nativeQuery = true)
-    List<String> findByJobIdAndDestTable(Long jobId, String destTable);
+    @Query(value = "from SysTablerule st where job_id = :jobId and dest_table = :destTable")
+    List<SysTablerule> findByJobIdAndDestTable(Long jobId,String destTable);
 }

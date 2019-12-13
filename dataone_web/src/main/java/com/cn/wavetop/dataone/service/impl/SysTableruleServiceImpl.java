@@ -18,6 +18,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import javax.transaction.Transactional;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -352,23 +353,50 @@ public class SysTableruleServiceImpl implements SysTableruleService {
     }
     @Autowired
     private SysMonitoringRepository sysMonitoringRepository;
+    @Autowired
+    private UserLogRepository userLogRepository;
+    @Autowired
+    private SysJobrelaRespository sysJobrelaRespository;
     /**
      * 查询源端表名
+     * 将错误状态4填入到monitoring表中
+     * 将错误信息填入到userlog中
      * @param jobId
+     * @param destTable
+     * @param time
      * @return
      */
     @Override
-    public String selectTable(Long jobId,String destTable) {
-        List<String> sourceTables = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
-        if (sourceTables != null && sourceTables.size() >0){
-            for (String sourceTable : sourceTables) {
-                System.out.println("sourceName = " + sourceTable);
-                sysMonitoringRepository.updateStatus(jobId,sourceTable);
+    public String selectTable(Long jobId, String destTable, Date time) {
+        //查询源端表名
+        List<SysTablerule> sysTableruleList = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
+        //查询任务名称
+        Optional<SysJobrela> byId = sysJobrelaRespository.findById(jobId);
+        Userlog userlog = new Userlog();
+        String jobName = byId.get().getJobName();
+        String operate = "发现任务"+jobName+"异常,建议重启任务或者申请技术支持";
+        String sourceTable = null;
+        userlog.setJobId(jobId);
+        userlog.setJobName(jobName);
+        userlog.setTime(time);
+        userlog.setOperate(operate);
+        //异常状态4
+        int status = 4;
+        if (sysTableruleList != null && sysTableruleList.size() > 0){
+            for (SysTablerule sysTablerule : sysTableruleList) {
+                sourceTable = sysTablerule.getSourceTable();
+                //更新状态4
+                sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
+                //将错误信息插入到用户登录表中
+                userLogRepository.save(userlog);
                 return sourceTable;
             }
         }
-        return "无源端表名";
+        sourceTable = destTable;
+        //更新状态4
+        sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
+        //将错误信息插入到用户登录表中
+        userLogRepository.save(userlog);
+        return sourceTable;
     }
-
-
 }
