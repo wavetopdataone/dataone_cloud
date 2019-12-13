@@ -50,7 +50,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
         System.out.println(endTime+"-------------------heng");
-        if(endTime!=null&&!"".equals(endTime)) {
+        if(endTime!=null&&!"null".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }
         if(PermissionUtils.isPermitted("1")||PermissionUtils.isPermitted("2")){
