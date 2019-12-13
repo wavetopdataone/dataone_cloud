@@ -33,7 +33,7 @@ public class Userlog {
   private Date time;
   private String jobName;
   private String operate;
-  private long jobId;
+  private Long jobId;
 
 
 }

@@ -27,8 +27,7 @@ public class SysLogging {
     private String level_string; //级别
     /**修改时间**/
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
-    private String createdTime; //时间
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")private String createdTime; //时间
 
     private String loggerName; //名称
 

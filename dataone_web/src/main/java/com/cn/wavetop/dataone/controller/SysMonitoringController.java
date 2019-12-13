@@ -12,6 +12,10 @@ import com.cn.wavetop.dataone.util.DateUtil;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,7 +103,18 @@ public class SysMonitoringController {
         return sysMonitoringService.dataChangeView(job_id,date);
     }
 
+    /**
+     * 根据表的状态查询
+     */
+    @ApiOperation(value = "根据表的状态查询", protocols = "POST", produces = "application/json", notes = "根据表的状态查询")
+    @PostMapping("/statusMonitoring")
+    public  Object statusMonitoring(Long job_id,Integer jobStatus){
+        return sysMonitoringService.statusMonitoring(job_id,jobStatus);
+    }
 
+    /**
+     * 抽取速率读写量
+     */
     @Transactional
     @Scheduled(cron = "0 0 0 * * ?")
     public void saveDataChange() {
@@ -114,6 +129,11 @@ public class SysMonitoringController {
         long writeData = 0;//写入量
         double readRate = 0;//读取速率
         double disposeRate = 0;//处理速率
+        Pageable page=null;//读取速率分页
+        Pageable page2=null;//写入速率分页
+        Integer result=0;//中间数
+        Page<SysRealTimeMonitoring> sysRealTimeMonitoring1=null;
+        Page<SysRealTimeMonitoring> sysRealTimeMonitoring2=null;
         String nowDate = dfs.format(new Date());//几号
         //todo 因为现在是凌晨抽取，那凌晨抽就要昨天的数据，所以要用yesterday
         String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
@@ -136,13 +156,33 @@ public class SysMonitoringController {
                     }
                 }
                 errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                errorData=errorLogs.size();
-                //todo 这个峰值，不知道能否自动映射进我们实体类
-                List<SysMonitorRateVo> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                readRate = sysRealTimeMonitorings.get(0).getReadRate();
-                disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
+                if(errorLogs!=null&&errorLogs.size()>0) {
+                    errorData = errorLogs.size();
+                }else{
+                    errorData=0;
+                }
+                //todo 取值是中间数，然后分页查询1条
+                 result= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                 if(result>0) {
+                     //读取速率的分页取中间
+                     page = PageRequest.of(result - 1, 1, Sort.Direction.ASC, "readRate");
+                     //写入速率分页取中间
+                     page2 = PageRequest.of(result - 1, 1, Sort.Direction.ASC, "writeRate");
+                     //读取速率
+                     sysRealTimeMonitoring1 = sysRealTimeMonitoringRepository.findAll(page);
+                     //写入速率
+                     sysRealTimeMonitoring2 = sysRealTimeMonitoringRepository.findAll(page2);
+                     if(sysRealTimeMonitoring2.getContent().get(0).getWriteRate()==null){
+                         sysRealTimeMonitoring2.getContent().get(0).setWriteRate(0.0);
+                     }
+                     if(sysRealTimeMonitoring2.getContent().get(0).getReadRate()==null){
+                         sysRealTimeMonitoring2.getContent().get(0).setReadRate(0.0);
+                     }
+                     readRate=sysRealTimeMonitoring1.getContent().get(0).getReadRate();
+                     disposeRate=sysRealTimeMonitoring2.getContent().get(0).getWriteRate();
+                 }
                 SysDataChange dataChange2 = new SysDataChange();
-                dataChange2.setCreateTime(errorLogs.get(0).getOptTime());
+                dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
                 dataChange2.setDisposeRate(disposeRate);
                 dataChange2.setJobId(jobId);
                 dataChange2.setWeekDay(weekDay);

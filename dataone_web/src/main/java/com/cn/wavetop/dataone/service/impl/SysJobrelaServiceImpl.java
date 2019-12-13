@@ -195,6 +195,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                             System.out.println(sysUserJobrela+"----------");
                         }
                         //python的操作流程
+                        System.out.println(new Date()+"创建任务");
                         Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(jobName).operate(PermissionUtils.getSysUser().getLoginName()+"创建了任务"+jobName).jobId(save.getId()).build();
                         userlogRespository.save(build);
                         SysJobrela s = repository.findByJobName(jobName);

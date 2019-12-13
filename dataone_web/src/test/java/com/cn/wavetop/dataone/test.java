@@ -13,6 +13,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -23,11 +25,36 @@ public class test {
 
     @Test
     public void asq(){
-        SimpleDateFormat dfs = new SimpleDateFormat("MM.dd");// 设置日期格式
+        double a=0.5;
+        double b=100;
+       double c= a/b;
+        BigDecimal bg = new BigDecimal(c);
+        double num1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+        System.out.println(c);
+        if(0.5>c){
+            System.out.println("hha");
+        }
+        System.out.println(num1);
+        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
+        SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
+
 ////
         String nowDate = dfs.format(new Date());//几号
+        String nowDates = df.format(new Date());//几号
         System.out.println(nowDate);
-//////        String hour = nowDate.substring(0, 2);
+        System.out.println(nowDates);
+        Set<String> set = new HashSet<>();
+//        Comparator<String> comp = new DescSort();
+        set.add("2019-12-11");
+        set.add("2019-12-13");
+        set.add("2019-12-12");
+
+        set.add("2019-12-12");
+        set.add("2019-12-12");
+
+        set.add("2019-12-10");
+//        Set<String> sest =getOrderByDate(set);
+//        System.out.println(sest);
 //////        String minue = nowDate.substring(3, 5);
 ////        String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
 ////        System.out.println(nowDate);

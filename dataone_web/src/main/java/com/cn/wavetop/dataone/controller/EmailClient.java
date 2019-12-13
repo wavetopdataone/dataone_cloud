@@ -13,6 +13,7 @@ import com.cn.wavetop.dataone.util.EmailUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,9 @@ public class EmailClient extends Thread {
             double readData = 0;
             double errorData = 0;
             double result = 0;
+            double WarnSetup=0;
+            BigDecimal bg=null;
+            BigDecimal bg1=null;
             sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             list = repository.findEmailJobRelaUser();
             for (EmailJobrelaVo emailJobrelaVo : list) {
@@ -67,9 +71,14 @@ public class EmailClient extends Thread {
                         } else {
                             result = 0;
                         }
-                        System.out.println(errorQueueSettings.getWarnSetup() + "---" + result);
-                        if (errorQueueSettings.getWarnSetup() < result) {
 
+                        WarnSetup=errorQueueSettings.getWarnSetup()/100;
+                         bg = new BigDecimal(WarnSetup);
+                        WarnSetup = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();//3wei
+                        bg1 = new BigDecimal(result);
+                        result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        System.out.println(WarnSetup + "---" + result);
+                        if (WarnSetup < result) {
                             emailPropert = new EmailPropert();
                             emailPropert.setForm("上海浪擎科技有限公司");
                             emailPropert.setSubject("浪擎dataone错误预警通知：");

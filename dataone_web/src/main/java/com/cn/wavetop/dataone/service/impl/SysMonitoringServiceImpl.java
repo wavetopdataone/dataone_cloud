@@ -8,6 +8,7 @@ import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.util.DateUtil;
+import org.checkerframework.checker.units.qual.A;
 import org.hibernate.dialect.Sybase11Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     private SysJobrelaRespository sysJobrelaRespository;
     @Autowired
     private ErrorLogRespository errorLogRespository;
+    @Autowired
+    private SysLogRepository sysLogRepository;
     @Override
     public Object findAll() {
         List<SysMonitoring> sysUserList = sysMonitoringRepository.findAll();
@@ -140,14 +143,74 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ToDataMessage.builder().status("0").message("发生错误").build();
         }
-
-
     }
 
     @Override
     public Object findLike(String source_table, long job_id) {
+        Map<Object,Object> map=new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
+        SysMonitoring sysMonitoring2=null;
+        SysMonitoring sysMonitoring3=null;
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findBySourceTableContainingAndJobId(source_table, job_id);
-        return ToData.builder().status("1").data(sysMonitoringList).build();
+       if(sysMonitoringList!=null&&sysMonitoringList.size()>0) {
+           for (SysMonitoring sysMonitoring : sysMonitoringList) {
+               sysMonitoring2 = new SysMonitoring();
+               sysMonitoring3 = new SysMonitoring();
+               //源端
+               sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
+               sysMonitoring2.setReadData(sysMonitoring.getReadData());
+               sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
+               sysMonitoringList2.add(sysMonitoring2);
+               //目的端
+               sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
+               sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
+               sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
+               sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+               sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
+               sysMonitoringList3.add(sysMonitoring3);
+           }
+           map.put("status","1");
+           map.put("data1",sysMonitoringList2);
+           map.put("data2",sysMonitoringList3);
+       }else{
+           map.put("status","0");
+           map.put("data","暂无数据");
+       }
+        return map;
+    }
+    public Object statusMonitoring(Long job_id,Integer jobStatus){
+        Map<Object,Object> map=new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2=new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3=new ArrayList<>();
+        SysMonitoring sysMonitoring2=null;
+        SysMonitoring sysMonitoring3=null;
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndJobStatus(job_id,jobStatus);
+        if(sysMonitoringList!=null&&sysMonitoringList.size()>0) {
+            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                sysMonitoring2 = new SysMonitoring();
+                sysMonitoring3 = new SysMonitoring();
+                //源端
+                sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
+                sysMonitoring2.setReadData(sysMonitoring.getReadData());
+                sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
+                sysMonitoringList2.add(sysMonitoring2);
+                //目的端
+                sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
+                sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
+                sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
+                sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+                sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
+                sysMonitoringList3.add(sysMonitoring3);
+            }
+            map.put("status","1");
+            map.put("data1",sysMonitoringList2);
+            map.put("data2",sysMonitoringList3);
+        }else{
+            map.put("status","0");
+            map.put("data","暂无数据");
+        }
+        return map;
     }
 
     @Override
@@ -175,6 +238,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
            String date=dfs.format(new Date());
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByIdAndDate(job_id,DateUtil.StringToDate(date));
+        List<SysLog> sysLogList=sysLogRepository.findByJobIdAndOperation(job_id,"添加任务");
         //StringBuffer sum=new StringBuffer();
         double sum = 0;
         double errorDatas = 0;
@@ -233,6 +297,11 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("read_rate", readRate);
             map.put("dispose_rate", disposeRate);
             map.put("synchronous", synchronous);
+            if(sysLogList!=null&&sysLogList.size()>0) {
+                map.put("create_time", sysLogList.get(0).getCreateDate());
+            }else{
+                map.put("create_time", new Date());
+            }
             map.put("status", "1");
 
         } else {
@@ -242,7 +311,11 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("read_rate", "0");
             map.put("dispose_rate", "0");
             map.put("synchronous", "0");
-            map.put("status", "1");
+            if(sysLogList!=null&&sysLogList.size()>0) {
+                map.put("create_time", sysLogList.get(0).getCreateDate());
+            }else{
+                map.put("create_time", new Date());
+            }            map.put("status", "1");
 
         }
         //把同步速率更新到任务表用于首页的显示

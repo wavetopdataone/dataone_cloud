@@ -1,69 +1,112 @@
-{
-  "status": "1",
-  "data": [
-    {
-      "id": 22,
-      "job_id": 80,
-      "job_name": null,
-      "sync_range": 0,
-      "source_table": "TEST",
-      "dest_table": "TEST",
-      "sql_count": 27,
-      "opt_time": "2019-11-16 16:02:55",
-      "need_time": null,
-      "fulldata_rate": null,
-      "incredata_rate": null,
-      "stocksdata_rate": null,
-      "table_rate": null,
-      "read_rate": null,
-      "dispose_rate": null,
-      "job_status": null,
-      "read_data": 27,
-      "write_data": 26,
-      "error_data": 0
-    },
-    {
-      "id": 29,
-      "job_id": 80,
-      "job_name": null,
-      "sync_range": 0,
-      "source_table": "TEST1",
-      "dest_table": "TEST1",
-      "sql_count": 0,
-      "opt_time": "2019-11-18 10:00:41",
-      "need_time": null,
-      "fulldata_rate": null,
-      "incredata_rate": null,
-      "stocksdata_rate": null,
-      "table_rate": null,
-      "read_rate": null,
-      "dispose_rate": null,
-      "job_status": null,
-      "read_data": null,
-      "write_data": null,
-      "error_data": null
-    },
-    {
-      "id": 63,
-      "job_id": 80,
-      "job_name": null,
-      "sync_range": 0,
-      "source_table": "TEST2",
-      "dest_table": "TEST2",
-      "sql_count": 7,
-      "opt_time": "2019-11-21 18:55:44",
-      "need_time": null,
-      "fulldata_rate": null,
-      "incredata_rate": null,
-      "stocksdata_rate": null,
-      "table_rate": null,
-      "read_rate": null,
-      "dispose_rate": null,
-      "job_status": null,
-      "read_data": null,
-      "write_data": null,
-      "error_data": null
-    }
-  ],
-  "message": null
-}
+[
+  Userlog(id=216,
+  user=xuezihao,
+  time=2019-12-11
+  11
+  :
+  05
+  :
+  19.0,
+  jobName=zytest1,
+  operate=xuezihao暂停任务zytest1成功,
+  jobId=1),
+  Userlog(id=215,
+  user=xuezihao,
+  time=2019-12-11
+  11
+  :
+  05
+  :
+  17.0,
+  jobName=zytest1,
+  operate=暂停任务zytest1,
+  jobId=1),
+  Userlog(id=16,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  31
+  :
+  09.0,
+  jobName=zytest1,
+  operate=启动成功,
+  jobId=1),
+  Userlog(id=15,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  31
+  :
+  07.0,
+  jobName=zytest1,
+  operate=启动,
+  jobId=1),
+  Userlog(id=14,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  30
+  :
+  53.0,
+  jobName=zytest1,
+  operate=暂停成功,
+  jobId=1),
+  Userlog(id=13,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  30
+  :
+  51.0,
+  jobName=zytest1,
+  operate=暂停,
+  jobId=1),
+  Userlog(id=12,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  25
+  :
+  29.0,
+  jobName=zytest1,
+  operate=启动成功,
+  jobId=1),
+  Userlog(id=11,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  25
+  :
+  27.0,
+  jobName=zytest1,
+  operate=启动,
+  jobId=1),
+  Userlog(id=10,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  24
+  :
+  56.0,
+  jobName=zytest1,
+  operate=暂停成功,
+  jobId=1),
+  Userlog(id=9,
+  user=xuezihao,
+  time=2019-11-29
+  04
+  :
+  24
+  :
+  54.0,
+  jobName=zytest1,
+  operate=暂停,
+  jobId=1)
+]----

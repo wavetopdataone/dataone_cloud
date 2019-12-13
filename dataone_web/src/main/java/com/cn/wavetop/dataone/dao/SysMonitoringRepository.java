@@ -18,7 +18,7 @@ public interface SysMonitoringRepository extends JpaRepository<SysMonitoring,Lon
     List<SysMonitoring> findById(long id);
     List<SysMonitoring> findBySourceTableContainingAndJobId(String source_table,long job_id);
     List<SysMonitoring> findBySourceTableAndJobId(String source_table,long job_id);
-
+     List<SysMonitoring> findByJobIdAndJobStatus(Long jobId,Integer jobStatus);
 
     @Modifying
     @Query("delete from SysMonitoring where jobId = :job_id")

@@ -3,15 +3,40 @@ package com.cn.wavetop.dataone.util;
         import com.cn.wavetop.dataone.entity.SysUser;
         import org.junit.jupiter.api.Test;
 
+        import java.text.DateFormat;
         import java.text.ParseException;
         import java.text.SimpleDateFormat;
-        import java.util.Calendar;
-        import java.util.Date;
-        import java.util.GregorianCalendar;
+        import java.util.*;
         import java.util.regex.Matcher;
         import java.util.regex.Pattern;
 
 public class DateUtil {
+    //日期倒叙排列
+    public static Set<String> getOrderByDate(Set<String> set){
+        Set<String> sortSet = new TreeSet<String>(new Comparator<String>() {
+            public int compare(String o1, String o2) {
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                    Date d1 = df.parse(o1);
+                    Date d2 = df.parse(o2);
+                    if(d1.getTime()<d2.getTime()){
+                        return 1;
+                    }else if(d1.getTime()>d2.getTime()){
+                        return -1;
+                    }else{
+                        return 0;
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return 0;
+            }
+        });
+        sortSet.addAll(set);
+
+        return sortSet;
+    }
+
     public static String dateAdd(String dateStr, int num) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         try {

@@ -20,4 +20,5 @@ public interface SysMonitoringService {
 
     void updateWriteMonitoring(long id, Long writeData,String table);
     Object dataChangeView(long job_id,Integer date);
+    Object statusMonitoring(Long job_id,Integer jobStatus);
 }
