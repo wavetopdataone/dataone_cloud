@@ -178,10 +178,11 @@ public class SysUserServiceImpl implements SysUserService {
                     map.put("authToken", tokenId);
                     map.put("data", s);
                     map.put("check", check);
-                    opsForValue.set(SHIRO_LOGIN_COUNT+name, "0");
-                    opsForValue.set(SHIRO_IS_LOCK+name, "UNLOCK");
-                    opsForValue.set("lefttime"+name,"5");
-                    opsForValue.set("index"+name,"0");
+                    //todo 加入了缓存过期策略
+                    opsForValue.set(SHIRO_LOGIN_COUNT+name, "0",5,TimeUnit.SECONDS);
+                    opsForValue.set(SHIRO_IS_LOCK+name, "UNLOCK",5,TimeUnit.SECONDS);
+                    opsForValue.set("lefttime"+name,"5",5,TimeUnit.SECONDS);
+                    opsForValue.set("index"+name,"0",5,TimeUnit.SECONDS);
                     SysLoginlog sysLog=new SysLoginlog();
                     sysLog.setCreateDate(new Date());
                     if(PermissionUtils.getSysUser().getDeptId()!=null&&PermissionUtils.getSysUser().getDeptId()!=0) {
@@ -223,7 +224,7 @@ public class SysUserServiceImpl implements SysUserService {
              index= Integer.parseInt(opsForValue.get("index"+name));
              index++;
             opsForValue.set("index"+name,String.valueOf(index));
-            opsForValue.set("logintime"+name+index, String.valueOf(new Date().getTime()));
+            opsForValue.set("logintime"+name+index, String.valueOf(new Date().getTime()),300,TimeUnit.SECONDS);
             map.put("date",opsForValue.get("logintime"+name+"1"));
         } catch (Exception e){
 
@@ -776,6 +777,7 @@ public class SysUserServiceImpl implements SysUserService {
             return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
         }
         if(authCode.equals(opsForValue.get("codeold"+email))){
+            stringRedisTemplate.expire("codeold"+email, 5, TimeUnit.SECONDS);
             return ToDataMessage.builder().status("1").message("验证码正确").build();
         }else{
             return ToDataMessage.builder().status("0").message("请输入正确的验证码").build();
