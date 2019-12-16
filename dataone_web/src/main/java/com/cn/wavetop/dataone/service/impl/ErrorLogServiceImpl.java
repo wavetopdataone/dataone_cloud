@@ -220,8 +220,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         };
         Page<ErrorLog> data = repository.findAll(querySpecifi,page);
         //todo 根据任务id查询出有多少张表出现错误
-        if (data.getContent() != null&&data.getContent().size()>0) {
-            for(ErrorLog errorLog:data.getContent()){
+        List<ErrorLog> data1=repository.findByJobId(jobId);
+        if (data1 != null&&data1.size()>0) {
+            for(ErrorLog errorLog:data1){
                 set.add(errorLog.getSourceName());
             }
             for(String tableName:set){
