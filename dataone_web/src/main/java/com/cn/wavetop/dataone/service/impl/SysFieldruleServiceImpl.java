@@ -249,6 +249,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
 //                            .jobId(job_id)
 //                            .type("Date")
 //                            .sourceName(source_name)
+//                              .addFlag(1)
 ////                                .primaryKey(key)
 //                            .destName(dest_name).varFlag(Long.valueOf(2)).build();
 //                    sysFieldrules.add(repository.save(build));
