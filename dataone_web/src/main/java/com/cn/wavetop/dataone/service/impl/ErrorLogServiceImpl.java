@@ -11,6 +11,10 @@ import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -42,10 +46,10 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     }
     //条件查询
     @Override
-    public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
+    public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context,Integer current,Integer size) {
         System.out.println(jobId+tableName+type+startTime+context+endTime+"-------------------hahah");
 
-        // Pageable page = PageRequest.of(current - 1, size, Sort.Direction.DESC, "id");
+         Pageable page = PageRequest.of(current - 1, size);
         List<ErrorLog> sysErrorlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
@@ -90,21 +94,21 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                         // return cb.and(predicates.toArray(new Predicate[predicates.size()]));
                     }
                 };
-                List<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi);
+                Page<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi,page);
                 map.put("status","1");
-                map.put("data",sysUserlogPage);
-                map.put("total",sysUserlogPage.size());
+                map.put("data",sysUserlogPage.getContent());
+                map.put("total",sysUserlogPage.getTotalElements());
                 Userlog build2=null;
                 //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
                 //todo 要不要在这里加上所有的错误队列判断
-                if (sysUserlogPage.size()>=100000) {
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
+                if (sysUserlogPage.getTotalElements()>=100000) {
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
                    Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
                    sysJobrela.get().setJobStatus("21");//改为暂停
                     sysJobrelaRespository.save(sysJobrela.get());
                     userLogRepository.save(build2);
-                }else if(sysUserlogPage.size()>=90000&&sysUserlogPage.size()<100000){
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已接近上限").jobId(jobId).build();
+                }else if(sysUserlogPage.getTotalElements()>=90000&&sysUserlogPage.getTotalElements()<100000){
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已接近上限").jobId(jobId).build();
                     userLogRepository.save(build2);
                 }
             } catch (Exception e) {
@@ -191,20 +195,34 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     }
     //根据任务id查询
     @Override
-    public Object queryErrorlog(Long jobId) {
+    public Object queryErrorlog(Long jobId,Integer current,Integer size) {
+        Pageable page = PageRequest.of(current - 1, size);
         HashMap<Object, Object> map = new HashMap();
         Set<String> set=new HashSet<>();
         List<Object> list=new ArrayList<>();
         List<String> listsss=null;
 
         List<ErrorLog> errorLogs=null;
-        List<ErrorLog> data = repository.findByJobId(jobId);
+        Specification<ErrorLog> querySpecifi = new Specification<ErrorLog>() {
+            @Override
+            public Predicate toPredicate(Root<ErrorLog> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
+
+                criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+                criteriaQuery.orderBy(cb.desc(root.get("optTime")));
+
+                // and到一起的话所有条件就是且关系，or就是或关系
+                return criteriaQuery.getRestriction();
+                // and到一起的话所有条件就是且关系，or就是或关系
+                // return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            }
+        };
+        Page<ErrorLog> data = repository.findAll(querySpecifi,page);
         //todo 根据任务id查询出有多少张表出现错误
-        if (data != null&&data.size()>0) {
-            for(ErrorLog errorLog:data){
-                if(errorLog.getSourceName()!=null&&!"".equals(errorLog.getSourceName())) {
-                    set.add(errorLog.getSourceName());
-                }
+        if (data.getContent() != null&&data.getContent().size()>0) {
+            for(ErrorLog errorLog:data.getContent()){
+                set.add(errorLog.getSourceName());
             }
             for(String tableName:set){
                 errorLogs=new ArrayList<>();
@@ -215,12 +233,12 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 list.add(listsss);
             }
             map.put("status", 1);
-            map.put("data", data);
-            map.put("total", data.size());
+            map.put("data", data.getContent());
+            map.put("total", data.getTotalElements());
             map.put("table",list);//表名
         } else {
             map.put("status", 0);
-            map.put("message", "该任务没有错误队列数据");
+            map.put("message", "任务不存在");
         }
         return  map;
     }

@@ -50,8 +50,8 @@ public class ErrorLogController {
 
     @ApiOperation(value = "根据表名，时间查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据表名，时间查询错误队列")
     @PostMapping("/check_errorlog")
-    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String content) {
-        return service.getCheckError(jobId,tableName,type,startTime,endTime,content);
+    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String content,Integer current,Integer size) {
+        return service.getCheckError(jobId,tableName,type,startTime,endTime,content,current,size);
     }
     @ApiOperation(value = "查询错误队列类型", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询错误队列类型")
     @PostMapping("/selType")
@@ -81,8 +81,8 @@ public class ErrorLogController {
 
     @ApiOperation(value = "根据任务ID查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
-    public Object query_errorlog(Long jobId) {
-        return service.queryErrorlog(jobId);
+    public Object query_errorlog(Long jobId,Integer current,Integer size) {
+        return service.queryErrorlog(jobId,current,size);
     }
     @ApiOperation(value = "根据ID查询具体错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据ID查询具体错误队列")
     @PostMapping("/selErrorlog")

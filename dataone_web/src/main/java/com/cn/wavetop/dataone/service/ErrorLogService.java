@@ -9,7 +9,7 @@ import com.cn.wavetop.dataone.entity.ErrorLog;
 public interface ErrorLogService {
     Object getErrorlogAll();
 
-    Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context);
+    Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context,Integer current,Integer size);
 
     Object addErrorlog(ErrorLog errorLog);
 
@@ -17,7 +17,7 @@ public interface ErrorLogService {
 
     Object deleteErrorlog(Long jobId,String ids);
 
-    Object queryErrorlog(Long jobId);
+    Object queryErrorlog(Long jobId,Integer current,Integer size);
     Object selErrorlogById(Long id);
     Object selType();
 }
