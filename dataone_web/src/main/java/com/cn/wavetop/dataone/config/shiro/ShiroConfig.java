@@ -54,6 +54,13 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/login/**", "anon");
         filterChainDefinitionMap.put("/sys_user/login**", "anon");
         filterChainDefinitionMap.put("/sys_user/login/", "anon");
+        //导出
+        filterChainDefinitionMap.put("/sys_loginlog/OutPutLoginExcel**", "anon");
+        filterChainDefinitionMap.put("/sys_log/OutPutExcel**", "anon");
+        filterChainDefinitionMap.put("/sys_userlog/OutPutUserExcel**", "anon");
+        filterChainDefinitionMap.put("/errorlog/outErrorlog**", "anon");
+
+
 //        filterChainDefinitionMap.put("/sys_user/login_out/", "anon");
         //后台kafka调用的接口
         filterChainDefinitionMap.put("/toback/**", "anon");

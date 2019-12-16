@@ -175,11 +175,13 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         HashMap<Object, Object> map = new HashMap();
         String []id=ids.split(",");
         // 查看该任务是否存在，存在删除任务，返回数据给前端
-        for(String idss:id) {
+        if(id!=null) {
+            for (String idss : id) {
 
                 repository.deleteById(Long.valueOf(idss));
                 map.put("status", 1);
                 map.put("message", "删除成功");
+            }
         }
         Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
 

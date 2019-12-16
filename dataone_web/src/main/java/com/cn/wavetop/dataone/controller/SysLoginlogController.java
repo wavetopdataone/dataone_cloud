@@ -64,7 +64,8 @@ public class SysLoginlogController {
      */
     @ApiOperation(value = "导出登录日志表", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出登录日志表")
     @GetMapping("/OutPutLoginExcel")
-    public void outPutExcel(HttpServletRequest request,HttpServletResponse response, @RequestParam Long deptId, @RequestParam Long userId, @RequestParam String operation, @RequestParam String startTime, @RequestParam String endTime, @RequestParam String loginName, @RequestParam String roleKey, @RequestParam Long dept) throws UnsupportedEncodingException {
+    public void outPutExcel(HttpServletRequest request,HttpServletResponse response, @RequestParam Long deptId, @RequestParam Long userId, @RequestParam String operation, @RequestParam String startTime, @RequestParam String endTime, @RequestParam String loginName, @RequestParam String roleKey, @RequestParam Long dept)  {
+        System.out.println(deptId+"----"+userId+"---"+operation+loginName+roleKey+"----"+dept+"------------------");
 
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd ");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式
@@ -138,14 +139,18 @@ public class SysLoginlogController {
             final String userAgent = request.getHeader("USER-AGENT");
             String finalFileName = null;
 
-            if ("Edge".equals(userAgent)) {
-                finalFileName = URLEncoder.encode(fileName, "UTF8");
-            } else if ("MSIE".equals(userAgent)) {// IE浏览器
-                finalFileName = URLEncoder.encode(fileName, "UTF8");
-            } else if ("Mozilla".equals(userAgent)) {// google,火狐浏览器
-                finalFileName = new String(fileName.getBytes(), "ISO8859-1");
-            } else {
-                finalFileName = URLEncoder.encode(fileName, "UTF8");// 其他浏览器
+            try {
+                if ("Edge".equals(userAgent)) {
+                    finalFileName = URLEncoder.encode(fileName, "UTF8");
+                } else if ("MSIE".equals(userAgent)) {// IE浏览器
+                    finalFileName = URLEncoder.encode(fileName, "UTF8");
+                } else if ("Mozilla".equals(userAgent)) {// google,火狐浏览器
+                    finalFileName = new String(fileName.getBytes(), "ISO8859-1");
+                } else {
+                    finalFileName = URLEncoder.encode(fileName, "UTF8");// 其他浏览器
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
 
 //            response.setHeader("Content-Disposition", "attachment;filename="+new String(fileName.getBytes("utf-8"), "iso8859-1"));

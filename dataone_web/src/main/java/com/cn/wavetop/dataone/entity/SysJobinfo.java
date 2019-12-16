@@ -35,10 +35,12 @@ public class SysJobinfo {
 //  @Column(name="read_way", columnDefinition="STRING default 0")
   private String readWay;
   private Long dataEnc;
-  private String maxSourceRead;
+  private String maxSourceRead;//读取速率限制   kb/s
+  private String maxSourceReadTo;//读取速率限制 行/s
   private Long destWriteConcurrentNum;
   private Long sourceReadConcurrentNum;
-  private String maxDestWrite;
+  private String maxDestWrite;//写入速率限制 kb/s
+  private String maxDestWriteTo;//写入速率限制 行 /s
   private Long destCaseSensitive;
   @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   @CreatedDate

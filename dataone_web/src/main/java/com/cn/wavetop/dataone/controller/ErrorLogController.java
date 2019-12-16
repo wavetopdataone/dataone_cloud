@@ -92,11 +92,11 @@ public class ErrorLogController {
 
     @ApiOperation(value = "导出错误队列量", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出错误队列量")
     @GetMapping("/outErrorlog")
-    public void outErrorlog(Long jobId,String  ids, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
+    public void outErrorlog(Long jobId,String  ids, @RequestParam String loginName, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
        String []id=ids.split(",");
         //消息列表
        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
-       Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"导出了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
+       Userlog build2 = Userlog.builder().time(new Date()).user(loginName).jobName(sysJobrela.get().getJobName()).operate(loginName+"导出了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
        userlogRespository.save(build2);
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd ");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式
@@ -109,9 +109,11 @@ public class ErrorLogController {
 //        map = (HashMap<String, Object>) service.getCheckError(jobId,tableName,startTime,endTime);
 //        list = (List) map.get("data");
         ErrorLog errorLog=null;
-        for(String idss:id){
-            errorLog= errorLogRespository.findById(Long.valueOf(idss).longValue());
-            list.add(errorLog);
+        if(id!=null) {
+            for (String idss : id) {
+                errorLog = errorLogRespository.findById(Long.valueOf(idss).longValue());
+                list.add(errorLog);
+            }
         }
 
         //设置表格
@@ -169,7 +171,7 @@ public class ErrorLogController {
                 cells = rows.createCell(3);
                 cells.setCellValue(list.get(i).getOptType());
                 cells = rows.createCell(4);
-                cells.setCellValue(list.get(i).getOptContext());
+                cells.setCellValue(list.get(i).getContent());
 
             }
             final String userAgent = request.getHeader("USER-AGENT");

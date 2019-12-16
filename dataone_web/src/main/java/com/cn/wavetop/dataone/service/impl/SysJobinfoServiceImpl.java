@@ -95,6 +95,10 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                 data.setEndTime(jobinfo.getEndTime());
                 data.setMaxDestWrite(jobinfo.getMaxDestWrite());
                 data.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                //todo 第二种限制
+                data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
+
                 data.setPlayers(jobinfo.getPlayers());
                 data.setReadBegin(jobinfo.getReadBegin());
                 data.setReadWay(jobinfo.getReadWay());
@@ -134,6 +138,9 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             datas.setEndTime(jobinfo.getEndTime());
                             datas.setMaxDestWrite(jobinfo.getMaxDestWrite());
                             datas.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                            //todo 第二种限制
+                            data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                            data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
 
                             datas.setPlayers(jobinfo.getPlayers());
                             datas.setReadBegin(jobinfo.getReadBegin());
@@ -176,6 +183,9 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                         sysJobinfo1.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
                         sysJobinfo1.setMaxDestWrite(jobinfo.getMaxDestWrite());
                         sysJobinfo1.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                        //todo 第二种限制
+                        data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                        data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
                             if(jobinfo.getReadBegin()==1) {
                                 sysJobinfo1.setSourceType(jobinfo.getSourceType());
                             if (jobinfo.getSourceType().equals("1")) {
