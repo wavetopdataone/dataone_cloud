@@ -189,7 +189,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         userLogRepository.save(build2);
         return map;
     }
-    //根据任务id查询表名，行数，和错误的数据量
+    //根据任务id查询
     @Override
     public Object queryErrorlog(Long jobId) {
         HashMap<Object, Object> map = new HashMap();
@@ -220,7 +220,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
             map.put("table",list);//表名
         } else {
             map.put("status", 0);
-            map.put("message", "任务不存在");
+            map.put("message", "该任务没有错误队列数据");
         }
         return  map;
     }

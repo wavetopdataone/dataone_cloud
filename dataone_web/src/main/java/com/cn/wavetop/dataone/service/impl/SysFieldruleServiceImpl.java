@@ -146,9 +146,12 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
 
     @Transactional
     @Override
+//    ,String primaryKey 设置主键就穿字段名称，没有就穿空就行
+//String addFile 新增日期字段，没有就穿空就行
     public Object editFieldrule(String list_data, String source_name, String dest_name, Long job_id) {
         System.out.println(list_data+"-----------");
         Map<Object, Object> map = new HashMap();
+        Integer key=0;
         SysFieldrule sysFieldrule1 = new SysFieldrule();
         List<SysFieldrule> sysFieldrules = new ArrayList<>();
         List<SysFieldrule> list = new ArrayList<>();
@@ -239,14 +242,39 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 }
                 //删除主任务字段规则
                 sysFieldruleRepository.deleteByJobIdAndSourceName(job_id, source_name);
+                //todo 增加的日期字段
+//                if(!"".equals(addFile)&&addFile!=null&&!"undefined".equals(addFile)){
+//                    SysFieldrule build = SysFieldrule.builder().fieldName(ziduan[0])
+//                            .destFieldName(addFile)
+//                            .jobId(job_id)
+//                            .type("Date")
+//                            .sourceName(source_name)
+////                                .primaryKey(key)
+//                            .destName(dest_name).varFlag(Long.valueOf(2)).build();
+//                    sysFieldrules.add(repository.save(build));
+//                }
                 for (String s : split) {
                     String[] ziduan = s.split(",");
                     if(ziduan[5]==null||"".equals(ziduan[5])){
                         ziduan[5]="0";
                     }
+                    //todo  字段类型在数据库查不到，就默认和源端一致
                     //若字段改变则存入字段规则表
-//                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[5].equals(ziduan[8])) {
+                    // List<SysFiledType> sysFiledTypeList=sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()),String.valueOf(sysDbinfo2.getType()),ziduan[2]);
+//                    if(sysFiledTypeList==null&&sysFiledTypeList.size()<=0){
+//                        SysFiledType sysFiledType=new SysFiledType();
+//                        sysFiledType.setDestFiledType(ziduan[6]);
+//                    }
+
+
+//                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[5].equals(ziduan[8])||!sysFiledTypeList.get(0).getDestFiledType().equals(ziduan[6])) {
                     if (!ziduan[0].equals(ziduan[1])) {
+                        //todo 主键策略
+//                        if(primaryKey.equals("")||primaryKey==null||primaryKey.equals("undefined")){
+//                            key=0;
+//                        }else{
+//                            key=1;
+//                        }
                         SysFieldrule build = SysFieldrule.builder().fieldName(ziduan[0])
                                 .destFieldName(ziduan[1])
                                 .jobId(job_id)
@@ -255,6 +283,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                                 .notNull(Long.valueOf(ziduan[4]))
                                 .accuracy(ziduan[5])
                                 .sourceName(source_name)
+//                                .primaryKey(key)
                                 .destName(dest_name).varFlag(Long.valueOf(2)).build();
                         sysFieldrules.add(repository.save(build));
 
@@ -273,6 +302,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                                         .notNull(Long.valueOf(ziduan[4]))
                                         .accuracy(ziduan[5])
                                         .sourceName(source_name)
+//                                        .primaryKey(key)
                                         .destName(dest_name).varFlag(Long.valueOf(2)).build();
                                 sysFieldrules.add(repository.save(builds));
 //                            }
@@ -285,7 +315,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
 //              List<SysFiledType> sysFiledTypeList=sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()),String.valueOf(sysDbinfo2.getType()),ziduan[2]);
 //                if(sysFiledTypeList!=null&&sysFiledTypeList.size()>0){
 //                    //有可能是多个，因为数据库有根据长度不同字段对应不同，但是是少数，先留着
-////                    for(int i=0;i<sysFiledTypeList.size();i=++)
+//                    for(int i=0;i<sysFiledTypeList.size();i=++)
 //                    //判断目标端字段是否是默认映射的字段
 //                      if(!sysFiledTypeList.get(0).getDestFiledType().equals(ziduan[6])){
 //                          SysFieldrule build = SysFieldrule.builder().fieldName(ziduan[0])
@@ -352,17 +382,11 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         SysFilterTable sysFilterTable2 = null;
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                            //判断是第一次添加还是修改
-//                        List<SysFilterTable> sysFilterTable1= sysFilterTableRepository.findByJobIdAndFilterTable(sysJobrelaRelated.getSlaveJobId(),source_name);
-//                        if(sysFilterTable1!=null&&sysFilterTable1.size()>0){
-//                            continue;
-//                        }else {
                             sysFilterTable2 = new SysFilterTable();
                             sysFilterTable2.setFilterTable(source_name);
                             sysFilterTable2.setJobId(sysJobrelaRelated.getSlaveJobId());
                             sysFilterTable2.setFilterField(sysFieldrule.getFieldName());
                             sysFilterTableRepository.save(sysFilterTable2);
-//                        }
                         }
                     }
                 }

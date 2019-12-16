@@ -68,6 +68,8 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Autowired
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
+    private  ErrorLogRespository errorLogRespository;
+    @Autowired
     private LogUtil logUtil;
 
     //首页根据用户权限查询任务，现在已经弃用
@@ -671,6 +673,11 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     map.put("status", 1);
                     map.put("data", sysJobrelas);
                     map.put("message", "激活完成");
+                    //重启删除错误队列
+                    List<ErrorLog> list1=  errorLogRespository.findByJobId(id);
+                    if(list1!=null&&list1.size()>0){
+                        errorLogRespository.deleteByJobId(id);
+                    }
                 } else {
                     map.put("status", 0);
                     map.put("message", "无法激活");

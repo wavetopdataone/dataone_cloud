@@ -75,11 +75,11 @@ public class ErrorLogController {
     @ApiImplicitParam(name = "id", value = "id", dataType = "long")
     @PostMapping("/delete_errorlog")
     public Object delete_errorlog(Long jobId,String ids) {
-        System.out.println(ids);
+
         return service.deleteErrorlog( jobId,ids);
     }
 
-    @ApiOperation(value = "根据任务ID查询错误队列，表名，错误量", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
+    @ApiOperation(value = "根据任务ID查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
     public Object query_errorlog(Long jobId) {
         return service.queryErrorlog(jobId);
@@ -92,7 +92,8 @@ public class ErrorLogController {
 
     @ApiOperation(value = "导出错误队列量", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出错误队列量")
     @GetMapping("/outErrorlog")
-    public void outErrorlog(Long jobId,String  ids, @RequestParam String loginName, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
+    public void outErrorlog(Long jobId,String ids,String loginName, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
+
        String []id=ids.split(",");
         //消息列表
        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
