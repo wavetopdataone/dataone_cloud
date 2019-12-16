@@ -41,6 +41,8 @@ public class ConfigSink {
             this.connection_password = sysDbinfo.getPassword();
         }else if (sysDbinfo.getType() == 2L ){
             this.connection_url = "jdbc:mysql://" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + "/" + sysDbinfo.getDbname() + "?user=" + sysDbinfo.getUser() + "&password=" + sysDbinfo.getPassword();
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
         }
 
     }
@@ -74,5 +76,8 @@ public class ConfigSink {
         name = null;
         config = null;
         return data;
+    }
+    public String getName(){
+        return this.name;
     }
 }

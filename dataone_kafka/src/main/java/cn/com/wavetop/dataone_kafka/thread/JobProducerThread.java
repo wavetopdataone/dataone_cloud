@@ -289,7 +289,7 @@ public class JobProducerThread extends Thread {
 
     }
 
-    public String readFile(String fileName, int index) {
+    public String  readFile(String fileName, int index) {
 
         Producer producer = new Producer(null); // 参数为配置信息
         boolean flag = false; // 标识是否添加了数据

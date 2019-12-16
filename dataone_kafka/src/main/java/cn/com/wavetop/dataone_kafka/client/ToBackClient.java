@@ -2,16 +2,20 @@ package cn.com.wavetop.dataone_kafka.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(value = "DATAONE-WEB")
 @Component
 public interface ToBackClient {
 
 
-
+    /**
+     * 根据jobid重置监听表
+     * @param jobId
+     * @return
+     */
+    @PutMapping("/toback/resetMonitoring/{jobId}")
+    public void resetMonitoring( @PathVariable Long jobId) ;
 
     /**
      * 根据jobid查询数据信息

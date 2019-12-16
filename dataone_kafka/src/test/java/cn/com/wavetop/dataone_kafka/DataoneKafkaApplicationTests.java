@@ -12,17 +12,17 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootTest
 class DataoneKafkaApplicationTests {
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Test
-    void contextLoads() {
-        String data = restTemplate.postForObject("http://192.168.1.156:8000/sys_dbinfo/check_dbinfo?id=12",null, String.class);
-
-        System.out.println(data);
-        SysDbinfo sysDbinfo = SysDbinfo.getSysDbinfo(data);
-        System.out.println(sysDbinfo);
-    }
+//    @Autowired
+//    private RestTemplate restTemplate;
+//
+//    @Test
+//    void contextLoads() {
+//        String data = restTemplate.postForObject("http://192.168.1.156:8000/sys_dbinfo/check_dbinfo?id=12",null, String.class);
+//
+//        System.out.println(data);
+//        SysDbinfo sysDbinfo = SysDbinfo.getSysDbinfo(data);
+//        System.out.println(sysDbinfo);
+//    }
 
 //    @Bean
 //    public RestTemplate restTemplate(){

@@ -143,6 +143,24 @@ public class ToBackController {
     }
 
     /**
+     * 重置读写速率
+     * @Author yongz
+     * @param jobId
+     */
+    @PutMapping("/resetMonitoring/{jobId}")
+    public void resetMonitoring( @PathVariable Long jobId) {
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
+        for (SysMonitoring sysMonitoring : sysMonitoringList) {
+            sysMonitoring.setReadData(0l);
+            sysMonitoring.setWriteData(0l);
+            sysMonitoring.setReadRate(0l);
+            sysMonitoring.setDisposeRate(0l);
+            sysMonitoring.setErrorData(0l);
+            sysMonitoringRepository.save(sysMonitoring);
+        }
+    }
+
+    /**
      * 分表更新读监听数据
      *
      * @param
