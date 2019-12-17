@@ -95,9 +95,15 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                     }
                 };
                 Page<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi,page);
+                List<ErrorLog> errorLogList=repository.findAll(querySpecifi);//为了拿条件查询的所有id
+                List<Long> ids=new ArrayList<>();
+                for(ErrorLog errorLog:errorLogList){
+                    ids.add(errorLog.getId());
+                }
                 map.put("status","1");
                 map.put("data",sysUserlogPage.getContent());
                 map.put("total",sysUserlogPage.getTotalElements());
+                map.put("ids",ids);
                 Userlog build2=null;
                 //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
                 //todo 要不要在这里加上所有的错误队列判断
@@ -221,9 +227,11 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         Page<ErrorLog> data = repository.findAll(querySpecifi,page);
         //todo 根据任务id查询出有多少张表出现错误
         List<ErrorLog> data1=repository.findByJobId(jobId);
+        List<Long> ids=new ArrayList<>();
         if (data1 != null&&data1.size()>0) {
             for(ErrorLog errorLog:data1){
                 set.add(errorLog.getSourceName());
+                ids.add(errorLog.getId());
             }
             for(String tableName:set){
                 errorLogs=new ArrayList<>();
@@ -237,9 +245,10 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
             map.put("data", data.getContent());
             map.put("total", data.getTotalElements());
             map.put("table",list);//表名
+            map.put("ids",ids);
         } else {
             map.put("status", 0);
-            map.put("message", "任务不存在");
+            map.put("message", "该任务没有错误队列");
         }
         return  map;
     }
