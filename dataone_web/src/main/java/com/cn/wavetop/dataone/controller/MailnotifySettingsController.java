@@ -26,8 +26,8 @@ public class MailnotifySettingsController {
 
     @ApiImplicitParam
     @PostMapping("/check_mailnotify")
-    public Object check_mailnotify(long job_id) {
-        return service.getCheckMailnotifyByJobId(job_id);
+    public Object check_mailnotify(long jobId) {
+        return service.getCheckMailnotifyByJobId(jobId);
     }
 
     @ApiImplicitParam

@@ -48,7 +48,7 @@ public class LogDBAppender extends DBAppenderBase<ILoggingEvent> {
     }
     // 自己写新增sql语句
     private static String buildInsertSQL() {
-        return "INSERT INTO `sys_logging`(`message`,`level_string`,`created_time`,`logger_name`)" +
+        return "INSERT INTO `sys_error`(`error_name`,`error_type`,`create_date`,`method`)" +
                 "VALUES (?,?,?,?)";
     }
 
@@ -73,13 +73,15 @@ public class LogDBAppender extends DBAppenderBase<ILoggingEvent> {
         // event.getFormattedMessage() 日志打印内容
         String message = event.getFormattedMessage();
         //todo 如果只想存储自己打印的日志，可以这样写日志：logger.info("* XXXX")
-        if(message.startsWith("*")){ // 判断日志消息首字母为 - 的日志，记录到数据库表
+        if(message.startsWith("-")){ // 判断日志消息首字母为 * 的日志，记录到数据库表
             stmt.setString(MESSAGE, message);
             // event.getLevel().toString() 日志级别
-            stmt.setString(LEVEL_STRING, event.getLevel().toString());
+//            stmt.setString(LEVEL_STRING, event.getLevel().toString());
+            stmt.setString(LEVEL_STRING, "1");
             // new Timestamp(event.getTimeStamp()) 时间
             stmt.setTimestamp(CREATE_TIME, new Timestamp(event.getTimeStamp()));
             // event.getLoggerName() 全类名
+
             stmt.setString(LOGGER_NAME, event.getLoggerName());
         }
 

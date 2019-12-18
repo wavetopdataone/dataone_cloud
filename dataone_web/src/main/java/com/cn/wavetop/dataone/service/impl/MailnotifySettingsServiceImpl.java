@@ -51,7 +51,7 @@ public class MailnotifySettingsServiceImpl implements MailnotifySettingsService 
             map.put("data", data);
             return map;
         } else {
-            return ToData.builder().status("0").message("任务不存在").build();
+            return ToData.builder().status("0").message("不存在邮件提醒设置").build();
 
         }
     }

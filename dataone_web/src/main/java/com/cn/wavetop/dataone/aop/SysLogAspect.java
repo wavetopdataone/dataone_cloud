@@ -46,7 +46,8 @@ public class SysLogAspect {
 //    public void logPoinCut() {
 //    }
 // 异常增强
-    @AfterThrowing(throwing="ex",pointcut="execution(* com.cn.wavetop.dataone.service.impl..*.*(..))")
+//    @AfterThrowing(throwing="ex",pointcut="execution(* com.cn.wavetop.dataone.service.impl..*.*(..))")
+    @AfterThrowing(throwing="ex",pointcut="execution(* com.cn.wavetop.dataone..*.*(..))")
     public void afterThrowing(JoinPoint joinPoint,Throwable ex) {
 //        logger.error("*"+ex);
         //保存日志

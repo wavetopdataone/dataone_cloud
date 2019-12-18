@@ -25,7 +25,12 @@ public class test {
 
     @Test
     public void asq(){
-        double a=0.5;
+        String d="dsadsadsa技术支持";
+        if(d.contains("技术支持")){
+
+        }
+
+      double a=0.5;
         double b=100;
        double c= a/b;
         BigDecimal bg = new BigDecimal(c);

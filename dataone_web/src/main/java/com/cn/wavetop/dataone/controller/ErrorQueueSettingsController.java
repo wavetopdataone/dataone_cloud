@@ -36,8 +36,8 @@ public class  ErrorQueueSettingsController {
 
   @ApiImplicitParam(name = "job_id", value = "job_id", dataType = "long")
   @PostMapping("/check_error_queue")
-  public Object check_error_queue(long job_id) {
-    return service.getCheckErrorQueueByjobid(job_id);
+  public Object check_error_queue(long jobId) {
+    return service.getCheckErrorQueueByjobid(jobId);
   }
 
   @ApiImplicitParam

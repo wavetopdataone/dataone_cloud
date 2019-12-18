@@ -9,6 +9,7 @@ import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysDesensitizationService;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
+import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.util.LogUtil;
 import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
@@ -69,6 +70,8 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private  ErrorLogRespository errorLogRespository;
+    @Autowired
+    private SysMonitoringService sysMonitoringService;
     @Autowired
     private LogUtil logUtil;
 
@@ -559,6 +562,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 map.put("status", 0);
                 map.put("message", "任务不存在");
             }
+            //todo 查询同步进程
+            for(SysJobrela s:data){
+                sysMonitoringService.showMonitoring(s.getId());
+            }
         } else if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
             data = repository.findByUserIdJobName(id, job_name, page);
             list = repository.findByUserIdJobName(id, job_name);
@@ -569,6 +576,9 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             } else {
                 map.put("status", 0);
                 map.put("message", "任务不存在");
+            }
+            for(SysJobrela s:data){
+                sysMonitoringService.showMonitoring(s.getId());
             }
         } else {
             map.put("status", 0);
@@ -595,10 +605,15 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     if (data != null && data.size() > 0) {
                         list = repository.findByDeptIdAndJobStatus(job_status, deptId, page);
                         sysJobrelaList = repository.findByDeptIdAndJobStatus(job_status, deptId);
+
                     } else {
                         list = null;
                         sysJobrelaList = null;
                     }
+                }
+                //todo
+                for(SysJobrela s:list){
+                    sysMonitoringService.showMonitoring(s.getId());
                 }
                 map.put("status", "1");
                 map.put("totalCount", sysJobrelaList.size());
@@ -614,6 +629,12 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     } else {
                         list = null;
                         sysJobrelaList = null;
+                    }
+                }
+                //todo
+                if(list!=null&&list.size()>0) {
+                    for (SysJobrela s : list) {
+                        sysMonitoringService.showMonitoring(s.getId());
                     }
                 }
                 map.put("status", "1");
@@ -1033,6 +1054,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     //首页根据部门查询任务
     @Override
     public Object selJobrelaByDeptIdPage(Long deptId, Integer current, Integer size) {
+
         Pageable pageable = new PageRequest(current - 1, size);
         Map<Object, Object> map = new HashMap<>();
         List<SysJobrela> list = new ArrayList<>();
@@ -1041,8 +1063,14 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if (deptId != 0) {
                 list = repository.findByDeptId(deptId, pageable);
                 data = repository.findByDeptId(deptId);
+                for(SysJobrela s:list){
+                    sysMonitoringService.showMonitoring(s.getId());
+                }
             } else {
                 Page<SysJobrela> page = repository.findAll(pageable);
+                for(SysJobrela s:page.getContent()){
+                    sysMonitoringService.showMonitoring(s.getId());
+                }
                 map.put("status", "1");
                 map.put("data", page.getContent());
                 map.put("totalCount", page.getTotalElements());
@@ -1052,9 +1080,14 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if (deptId != 0) {
                 list = repository.findByUserId(deptId, pageable);
                 data = repository.findByUserId(deptId);
+
             } else {
                 list = repository.findByUserId(PermissionUtils.getSysUser().getId(), pageable);
                 data = repository.findByUserId((PermissionUtils.getSysUser().getId()));
+
+            }
+            for(SysJobrela s:list){
+                sysMonitoringService.showMonitoring(s.getId());
             }
         }
         map.put("status", "1");

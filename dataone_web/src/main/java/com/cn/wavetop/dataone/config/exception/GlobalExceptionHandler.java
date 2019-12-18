@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = BizException.class)
     @ResponseBody
     public ResultBody bizExceptionHandler(HttpServletRequest req, BizException e){
-        logger.error("发生业务异常！原因是：{}",e.getErrorMsg());
+        logger.error("*发生业务异常！原因是：{}"+e);
         return ResultBody.error(e.getErrorCode(),e.getErrorMsg());
     }
 
@@ -39,7 +39,9 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResultBody exceptionHandler(HttpServletRequest req, NullPointerException e){
         logger.error("*发生空指针异常！原因是:",e);
-        return ResultBody.error(CommonEnum.BODY_NOT_MATCH);
+
+
+        return ResultBody.error(CommonEnum.NULL_NOT_MATCH);
     }
 
     /**
@@ -51,29 +53,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
     @ResponseBody
     public ResultBody exceptionHandler(HttpServletRequest req, HttpRequestMethodNotSupportedException e){
-        logger.error("发生请求方法不支持异常！原因是:",e);
+        logger.error("*发生请求方法不支持异常！原因是:",e);
         return ResultBody.error(CommonEnum.REQUEST_METHOD_SUPPORT_ERROR);
     }
     //类型转换异常
     @ExceptionHandler(ClassCastException.class)
     @ResponseBody
     public ResultBody exceptionHandler(HttpServletRequest req, ClassCastException ex) {
-        logger.error("类型转换异常",ex);
-        return ResultBody.error(CommonEnum.INTERNAL_SERVER_ERROR);
+        logger.error("*类型转换异常",ex);
+        return ResultBody.error(CommonEnum.TYPE_NOT_ERROR);
     }
 
     //IO异常
     @ExceptionHandler(IOException.class)
     @ResponseBody
     public ResultBody iOExceptionHandler(IOException ex) {
-        logger.error("IO异常",ex);
+        logger.error("*IO异常",ex);
         return ResultBody.error(CommonEnum.INTERNAL_SERVER_ERROR);
     }
     //数据下标越界
     @ExceptionHandler(ArrayIndexOutOfBoundsException.class)
     @ResponseBody
     public ResultBody ArrayIndexOutOfBoundsExceptionHandler(ArrayIndexOutOfBoundsException ex) {
-        logger.error("数据下标越界",ex);
+        logger.error("*数据下标越界",ex);
         return ResultBody.error(CommonEnum.INTERNAL_SERVER_ERROR);
     }
 
@@ -86,7 +88,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value =Exception.class)
     @ResponseBody
     public ResultBody exceptionHandler(HttpServletRequest req, Exception e){
-        logger.error("未知异常！原因是:",e);
-        return ResultBody.error(CommonEnum.INTERNAL_SERVER_ERROR);
+        logger.error("*未知异常！原因是:",e);
+        return ResultBody.error(CommonEnum.SERVER_BUSY);
     }
 }

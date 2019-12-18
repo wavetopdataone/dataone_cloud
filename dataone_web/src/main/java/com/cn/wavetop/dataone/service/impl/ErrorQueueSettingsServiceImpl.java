@@ -47,7 +47,7 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
             map.put("data", errorQueueSettings);
             return map;
         } else {
-            return ToData.builder().status("0").message("任务不存在").build();
+            return ToData.builder().status("0").message("不存在错误队列设置").build();
 
         }
     }

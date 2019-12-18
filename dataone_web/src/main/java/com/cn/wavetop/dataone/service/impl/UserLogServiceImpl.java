@@ -1,15 +1,15 @@
 package com.cn.wavetop.dataone.service.impl;
 
+import com.cn.wavetop.dataone.dao.SysUserRepository;
 import com.cn.wavetop.dataone.dao.UserLogRepository;
 import com.cn.wavetop.dataone.entity.SysDept;
 import com.cn.wavetop.dataone.entity.SysLog;
 import com.cn.wavetop.dataone.entity.SysUser;
 import com.cn.wavetop.dataone.entity.Userlog;
-import com.cn.wavetop.dataone.entity.vo.ToData;
-import com.cn.wavetop.dataone.entity.vo.UserlogDateVo;
-import com.cn.wavetop.dataone.entity.vo.UserlogVo;
+import com.cn.wavetop.dataone.entity.vo.*;
 import com.cn.wavetop.dataone.service.UserLogService;
 import com.cn.wavetop.dataone.util.DateUtil;
+import com.cn.wavetop.dataone.util.EmailUtils;
 import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.apache.catalina.User;
 import org.slf4j.Logger;
@@ -26,6 +26,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -35,6 +38,8 @@ public class UserLogServiceImpl implements UserLogService {
 
     @Autowired
     private UserLogRepository userLogRepository;
+    @Autowired
+    private SysUserRepository sysUserRepository;
 
     @Override
     public Object selByJobId(long job_id, Integer current, Integer size) {
@@ -76,6 +81,7 @@ public class UserLogServiceImpl implements UserLogService {
                     for (Userlog userlog : userlogList) {
                         if (date.equals(dfs.format(userlog.getTime()))) {
                             userlogVo = new UserlogVo();
+                            userlogVo.setUserlogId(userlog.getId());
                             userlogVo.setTime(df.format(userlog.getTime()));
                             userlogVo.setOperate(userlog.getOperate());
                             userlogVos.add(userlogVo);
@@ -125,6 +131,7 @@ public class UserLogServiceImpl implements UserLogService {
         if (userlogList1 != null && userlogList1.size() > 0) {
             for (Userlog userlog : userlogList1) {
                 userlogVo = new UserlogVo();
+                userlogVo.setUserlogId(userlog.getId());
                 userlogVo.setTime(df.format(userlog.getTime()));
                 userlogVo.setOperate(userlog.getOperate());
                 userlogVos.add(userlogVo);
@@ -140,5 +147,25 @@ public class UserLogServiceImpl implements UserLogService {
 
     }
 
+    public Object supportEmail(Long userlogId){
+        EmailUtils emailUtils=new EmailUtils();
+        Optional<Userlog> userlog= userLogRepository.findById(userlogId);
+        Optional<SysUser> sysUser=sysUserRepository.findById(1L);
+        EmailPropert emailPropert=new EmailPropert();
+        emailPropert.setForm("1");
+        emailPropert.setSubject("2");
+        emailPropert.setSag("3");
+        emailPropert.setMessageText("4");
+        List<SysUser> email=new ArrayList<>();
+        SysUser sysUser1=new SysUser();
+        sysUser1.setEmail("1696694856@qq.com");
+        email.add(sysUser1);
+        boolean flag=emailUtils.sendAuthCodeEmail(sysUser.get(),emailPropert,email);
+        if(flag){
+            return ToDataMessage.builder().status("1").message("发送成功").build();
+        }else{
+            return ToDataMessage.builder().status("0").message("发送失败").build();
+        }
+    }
 
 }

@@ -243,6 +243,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
     @Override
     public Object showMonitoring(long job_id) {
+
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
         String date = dfs.format(new Date());
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByIdAndDate(job_id, DateUtil.StringToDate(date));
@@ -662,4 +663,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         }
         return ToData.builder().status("1").data(list).build();
     }
+
+
 }

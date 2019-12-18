@@ -27,10 +27,9 @@ public class DataChangeSettingsController {
         return service.getDataChangeSettingsAll();
     }
 
-    @ApiImplicitParam(name = "job_id", value = "job_id", dataType = "long")
     @PostMapping("/check_data_change")
-    public Object check_data_change(long job_id) {
-        return service.getCheckDataChangeByjobid(job_id);
+    public Object check_data_change(long jobId) {
+        return service.getCheckDataChangeByjobid(jobId);
     }
 
     @ApiImplicitParam
