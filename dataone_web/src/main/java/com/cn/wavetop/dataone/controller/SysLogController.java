@@ -165,7 +165,9 @@ public class SysLogController  {
             response.setHeader("Content-Disposition",
                                         "attachment;fileName=" + finalFileName);
             ServletOutputStream out = null;
+
             try {
+
                 out = response.getOutputStream();
                 wb.write(out);
                 out.flush();

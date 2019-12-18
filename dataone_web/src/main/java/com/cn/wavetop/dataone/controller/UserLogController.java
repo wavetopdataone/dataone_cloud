@@ -3,15 +3,15 @@ package com.cn.wavetop.dataone.controller;
 import com.cn.wavetop.dataone.service.UserLogService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -77,4 +77,43 @@ public class UserLogController {
             e.printStackTrace();
         }
     }
+    @ApiOperation(value = "系统错误日志下载2", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "系统错误日志")
+    @GetMapping("/Showerror")
+    public void showError2(HttpServletRequest request, HttpServletResponse response) {
+        FileInputStream in = null;
+        Date date = new Date();
+        DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+        String fileName="dataoneerror.log." + ft.format(date) + ".log";
+        response.setContentType("text/plain");
+        response.setHeader("Content-Disposition",
+                "attachment;fileName=dataoneError.txt" );
+        try {
+            in = new FileInputStream(new File(fileName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        OutputStream out = null;
+        try {
+            out = response.getOutputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] b = new byte[512];
+        while (true) {
+            try {
+                if (!((in.read(b)) != -1)) break;
+                out.write(b);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
