@@ -13,5 +13,5 @@ public interface SysTableruleService {
     Object editTablerule(SysTablerule sysTablerule);
     Object deleteTablerule(long job_id);
     Object linkDataTable(SysDbinfo sysDbinfo);
-    String selectTable(Long jobId, String destTable, Date time);
+    String selectTable(Long jobId, String destTable, String time,Integer errorflag);
 }

@@ -12,11 +12,14 @@ import org.apache.shiro.crypto.hash.Md5Hash;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class test {
 
@@ -154,8 +157,33 @@ public void s(){
          System.out.println(salt);
          System.out.println(ciphertext);
     }
+    @Test
+    public void encryptPassword1() {
+        String a = "CONVERT(BINARY(1),'1',0)";
+        String replace = a.replace(a, "'1'");
+        String b = "(^CONVERT(BINARY.*abc$)";
+        boolean c = StringUtils.startsWithIgnoreCase("CONVERT(BINARY", "'1'");
+        boolean convert = a.matches("CONVERT(BINARY(1),'1',0)");
+        System.out.println("a = " + a);
+    }
+    public static void main(String[] args) {
+        String str = "INSERT INTO TEST1.dbo.sys_role(id,data_scope,del_flag,flag,role_id,role_key,role_name,role_sort,status,create_time,create_user,update_time,update_user) VALUES ('7',NULL,CONVERT(BINARY(20),'43',0),CONVERT(BINARY(1),'20',0),NULL,NULL,'???',NULL,NULL,'2019-12-10 14:34:05',NULL,NULL,NULL)";
+//        str.matches("([A-Z])\\w+\\(+([A-Z])\\w+\\(+[0-9]+\\)+\\,+\\'+[0-9]+\\'+\\,+[0-9]+\\)");
+        Pattern pattern = Pattern.compile("([A-Z])\\w+\\(+([A-Z])\\w+\\(+[0-9]+\\)+\\,+\\'+[0-9]+\\'+\\,+[0-9]+\\)");
+        System.out.println("pattern = " + pattern);
+        Matcher matcher = pattern.matcher(str);
+        System.out.println("matcher = " + matcher);
+        while (matcher.find()) {
+            String group = matcher.group(0);
+            System.out.println("group = " + group);
+            String substring = group.substring(group.indexOf("\'") + 1, group.lastIndexOf("\'"));
+            System.out.println("substring = " + substring);
+            str =  str.replace(group, substring);
+        }
+        System.out.println(str);
 
-    //驗證密碼
+    }
+//       驗證密碼
 //        String ciphertext = new Md5Hash("88888","0ae975a6aeb859797f60e98c575ee12c",3).toString(); //生成的密文
 //       String password="a3be8ba9c44a062345e2a210661df3b8";
 //        System.out.println(ciphertext);

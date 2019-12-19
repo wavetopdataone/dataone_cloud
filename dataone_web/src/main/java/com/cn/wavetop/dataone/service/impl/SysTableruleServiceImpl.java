@@ -17,6 +17,8 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.transaction.Transactional;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -351,12 +353,15 @@ public class SysTableruleServiceImpl implements SysTableruleService {
 
 
     }
+
+
     @Autowired
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private UserLogRepository userLogRepository;
     @Autowired
     private SysJobrelaRespository sysJobrelaRespository;
+
     /**
      * 查询源端表名
      * 将错误状态4填入到monitoring表中
@@ -366,37 +371,54 @@ public class SysTableruleServiceImpl implements SysTableruleService {
      * @param time
      * @return
      */
+    @Transactional
     @Override
-    public String selectTable(Long jobId, String destTable, Date time) {
+    public String selectTable(Long jobId, String destTable, String time,Integer errorflag) {
         //查询源端表名
-        List<SysTablerule> sysTableruleList = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
+        //List<SysTablerule> sysTableruleList = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndDestTable(jobId, destTable);
         //查询任务名称
         Optional<SysJobrela> byId = sysJobrelaRespository.findById(jobId);
         Userlog userlog = new Userlog();
-        String jobName = byId.get().getJobName();
+        String jobName =null;
+        if (byId != null ){
+            jobName = byId.get().getJobName();
+        }
         String operate = "发现任务"+jobName+"异常,建议重启任务或者申请技术支持";
         String sourceTable = null;
         userlog.setJobId(jobId);
         userlog.setJobName(jobName);
-        userlog.setTime(time);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date parse = null;
+        try {
+            parse = simpleDateFormat.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        userlog.setTime(parse);
         userlog.setOperate(operate);
-        //异常状态4
+        //异常状态4,暂时只有死进程才会修改异常状态
         int status = 4;
-        if (sysTableruleList != null && sysTableruleList.size() > 0){
-            for (SysTablerule sysTablerule : sysTableruleList) {
-                sourceTable = sysTablerule.getSourceTable();
-                //更新状态4
-                sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
-                //将错误信息插入到用户登录表中
-                userLogRepository.save(userlog);
+
+        if (sysMonitoringList != null && sysMonitoringList.size() > 0){
+            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                sourceTable = sysMonitoring.getSourceTable();
+                //死进程,更新状态4
+                if (errorflag == 2){
+                    sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
+                    //将错误信息插入到用户登录表中
+                    userLogRepository.save(userlog);
+                }
                 return sourceTable;
             }
         }
         sourceTable = destTable;
         //更新状态4
-        sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
-        //将错误信息插入到用户登录表中
-        userLogRepository.save(userlog);
+        if (errorflag == 2){
+            sysMonitoringRepository.updateStatus(jobId,sourceTable,status);
+            //将错误信息插入到用户登录表中
+            userLogRepository.save(userlog);
+        }
         return sourceTable;
     }
 }

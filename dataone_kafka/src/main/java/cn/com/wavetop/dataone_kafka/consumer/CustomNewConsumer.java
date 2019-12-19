@@ -104,7 +104,7 @@ public class CustomNewConsumer {
 
 		Properties props = new Properties();
 		props.put("bootstrap.servers", "192.168.1.156:9092");
-		props.put("group.id", "test1");
+		props.put("group.id", "testm");
 		props.put("enable.auto.commit", "false");
 		props.put("auto.commit.interval.ms", "1000");
 		props.put("auto.offset.reset", "earliest");

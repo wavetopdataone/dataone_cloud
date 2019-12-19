@@ -45,4 +45,7 @@ public interface SysMonitoringRepository extends JpaRepository<SysMonitoring,Lon
     @Modifying
     @Query("update SysMonitoring sm set sm.jobStatus = :status where sm.jobId = :jobId and sm.sourceTable = :sourceTable")
     void updateStatus(Long jobId, String sourceTable,int status);
+
+    @Query(value = "from SysMonitoring st where job_id = :jobId and dest_table = :destTable")
+    List<SysMonitoring> findByJobIdAndDestTable(Long jobId,String destTable);
 }

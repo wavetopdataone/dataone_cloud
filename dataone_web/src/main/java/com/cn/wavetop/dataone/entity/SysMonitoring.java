@@ -60,5 +60,5 @@ public class SysMonitoring {
   @Column(name="error_data", columnDefinition="INT default 0")
   private Long errorData;
 
-    private Double synchronous;//同步进程
+  private Double synchronous;//同步进程
 }

@@ -5,10 +5,13 @@ import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.service.*;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -191,7 +194,7 @@ public class ToBackController {
      * 插入错误信息
      */
     @PostMapping("/insertErrorLog")
-    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam Date time,@RequestParam String errortype,
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
                             @RequestParam String message){
 
         errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message);
@@ -208,15 +211,27 @@ public class ToBackController {
      */
     @ApiImplicitParam
     @GetMapping("/selecttable")
-    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam Date time) {
-        return sysTableruleService.selectTable(jobId,destTable,time);
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam String time,@RequestParam Integer errorflag) {
+        return sysTableruleService.selectTable(jobId,destTable,time,errorflag);
     }
 
+
+    @Autowired
+    private SysErrorRepository sysErrorRepository;
     /**
-     * 将错误信息4状态填入到监控表
+     * 将系统错误信息插入到系统日志表
+     * @param syserror
      */
-    /*@PostMapping("/insertstatus")
-    public void insertStatus(@RequestParam Integer status){
-        sysMonitoringService.insertStatus(status);
-    }*/
+    @PostMapping("/insertsyslog")
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date parse = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+        SysError sysError = new SysError();
+        String errortype = "ConsumerError";
+        sysError.setCreateDate(parse);
+        sysError.setErrorType(errortype);
+        sysError.setMethod(method);
+        sysError.setErrorName(syserror);
+        sysErrorRepository.save(sysError);
+    }
 }

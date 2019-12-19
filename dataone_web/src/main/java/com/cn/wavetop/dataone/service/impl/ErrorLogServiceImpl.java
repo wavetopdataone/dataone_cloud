@@ -17,6 +17,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -198,12 +200,19 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
      */
     @Transactional
     @Override
-    public void insertError(Long jobId,String sourceTable, String destTable, Date time,String errortype,String message) {
+    public void insertError(Long jobId,String sourceTable, String destTable, String time,String errortype,String message) {
         ErrorLog errorLog = new ErrorLog();
         errorLog.setJobId(jobId);
         errorLog.setSourceName(sourceTable);
         errorLog.setDestName(destTable);
-        errorLog.setOptTime(time);
+        Date parse = null;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            parse = simpleDateFormat.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        errorLog.setOptTime(parse);
         errorLog.setOptType(errortype);
         errorLog.setContent(message);
         repository.save(errorLog);

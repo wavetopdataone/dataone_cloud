@@ -37,7 +37,8 @@ public class SysError {
     private String roleName; //角色
     private String deptName; //部门
     private  String name;
-    private String DeclaringType;
-    private String  DeclaringTypeName;
+    private Integer lineNumber;//行数
+    private String errorType;//异常类型
+    private String errorName;//异常名字
     private Integer Modifiers;
 }

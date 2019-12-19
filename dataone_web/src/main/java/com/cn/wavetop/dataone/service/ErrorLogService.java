@@ -24,5 +24,5 @@ public interface ErrorLogService {
 
 
 
-    void insertError(Long jobId,String sourceTable, String destTable, Date time,String errortype,String message);
+    void insertError(Long jobId,String sourceTable, String destTable, String time,String errortype,String message);
 }
