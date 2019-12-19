@@ -42,13 +42,11 @@ public class SysJobinfoController {
     @ApiImplicitParam
     @PostMapping("/edit_jobinfo")
     public Object edit_jobinfo(@RequestBody SysJobinfo jobinfo) {
-        System.out.println(jobinfo);
         return service.editJobinfo(jobinfo);
     }
     @ApiImplicitParam
     @PostMapping("/delete_jobinfo")
     public Object delete_jobinfo(Long job_id) {
-        System.out.println(job_id);
         return service.deleteJobinfo(job_id);
     }
 

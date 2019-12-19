@@ -228,7 +228,7 @@ public class SysUserServiceImpl implements SysUserService {
             map.put("date",opsForValue.get("logintime"+name+"1"));
         } catch (Exception e){
 
-            System.out.println(e);
+
             lefttime=Integer.parseInt(opsForValue.get("lefttime"+name));
             lefttime--;
             opsForValue.set("lefttime"+name,String.valueOf(lefttime));
@@ -540,7 +540,6 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional
     @Override
     public Object updateUser(Long id,Long DeptId) {
-        System.out.println(id+"-----------"+DeptId+"----------------");
         if(PermissionUtils.isPermitted("1")) {
             List<SysUser> list = sysUserRepository.findUserByDeptIdAndRoleKey(Long.valueOf(2),DeptId);
             if (list != null && list.size() > 0) {

@@ -12,7 +12,8 @@ public enum  CommonEnum implements BaseErrorInfoInterface {
     INTERNAL_SERVER_ERROR("500", "服务器内部错误!"),
     SERVER_BUSY("503", "服务器正忙，请稍后再试!"),
     REQUEST_METHOD_SUPPORT_ERROR("40001","当前请求方法不支持"),
-    TYPE_NOT_ERROR("500","类型转换错误");
+    TYPE_NOT_ERROR("500","类型转换错误"),
+    NOT_FOUND_FILE("404","系统找不到指定文件");
     /**
      * 错误码
      */

@@ -115,7 +115,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
     @Override
     public Object addTablerule(SysTablerule sysTablerule) {
         try{
-            System.out.println(sysTablerule+"-----------"+sysTablerule.getId());
             List<SysTablerule> sysTableruleList =sysTableruleRepository.findByJobId(sysTablerule.getJobId());
             String[] b= sysTablerule.getSourceTable().split(",");
             List<SysTablerule> list=new ArrayList<SysTablerule>();
@@ -153,7 +152,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
     @Override
     public Object editTablerule(SysTablerule sysTablerule) {
         try{
-            System.out.println(sysTablerule+"-----------"+sysTablerule.getId());
             List<SysTablerule> sysTableruleList =sysTableruleRepository.findByJobId(sysTablerule.getJobId());
             String[] b= sysTablerule.getSourceTable().split(",");
             List<SysTablerule> list=new ArrayList<SysTablerule>();
@@ -192,7 +190,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                         }
                     }
                 }
-                System.out.println(a);
                 SysTablerule sysTablerule1=null;
                 SysFilterTable sysFilterTable=null;
                 //添加过滤的表
@@ -310,7 +307,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                 while (rs.next()) {
                     tableName = rs.getString(1);
                     list.add(tableName);
-                    System.out.println(tableName);
                 }//显示数据
                 return ToData.builder().status("1").data(list).build();
             } catch (SQLException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
@@ -331,7 +327,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                 rs = stmt.executeQuery(sql);
                 while (rs.next()) {
                     tableName = rs.getString(1);
-                    System.out.println(tableName);
                     list.add(tableName);
                 }
                 return ToData.builder().status("1").data(list).build();

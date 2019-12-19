@@ -53,7 +53,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Override
     public Object findByJobId(long job_id) {
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
-        System.out.println(sysMonitoringList);
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             return ToData.builder().status("1").data(sysMonitoringList).build();
         } else {
@@ -66,7 +65,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     public Object update(SysMonitoring sysMonitoring) {
         try {
             List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(sysMonitoring.getJobId());
-            System.out.println(sysMonitoringList);
             List<SysMonitoring> userList = new ArrayList<SysMonitoring>();
             if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
                 //sysMonitoringList.get(0).setId(sysMonitoring.getId());
@@ -90,7 +88,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 sysMonitoringList.get(0).setErrorData(sysMonitoring.getErrorData());
 
                 SysMonitoring user = sysMonitoringRepository.save(sysMonitoringList.get(0));
-                System.out.println(user);
                 userList = sysMonitoringRepository.findById(user.getId());
                 if (user != null && !"".equals(user)) {
                     return ToData.builder().status("1").data(userList).message("修改成功").build();
@@ -113,7 +110,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     @Override
     public Object addSysMonitoring(SysMonitoring sysMonitoring) {
         try {
-            System.out.println(sysMonitoring + "-----------" + sysMonitoring.getJobId());
             if (sysMonitoringRepository.findByJobId(sysMonitoring.getJobId()) != null && sysMonitoringRepository.findByJobId(sysMonitoring.getJobId()).size() > 0) {
 
                 return ToDataMessage.builder().status("0").message("已存在").build();
@@ -159,6 +155,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
         SysMonitoring sysMonitoring2 = null;
         SysMonitoring sysMonitoring3 = null;
+        List<ErrorLog> errorLogs = null;
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findBySourceTableContainingAndJobId(source_table, job_id);
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
@@ -170,10 +167,12 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
                 sysMonitoringList2.add(sysMonitoring2);
                 //目的端
+                errorLogs=new ArrayList<>();
+                errorLogs= errorLogRespository.findByJobIdAndSourceName(job_id,sysMonitoring.getSourceTable());
                 sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
                 sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
                 sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
-                sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+                sysMonitoring3.setErrorData(Long.valueOf(errorLogs.size()));
                 sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
                 sysMonitoringList3.add(sysMonitoring3);
             }
@@ -194,6 +193,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         SysMonitoring sysMonitoring2 = null;
         SysMonitoring sysMonitoring3 = null;
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndJobStatus(job_id, jobStatus);
+        List<ErrorLog> errorLogs = null;
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
                 sysMonitoring2 = new SysMonitoring();
@@ -204,10 +204,12 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
                 sysMonitoringList2.add(sysMonitoring2);
                 //目的端
+                errorLogs=new ArrayList<>();
+                errorLogs= errorLogRespository.findByJobIdAndSourceName(job_id,sysMonitoring.getSourceTable());
                 sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
                 sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
                 sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
-                sysMonitoring3.setErrorData(sysMonitoring.getErrorData());
+                sysMonitoring3.setErrorData(Long.valueOf(errorLogs.size()));
                 sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
                 sysMonitoringList3.add(sysMonitoring3);
             }
@@ -233,7 +235,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 stringList.add(countAndTime);
 //                stringList.add(s.getSqlCount());
 //                stringList.add(s.getOptTime());
-                System.out.println(s.getOptTime());
             }
             return ToData.builder().status("1").data(stringList).build();
         } else {
@@ -299,7 +300,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             if (readData != 0) {
                 synchronous = writeData / readData;
             }
-            System.out.println(disposeRate + "-----" + readRate);
             map.put("read_datas", readData);
             map.put("write_datas", writeData);
             map.put("error_datas", errorDatas);
@@ -437,7 +437,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             list4.add(ef);
             list1.add(df.format(DateUtil.StringToDate(ef)));//09-25
         }
-        System.out.println(DateUtil.StringToDate(ab));
         List<SysDataChange> sysDataChanges = sysDataChangeRepository.findByJobIdAndTime(jobId, DateUtil.StringToDate(ab));
         if (sysDataChanges != null && sysDataChanges.size() > 0) {
             for (SysDataChange sysDataChange : sysDataChanges) {
@@ -455,7 +454,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 }
             }
             map2 = (HashMap<Object, Double>) showMonitoring(jobId);
-            System.out.println(map2);
             String nowdate = df.format(new Date());
 //            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
             list1.add(nowdate);
@@ -465,7 +463,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("data1", list1);
             map.put("data2", list2);
             map.put("data3", list3);
-            System.out.println(map);
+
         }
         return map;
     }
@@ -496,8 +494,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
                 try {
                     Long readData = sysMonitoring.getReadData();
-                    System.out.println("readData = " + readData);
-                    System.out.println("writeData = " + writeData);
+
                     /*Long errorData = readData - writeData;
                     System.out.println("errorData = " + errorData);*/
                     sysMonitoringRepository.updateWriteMonitoring(id, writeData, table);
@@ -554,7 +551,6 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             }
             if (i < data) {
                 SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
-                System.out.println("sysDataChange = " + sysDataChange);
                 if (null != sysDataChange) {
                     writes.add(sysDataChange.getWriteData());
                     reads.add(sysDataChange.getReadData());

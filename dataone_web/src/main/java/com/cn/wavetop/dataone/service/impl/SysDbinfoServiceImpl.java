@@ -148,7 +148,6 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
      List<SysJobrela> list=sysJobrelarepository.findDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());
             try {
                 boolean flag = sysJobrelarepository.existsByDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName());
-                System.out.println(flag);
                 if(list==null||list.size()<=0){
 //                if (!flag) {
                     boolean flag2 = repository.existsByName(sysDbinfo.getName());

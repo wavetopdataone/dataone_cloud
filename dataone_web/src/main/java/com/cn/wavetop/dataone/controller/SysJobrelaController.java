@@ -46,14 +46,14 @@ public class SysJobrelaController {
     @ApiImplicitParam
     @PostMapping("/edit_jobrela")
     public Object edit_jobrela(@RequestBody SysJobrela sysJobrela) {
-        System.out.println(sysJobrela);
+
         return service.editJobrela(sysJobrela);
     }
 
     @ApiImplicitParam
     @PostMapping("/delete_jobrela")
     public Object delete_jobrela(Long id) {
-        System.out.println(id);
+
         return service.deleteJobrela(id);
     }
 

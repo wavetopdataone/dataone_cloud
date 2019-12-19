@@ -152,15 +152,13 @@ public class ToBackController {
     @ApiOperation(value = "new读取速率", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
     @PostMapping("/updateReadRate/{jobId}")
     public void monitoringTable(@PathVariable Long jobId, @RequestBody Map<String, Map> Monito) {
-        System.out.println(Monito);
-        System.out.println(1);
+
         //todo 后面要分表
         Map<String, Object> tableMonito = Monito.get("tableMonito");
         Map<String, Object> tableTotal = Monito.get("tableTotal");
-        System.out.println(tableMonito);
-        System.out.println(tableTotal);
+
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
-        System.out.println(sysMonitoringList);
+
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (String table : tableTotal.keySet()) {
                 for (SysMonitoring sysMonitoring : sysMonitoringList) {

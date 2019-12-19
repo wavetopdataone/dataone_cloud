@@ -72,7 +72,6 @@ public class SysLogServiceImpl implements SysLogService {
         List<SysUserlog> sysUserlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
-        System.out.println(endTime+"-------------------heng");
         if(endTime!=null&&!"".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }
@@ -136,7 +135,6 @@ public class SysLogServiceImpl implements SysLogService {
         List<SysUserlog> sysUserlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
-        System.out.println(endTime+"-------------------heng");
         if(endTime!=null&&!"".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }

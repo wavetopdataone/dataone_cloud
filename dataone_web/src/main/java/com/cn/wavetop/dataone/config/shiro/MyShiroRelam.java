@@ -47,11 +47,10 @@ public class MyShiroRelam extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         String username=(String)authenticationToken.getPrincipal();
-        System.out.println(username);
+
         System.out.println(authenticationToken.getCredentials());
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
 
-        System.out.println(new Date().getTime());
 //        redisTemplate.opsForValue().increment("SHIRO_LOGIN_COUNT"+username, 1);
 //        System.out.println( redisTemplate.opsForValue().get("SHIRO_LOGIN_COUNT"+username)+"xhuax");
 //        //计数大于5时，设置用户被锁定一小时

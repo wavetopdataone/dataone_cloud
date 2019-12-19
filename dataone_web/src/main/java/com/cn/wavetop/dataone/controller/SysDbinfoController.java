@@ -48,21 +48,21 @@ public class SysDbinfoController {
     @ApiImplicitParam
     @PostMapping("/add_dbinfo")
     public Object add_dbinfo(@RequestBody SysDbinfo sysDbinfo) {
-        System.out.println(sysDbinfo);
+
         return service.addbinfo(sysDbinfo);
     }
 
     @ApiImplicitParam
     @PostMapping("/edit_dbinfo")
     public Object edit_dbinfo( @RequestBody SysDbinfo sysDbinfo) {
-        System.out.println(sysDbinfo);
+
         return service.editDbinfo(sysDbinfo);
     }
 
     @ApiImplicitParam
     @PostMapping("/delete_dbinfo")
     public Object delete_dbinfo(long id) {
-        System.out.println(id);
+
         return service.deleteDbinfo(id);
     }
 

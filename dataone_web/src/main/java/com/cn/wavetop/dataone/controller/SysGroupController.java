@@ -36,20 +36,17 @@ public class SysGroupController {
     @ApiImplicitParam
     @PostMapping("/add_group")
     public Object add_group(@RequestBody SysGroup sysGroup) {
-       System.out.println(sysGroup);
         return service.addGroup(sysGroup);
     }
 
     @ApiImplicitParam
     @PostMapping("/edit_group")
     public Object edit_group(@RequestBody SysGroup sysGroup) {
-        System.out.println(sysGroup);
         return service.editGroup(sysGroup);
     }
     @ApiImplicitParam
     @PostMapping("/delete_group")
     public Object delete_group(Long id) {
-        System.out.println(id);
         return service.deleteGroup(id);
     }
 

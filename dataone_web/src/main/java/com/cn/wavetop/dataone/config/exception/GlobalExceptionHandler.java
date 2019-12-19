@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
@@ -77,6 +78,13 @@ public class GlobalExceptionHandler {
     public ResultBody ArrayIndexOutOfBoundsExceptionHandler(ArrayIndexOutOfBoundsException ex) {
         logger.error("*数据下标越界",ex);
         return ResultBody.error(CommonEnum.INTERNAL_SERVER_ERROR);
+    }
+    //系统找不到指定文件
+    @ExceptionHandler(FileNotFoundException.class)
+    @ResponseBody
+    public ResultBody FileNotFoundException(FileNotFoundException ex) {
+        logger.error("*系统找不到指定文件",ex);
+        return ResultBody.error(CommonEnum.NOT_FOUND_FILE);
     }
 
     /**

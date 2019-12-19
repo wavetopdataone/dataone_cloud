@@ -1,9 +1,12 @@
 package com.cn.wavetop.dataone.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.cn.wavetop.dataone.service.UserLogService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,13 +15,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.rmi.NotBoundException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/userlog")
 public class UserLogController {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private UserLogService userLogService;
@@ -41,78 +49,112 @@ public class UserLogController {
         return userLogService.supportEmail(userlogId);
     }
 
-    @ApiOperation(value = "系统错误日志", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "系统错误日志")
+    @ApiOperation(value = "查询系统错误日志", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询系统错误日志")
     @PostMapping("/errorShow")
-    public void showError(HttpServletRequest request, HttpServletResponse response) {
-        response.setContentType("application/txt");
-        FileInputStream in = null;
-        Date date = new Date();
-        DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            in = new FileInputStream(new File("dataoneerror.log." + ft.format(date) + ".log"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        OutputStream out = null;
-        try {
-            out = response.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        byte[] b = new byte[512];
-        while (true) {
-            try {
-                if (!((in.read(b)) != -1)) break;
-                out.write(b);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-        try {
-            out.flush();
-            in.close();
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    @ApiOperation(value = "系统错误日志下载2", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "系统错误日志")
-    @GetMapping("/Showerror")
-    public void showError2(HttpServletRequest request, HttpServletResponse response) {
-        FileInputStream in = null;
-        Date date = new Date();
-        DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
-        String fileName="dataoneerror.log." + ft.format(date) + ".log";
+    public void showError(HttpServletRequest request, HttpServletResponse response, String date) {
         response.setContentType("text/plain");
-        response.setHeader("Content-Disposition",
-                "attachment;fileName=dataoneError.txt" );
-        try {
-            in = new FileInputStream(new File(fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FileInputStream in = null;
+        DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+        File file = new File("dataoneerror.log." + date + ".log");
         OutputStream out = null;
         try {
             out = response.getOutputStream();
+            if (!file.exists()) {
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object,Object> map=new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a= String.valueOf(JSON.toJSON(map));
+                byte[]b=a.getBytes();
+                for(int i=0;i<b.length;i++){
+                    out.write(b[i]);
+                }
+            }else {
+                in = new FileInputStream(file);
+                byte[] b = new byte[512];
+                while (true) {
+                    if (!((in.read(b)) != -1)) break;
+                    out.write(b);
+                }
+            }
+            out.flush();
         } catch (IOException e) {
+            logger.error("*IO错误",e);
             e.printStackTrace();
-        }
-        byte[] b = new byte[512];
-        while (true) {
-            try {
-                if (!((in.read(b)) != -1)) break;
-                out.write(b);
-            } catch (IOException e) {
-                e.printStackTrace();
+        }finally {
+            if(in!=null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(out!=null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
+    }
+
+    @ApiOperation(value = "系统错误日志下载", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "系统错误日志下载")
+    @GetMapping("/OutputError")
+    public void showError2(HttpServletRequest request, HttpServletResponse response, String date) {
+        FileInputStream in = null;
+        DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+        String fileName = "dataoneerror.log." + date + ".log";
+        String FileNewName = "dataoneError-" + date + ".txt";
+        OutputStream out = null;
+        response.setContentType("text/plain");
+
+        File file = new File(fileName);
+
         try {
+            out = response.getOutputStream();
+            if (!file.exists()) {
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object,Object> map=new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a= String.valueOf(JSON.toJSON(map));
+                byte[]b=a.getBytes();
+                for(int i=0;i<b.length;i++){
+                    out.write(b[i]);
+                }
+            }else {
+                response.setHeader("Content-Disposition",
+                        "attachment;fileName=" + FileNewName);
+                in = new FileInputStream(file);
+                byte[] b = new byte[512];
+                while (true) {
+                    if (!((in.read(b)) != -1)) break;
+                    out.write(b);
+                }
+            }
             out.flush();
-            out.close();
         } catch (IOException e) {
+            logger.error("*IO错误",e);
             e.printStackTrace();
+        }finally {
+            if(in!=null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(out!=null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
     }
 
 

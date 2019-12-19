@@ -194,7 +194,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     byJobIdAndSourceTable.setJobId(job_id);
                     byJobIdAndSourceTable.setSourceTable(source_name);
                     byJobIdAndSourceTable.setVarFlag(Long.valueOf(2));//2代表映射
-                    System.out.println(byJobIdAndSourceTable+"----------------");
 
                     sysTableruleRespository.save(byJobIdAndSourceTable);
                     //若有子任务为子任务添加表规则
@@ -363,7 +362,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 list = DBConns.getResult(sysDbinfo, sql, list_data);
                 SysFilterTable sysFilterTable = null;
                 sysFilterTableRepository.deleteByJobIdAndFilterTable(job_id, source_name);
-                System.out.println("xuezihaoxuezihaoxuezihao" + list.size() + "---------------");
                 for (SysFieldrule sysFieldrule : list) {
                     sysFilterTable = new SysFilterTable();
 //                sysFieldrule1 = new SysFieldrule();
@@ -472,7 +470,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     } else {
                         sysFieldrule.setAccuracy("0");
                     }
-                    System.out.println(sysFieldrule + "aaaaaaaaaaassssssss");
 
                     list.add(sysFieldrule);
                 }
@@ -484,7 +481,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             }
         } else if (type == 1) {
             sql = "SELECT COLUMN_NAME, DATA_TYPE, NVL(DATA_LENGTH,0), NVL(DATA_PRECISION,0), NVL(DATA_SCALE,0), NULLABLE, COLUMN_ID ,DATA_TYPE_OWNER FROM DBA_TAB_COLUMNS WHERE TABLE_NAME='" + tablename + "' AND OWNER='" + sysDbinfo.getSchema() + "'";
-            System.out.println(sql);
+
             try {
                 conn = DBConns.getOracleConn(sysDbinfo);
                 stmt = conn.prepareStatement(sql);
@@ -508,7 +505,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     } else {
                         sysFieldrule.setAccuracy("0");
                     }
-                    System.out.println(sysFieldrule + "eeeeeeeeeeeeeeeee");
                     list.add(sysFieldrule);
                 }
             } catch (SQLException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
@@ -523,8 +519,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(list + "---d");
-        System.out.println(data);
+
         // List<SysFieldrule> sysFieldruleList= sysFieldruleRepository.findByJobIdAndSourceName(job_id,tablename);
         map.put("status", "1");
         map.put("data", list);

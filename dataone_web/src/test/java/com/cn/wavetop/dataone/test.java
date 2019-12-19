@@ -35,19 +35,16 @@ public class test {
        double c= a/b;
         BigDecimal bg = new BigDecimal(c);
         double num1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-        System.out.println(c);
         if(0.5>c){
             System.out.println("hha");
         }
-        System.out.println(num1);
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
 
 ////
         String nowDate = dfs.format(new Date());//几号
         String nowDates = df.format(new Date());//几号
-        System.out.println(nowDate);
-        System.out.println(nowDates);
+
         Set<String> set = new HashSet<>();
 //        Comparator<String> comp = new DescSort();
         set.add("2019-12-11");
@@ -166,7 +163,6 @@ public void s(){
 //         if(num.equals("7")) {
              DateUtil.dateAdd(ab, -6);
 //         }
-         System.out.println( DateUtil.dateAdd(ab, -6));
 //         System.out.println(d-a);
      }
 
@@ -177,15 +173,12 @@ public void s(){
          List<String> list=new ArrayList<>();
          list.add("1");
       redisTemplate.opsForValue().set("a",list);
-         System.out.println(redisTemplate.opsForValue().get("a"));
      }
      @Test
     public void encryptPassword() {
         String salt = new SecureRandomNumberGenerator().nextBytes().toHex(); //生成盐值
         String ciphertext = new Md5Hash("Aa111111", salt, 3).toString(); //生成的密文
         String[] strings = new String[]{salt, ciphertext};
-         System.out.println(salt);
-         System.out.println(ciphertext);
     }
 
     //驗證密碼

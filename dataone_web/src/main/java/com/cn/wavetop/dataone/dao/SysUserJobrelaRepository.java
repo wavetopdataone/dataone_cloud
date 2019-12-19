@@ -22,7 +22,9 @@ public interface SysUserJobrelaRepository extends JpaRepository<SysUserJobrela,L
         @Modifying
         @Query("delete from SysUserJobrela where userId = :userId and jobrelaId=:jobId")
         Integer deleteByUserIdAndJobrelaId(Long userId,Long jobId);
-        @Query("select u from SysUserJobrela uj,SysUser u,SysJobrela j,SysRole r,SysUserRole ur where uj.userId=u.id and uj.jobrelaId=j.id and u.id=ur.userId and ur.roleId=r.id and j.id=:jobId and r.roleKey<>'2'")
+
+//        and r.roleKey<>'2'
+        @Query("select u from SysUserJobrela uj,SysUser u,SysJobrela j,SysRole r,SysUserRole ur where uj.userId=u.id and uj.jobrelaId=j.id and u.id=ur.userId and ur.roleId=r.id and j.id=:jobId ")
         List<SysUser> selUserByJobId(Long jobId);
 
        boolean existsAllByUserIdAndJobrelaId(Long userId,Long jobrelaId);

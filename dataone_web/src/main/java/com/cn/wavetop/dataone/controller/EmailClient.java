@@ -77,7 +77,7 @@ public class EmailClient extends Thread {
                         WarnSetup = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();//3wei
                         bg1 = new BigDecimal(result);
                         result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-                        System.out.println(WarnSetup + "---" + result);
+
                         if (WarnSetup < result) {
                             emailPropert = new EmailPropert();
                             emailPropert.setForm("上海浪擎科技有限公司");

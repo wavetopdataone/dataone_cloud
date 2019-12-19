@@ -61,14 +61,13 @@ public class ErrorLogController {
     @ApiImplicitParam
     @PostMapping("/add_errorlog")
     public Object add_errorlog( @RequestBody ErrorLog errorLog) {
-        System.out.println(errorLog);
+
         return service.addErrorlog(errorLog);
     }
 
     @ApiImplicitParam
     @PostMapping("/edit_errorlog")
     public Object edit_errorlog(@RequestBody ErrorLog errorLog) {
-        System.out.println(errorLog);
         return service.editErrorlog(errorLog);
     }
 

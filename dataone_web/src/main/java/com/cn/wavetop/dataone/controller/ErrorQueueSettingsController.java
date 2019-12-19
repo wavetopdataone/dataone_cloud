@@ -34,7 +34,6 @@ public class  ErrorQueueSettingsController {
     return service.getErrorQueueAll();
 }
 
-  @ApiImplicitParam(name = "job_id", value = "job_id", dataType = "long")
   @PostMapping("/check_error_queue")
   public Object check_error_queue(long jobId) {
     return service.getCheckErrorQueueByjobid(jobId);
@@ -43,21 +42,21 @@ public class  ErrorQueueSettingsController {
   @ApiImplicitParam
   @PostMapping("/add_error_queue")
   public Object add_error_queue( @RequestBody ErrorQueueSettings errorQueueSettings) {
-    System.out.println(errorQueueSettings);
+
     return service.addErrorQueue(errorQueueSettings);
   }
 
   @ApiImplicitParam
   @PostMapping("/edit_error_queue")
   public Object edit_error_queue( @RequestBody ErrorQueueSettings errorQueueSettings) {
-    System.out.println(errorQueueSettings);
+
     return service.editErrorQueue(errorQueueSettings);
   }
 
   @ApiImplicitParam(name = "job_id", value = "job_id", dataType = "long")
   @PostMapping("/delete_error_queue")
   public Object delete_error_queue(long job_id) {
-    System.out.println(job_id);
+
     return service.deleteErrorQueue(job_id);
   }
 }

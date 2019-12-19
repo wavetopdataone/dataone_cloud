@@ -54,7 +54,6 @@ public class SysUserlogController  {
     @ApiOperation(value = "导出管理日志表", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出管理日志表")
     @GetMapping("/OutPutUserExcel")
     public void outPutExcel(HttpServletRequest request,HttpServletResponse response, @RequestParam Long deptId, @RequestParam Long userId, @RequestParam String operation, @RequestParam String startTime, @RequestParam String endTime, @RequestParam String loginName, @RequestParam String roleKey, @RequestParam Long dept) throws UnsupportedEncodingException {
-        System.out.println(deptId+"----"+userId+"---"+operation+loginName+roleKey+"----"+dept+"------------------");
 
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式

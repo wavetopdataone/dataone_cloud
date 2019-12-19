@@ -197,10 +197,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                             sysUserJobrela.setDeptId(PermissionUtils.getSysUser().getDeptId());
                             sysUserJobrela.setJobrelaId(save.getId());
                             sysUserJobrelaRepository.save(sysUserJobrela);
-                            System.out.println(sysUserJobrela+"----------");
+
                         }
                         //python的操作流程
-                        System.out.println(new Date()+"创建任务");
+
                         Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(jobName).operate(PermissionUtils.getSysUser().getLoginName()+"创建了任务"+jobName).jobId(save.getId()).build();
                         userlogRespository.save(build);
                         SysJobrela s = repository.findByJobName(jobName);
@@ -271,7 +271,6 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     List<SysJobrela> list = repository.findJobByUserIdJobName(PermissionUtils.getSysUser().getId(), sysJobrela.getJobName());
                     if (list != null && list.size() > 0) {
                         if (!list.get(0).getId().equals(sysJobrela.getId())) {
-                            System.out.println(list.get(0).getId() + "-----" + sysJobrela.getId());
                             return ToDataMessage.builder().status("0").message("该部门下任务名称已存在").build();
                         }
                     }
@@ -651,7 +650,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object start(Long id) {
-        System.out.println(id);
+
         HashMap<Object, Object> map = new HashMap();
         //把主任务的id添加到集合中
         List<Long> jobIds = new ArrayList<>();
@@ -717,12 +716,11 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object pause(Long id) {
-        System.out.println(id);
         HashMap<Object, Object> map = new HashMap();
         long id1 = id;
         SysJobrela byId = repository.findById(id1);
         String jobStatus = byId.getJobStatus();
-        System.out.println(jobStatus);
+
         if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
             if ("1".equals(jobStatus)) {
                 byId.setJobStatus("21"); //  2 代表暂停中，21代表暂停动作
@@ -759,7 +757,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object end(Long id) {
-        System.out.println(id);
+
         HashMap<Object, Object> map = new HashMap();
         long id1 = id;
         SysJobrela byId = repository.findById(id1);
@@ -861,7 +859,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
         if (PermissionUtils.isPermitted("2")) {
             List<SysJobrelaUser> list = repository.findJobrelaByUserId(PermissionUtils.getSysUser().getId());
             List<SysJobrelaUser> list1 = repository.findJobrelaByUserId(userId);
-            System.out.println(list);
+
             Iterator<SysJobrelaUser> iterator = list.iterator();
             while (iterator.hasNext()) {
                 SysJobrelaUser s = iterator.next();
@@ -957,7 +955,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
 
     //根据用户id查询参与的任务
     public Object findUserJob(Long userId) {
-        System.out.println(new Date() + "start");
+
         List<SysJobrela> list = repository.findByUserId(userId);
         StringBuffer stringBuffer = new StringBuffer("");
         SysUserJobVo sysUserJobVo = null;
@@ -993,7 +991,6 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 stringBuffer.setLength(0);
                 sysUserJobVoList.add(sysUserJobVo);
             }
-            System.out.println(new Date() + "end");
             return ToData.builder().status("1").data(sysUserJobVoList).build();
         } else {
             return ToDataMessage.builder().status("0").message("权限不足").build();

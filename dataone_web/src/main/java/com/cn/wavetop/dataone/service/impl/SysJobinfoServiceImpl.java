@@ -71,7 +71,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
     @Transactional
     @Override
     public Object editJobinfo(SysJobinfo jobinfo) {
-        System.out.println(jobinfo);
+
         HashMap<Object, Object> map = new HashMap();
         long syncRange = jobinfo.getSyncRange();
         if (syncRange == 0) {
@@ -195,7 +195,6 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                                 sysJobinfo1.setBinlogPostion(jobinfo.getBinlogPostion());
                             }
                         }
-                            System.out.println(sysJobrelaRelated.getSlaveJobId()+"renwu");
                             repository.save(sysJobinfo1);
 
                     }

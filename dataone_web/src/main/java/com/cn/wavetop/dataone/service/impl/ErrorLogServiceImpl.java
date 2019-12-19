@@ -47,13 +47,11 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     //条件查询
     @Override
     public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context,Integer current,Integer size) {
-        System.out.println(jobId+tableName+type+startTime+context+endTime+"-------------------hahah");
 
          Pageable page = PageRequest.of(current - 1, size);
         List<ErrorLog> sysErrorlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
-        System.out.println(endTime+"-------------------heng");
         if(endTime!=null&&!"null".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }

@@ -65,7 +65,6 @@ public class SysLoginlogController {
     @ApiOperation(value = "导出登录日志表", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出登录日志表")
     @GetMapping("/OutPutLoginExcel")
     public void outPutExcel(HttpServletRequest request,HttpServletResponse response, @RequestParam Long deptId, @RequestParam Long userId, @RequestParam String operation, @RequestParam String startTime, @RequestParam String endTime, @RequestParam String loginName, @RequestParam String roleKey, @RequestParam Long dept)  {
-        System.out.println(deptId+"----"+userId+"---"+operation+loginName+roleKey+"----"+dept+"------------------");
 
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd ");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式

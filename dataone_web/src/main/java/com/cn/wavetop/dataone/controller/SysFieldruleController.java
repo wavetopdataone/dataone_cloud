@@ -35,7 +35,7 @@ public class SysFieldruleController {
     @ApiImplicitParam
     @PostMapping("/add_fieldrule")
     public Object add_fieldrule(@RequestBody  SysFieldrule sysFieldrule, String list_data) {
-        System.out.println(sysFieldrule + list_data);
+
         return service.addFieldrule(sysFieldrule);
     }
 
