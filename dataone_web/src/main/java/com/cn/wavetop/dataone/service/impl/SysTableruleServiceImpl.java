@@ -389,13 +389,15 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         userlog.setJobId(jobId);
         userlog.setJobName(jobName);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date parse = null;
+        Date parse = new Date();
+        Date format = null;
         try {
-            parse = simpleDateFormat.parse(time);
+            format = simpleDateFormat.parse(simpleDateFormat.format(parse));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        userlog.setTime(parse);
+
+        userlog.setTime(format);
         userlog.setOperate(operate);
         //异常状态4,暂时只有死进程才会修改异常状态
         int status = 4;

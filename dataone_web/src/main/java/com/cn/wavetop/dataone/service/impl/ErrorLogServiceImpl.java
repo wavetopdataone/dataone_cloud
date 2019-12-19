@@ -205,10 +205,17 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         errorLog.setJobId(jobId);
         errorLog.setSourceName(sourceTable);
         errorLog.setDestName(destTable);
-        Date parse = null;
+        /*Date parse = null;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             parse = simpleDateFormat.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }*/
+        Date parse = null;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            parse = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
         } catch (ParseException e) {
             e.printStackTrace();
         }

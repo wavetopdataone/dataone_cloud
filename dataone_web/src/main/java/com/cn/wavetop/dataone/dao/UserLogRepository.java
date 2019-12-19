@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserLogRepository extends JpaRepository<Userlog,Long> {
+public interface UserLogRepository extends JpaRepository<Userlog,Integer> {
 
     List<Userlog> findByJobIdOrderByTimeDesc(long job_id);
 

@@ -29,7 +29,7 @@ public class CustomConsumer extends Thread {
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
-        props.put("group.id", "testj");
+        props.put("group.id", "test12");
         props.put("enable.auto.commit", "false");
         props.put("auto.commit.interval.ms", "1000");
         HashMap<String, String> map = new HashMap<>();
@@ -62,9 +62,9 @@ public class CustomConsumer extends Thread {
                 String value = iterator.next().value();
                 JSONObject jsonObject = JSONObject.parseObject(value);
                 String payload = (String) jsonObject.get("payload");
-                //System.out.println("payload = " + payload);
+
                 boolean error = payload.contains("ERROR Error");
-                //boolean error1 = payload.contains("ERROR");
+
                 if (error) {
 
                     String topic = null;
@@ -90,6 +90,7 @@ public class CustomConsumer extends Thread {
                             }
                         }
                     }
+
                     if (map.get("topic") != null) {
                         topic = map.get("topic").replace("'", "");
                     }
@@ -150,7 +151,7 @@ public class CustomConsumer extends Thread {
                  * 如果是普通的系统异常,则直接插入到syslog表中,不需要修改状态
                  */
 
-                if (!payload.contains("ERROR Error")&&payload.contains("ERROR")&&iterator.hasNext()) {
+                if (!payload.contains("ERROR Error")&&payload.contains("ERROR")) {
                     if (payload.contains("being killed")){
                         HashMap<String, String> hashMap = new HashMap<>();
                         String[] split = payload.split("\\{");
@@ -166,8 +167,8 @@ public class CustomConsumer extends Thread {
                             }
                         }
                         String topic = null;
-                        if (map.get("id") != null) {
-                            topic = map.get("id");
+                        if (hashMap.get("id") != null) {
+                            topic = hashMap.get("id");
 
                             String[] split1 = topic.split("-");
 
@@ -183,16 +184,18 @@ public class CustomConsumer extends Thread {
                             String sourceTable = toBackClient.selectTable(jobId, destTable, time, errorflag);
                         }
                     }
-                    String exception = iterator.next().value();
-                    JSONObject jsonObject1 = JSONObject.parseObject(exception);
-                    String payload1 = (String) jsonObject1.get("payload");
-                    String method = "com.wavetop.dataone_kafka.consumer.CustomConsumer";
-                    if (payload1.contains("Exception")) {
-                        String[] split = payload1.split(":");
-                        for (String syserror : split) {
-                            if (syserror.contains("Exception")){
-                                toBackClient.inserSyslog(syserror,method);
-                                break;
+                    if (iterator.hasNext()){
+                        String exception = iterator.next().value();
+                        JSONObject jsonObject1 = JSONObject.parseObject(exception);
+                        String payload1 = (String) jsonObject1.get("payload");
+                        String method = "com.wavetop.dataone_kafka.consumer.CustomConsumer";
+                        if (payload1.contains("Exception")) {
+                            String[] split = payload1.split(":");
+                            for (String syserror : split) {
+                                if (syserror.contains("Exception")){
+                                    toBackClient.inserSyslog(syserror,method);
+                                    break;
+                                }
                             }
                         }
                     }
