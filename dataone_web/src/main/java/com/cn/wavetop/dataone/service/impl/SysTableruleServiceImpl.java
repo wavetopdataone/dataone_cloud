@@ -45,9 +45,9 @@ public class SysTableruleServiceImpl implements SysTableruleService {
 
     @Override
     public Object checkTablerule(long job_id) {
-        List<SysTablerule> sysUserList=sysTableruleRepository.findByJobId(job_id);
+//        List<SysTablerule> sysUserList=sysTableruleRepository.findByJobId(job_id);
         //查询过滤表
-//        List<SysFilterTable> sysUserList= sysFilterTableRepository.findJobId(job_id);
+        List<SysFilterTable> sysUserList= sysFilterTableRepository.findJobId(job_id);
         String sql="";
         SysDbinfo sysDbinfo=new SysDbinfo();
         List<SysTablerule> list=new ArrayList<SysTablerule>();
@@ -71,14 +71,14 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         }
 
         if(sysUserList!=null&&sysUserList.size()>0){
-            for(SysTablerule sysTablerule:sysUserList){
-                stringBuffer.append(sysTablerule.getSourceTable());
-                stringBuffer.append(",");
-            }
-//            for(SysFilterTable sysTablerule:sysUserList){
-//                stringBuffer.append(sysTablerule.getFilterTable());
+//            for(SysTablerule sysTablerule:sysUserList){
+//                stringBuffer.append(sysTablerule.getSourceTable());
 //                stringBuffer.append(",");
 //            }
+            for(SysFilterTable sysTablerule:sysUserList){
+                stringBuffer.append(sysTablerule.getFilterTable());
+                stringBuffer.append(",");
+            }
             tablerule.setSourceTable(stringBuffer.toString());
             stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
 
@@ -91,6 +91,8 @@ public class SysTableruleServiceImpl implements SysTableruleService {
             SysJobrela sysJobrela = sysJobrelaRepository.save(sysJobrelaList.get(0));
         }
 
+        //todo 详情也用到了查询表名，所以必须是人物激活过后，没有子人物才能这样写
+        //不然详情页的就要在写个接口
         //修改子任务状态
         Optional<SysJobrela> ss=null;
         List<SysJobrelaRelated> sysJobrelaRelateds= sysJobrelaRelatedRespository.findByMasterJobId(Long.valueOf(job_id));

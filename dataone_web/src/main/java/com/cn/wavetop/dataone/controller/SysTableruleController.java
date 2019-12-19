@@ -53,7 +53,6 @@ public class SysTableruleController {
     @ApiImplicitParam
     @PostMapping("/link_data_table")
     public Object linkDataTable(@RequestBody SysDbinfo sysDbinfo){
-        System.out.println("--------------------------");
         return sysTableruleService.linkDataTable(sysDbinfo);
     }
 

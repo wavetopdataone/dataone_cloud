@@ -2,10 +2,12 @@ package com.cn.wavetop.dataone.config.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileNotFoundException;
@@ -43,6 +45,45 @@ public class GlobalExceptionHandler {
 
 
         return ResultBody.error(CommonEnum.NULL_NOT_MATCH);
+    }
+    /**
+     * 接口参数转化异常 本项目都是String传的是空的 转化long报错
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value =NumberFormatException.class)
+    @ResponseBody
+    public ResultBody NumberFormatException(HttpServletRequest req, NumberFormatException e){
+        logger.error("*数字格式化异常:",e);
+        return ResultBody.error(CommonEnum.NUMBER_FROMAT_ERROR);
+    }
+    /**
+     * 接口参数转化异常 本项目都是String传的是空的 转化long报错
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    @ResponseBody
+    public ResultBody MethodArgumentTypeMismatchException(HttpServletRequest req, MethodArgumentTypeMismatchException e){
+        logger.error("*接口参数转化异常:",e);
+        return ResultBody.error(CommonEnum.NUMBER_FROMAT_ERROR);
+    }
+
+    /**
+     * 入参和形参不一致，导致参数接受不到
+     * @param req
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value = InvalidDataAccessApiUsageException.class)
+    @ResponseBody
+    public ResultBody InvalidDataAccessApiUsageException(HttpServletRequest req, InvalidDataAccessApiUsageException e){
+        logger.error("*参数不匹配:",e);
+
+
+        return ResultBody.error(CommonEnum.PARAMS_NOT_ERROR);
     }
 
     /**

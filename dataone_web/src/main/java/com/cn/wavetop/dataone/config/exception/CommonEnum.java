@@ -13,7 +13,12 @@ public enum  CommonEnum implements BaseErrorInfoInterface {
     SERVER_BUSY("503", "服务器正忙，请稍后再试!"),
     REQUEST_METHOD_SUPPORT_ERROR("40001","当前请求方法不支持"),
     TYPE_NOT_ERROR("500","类型转换错误"),
-    NOT_FOUND_FILE("404","系统找不到指定文件");
+    NOT_FOUND_FILE("404","系统找不到指定文件"),
+    NUMBER_FROMAT_ERROR("500","接口参数转化异常"),
+    PARAMS_NOT_ERROR("500","入参和形参不匹配");
+
+
+
     /**
      * 错误码
      */
