@@ -45,9 +45,9 @@ public class SysTableruleServiceImpl implements SysTableruleService {
 
     @Override
     public Object checkTablerule(long job_id) {
-//        List<SysTablerule> sysUserList=sysTableruleRepository.findByJobId(job_id);
+        List<SysTablerule> sysUserList=sysTableruleRepository.findByJobId(job_id);
         //查询过滤表
-        List<SysFilterTable> sysUserList= sysFilterTableRepository.findJobId(job_id);
+//        List<SysFilterTable> sysUserList= sysFilterTableRepository.findJobId(job_id);
         String sql="";
         SysDbinfo sysDbinfo=new SysDbinfo();
         List<SysTablerule> list=new ArrayList<SysTablerule>();
@@ -71,14 +71,14 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         }
 
         if(sysUserList!=null&&sysUserList.size()>0){
-//            for(SysTablerule sysTablerule:sysUserList){
-//                stringBuffer.append(sysTablerule.getSourceTable());
-//                stringBuffer.append(",");
-//            }
-            for(SysFilterTable sysTablerule:sysUserList){
-                stringBuffer.append(sysTablerule.getFilterTable());
+            for(SysTablerule sysTablerule:sysUserList){
+                stringBuffer.append(sysTablerule.getSourceTable());
                 stringBuffer.append(",");
             }
+//            for(SysFilterTable sysTablerule:sysUserList){
+//                stringBuffer.append(sysTablerule.getFilterTable());
+//                stringBuffer.append(",");
+//            }
             tablerule.setSourceTable(stringBuffer.toString());
             stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
 

@@ -14,9 +14,15 @@ import org.hibernate.dialect.Sybase11Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -148,6 +154,64 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         }
     }
 
+    //根据状态和表名查询table
+    public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id){
+        Map<Object, Object> map = new HashMap<>();
+        List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
+        List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
+        SysMonitoring sysMonitoring2 = null;
+        SysMonitoring sysMonitoring3 = null;
+        List<ErrorLog> errorLogs = null;
+        Specification<SysMonitoring> querySpecifi = new Specification<SysMonitoring>() {
+            @Override
+            public Predicate toPredicate(Root<SysMonitoring> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(cb.equal(root.get("jobId").as(Long.class), job_id));
+                if(source_table!=null&&!"null".equals(source_table)&&!"".equals(source_table)){
+                    predicates.add(cb.like(root.get("sourceTable").as(String.class), "%"+source_table+"%"));
+                }
+                if(jobStatus!=0){
+                    predicates.add(cb.equal(root.get("jobStatus").as(Integer.class), jobStatus));
+                }
+                criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+
+//                criteriaQuery.orderBy(cb.desc(root.get("createDate")));
+                // and到一起的话所有条件就是且关系，or就是或关系
+                return criteriaQuery.getRestriction();
+            }
+        };
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findAll(querySpecifi);
+        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
+            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                sysMonitoring2 = new SysMonitoring();
+                sysMonitoring3 = new SysMonitoring();
+                //源端
+                sysMonitoring2.setSourceTable(sysMonitoring.getSourceTable());
+                sysMonitoring2.setReadData(sysMonitoring.getReadData());
+                sysMonitoring2.setReadRate(sysMonitoring.getReadRate());
+                sysMonitoringList2.add(sysMonitoring2);
+                //目的端
+                errorLogs=new ArrayList<>();
+                errorLogs= errorLogRespository.findByJobIdAndSourceName(job_id,sysMonitoring.getSourceTable());
+                sysMonitoring3.setDestTable(sysMonitoring.getDestTable());
+                sysMonitoring3.setDisposeRate(sysMonitoring.getDisposeRate());
+                sysMonitoring3.setWriteData(sysMonitoring.getWriteData());
+                sysMonitoring3.setErrorData(Long.valueOf(errorLogs.size()));
+                sysMonitoring3.setJobStatus(sysMonitoring.getJobStatus());
+                sysMonitoringList3.add(sysMonitoring3);
+            }
+            map.put("status", "1");
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
+        } else {
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
+        }
+        return map;
+    }
+
+
+
     @Override
     public Object findLike(String source_table, long job_id) {
         Map<Object, Object> map = new HashMap<>();
@@ -180,8 +244,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("data1", sysMonitoringList2);
             map.put("data2", sysMonitoringList3);
         } else {
-            map.put("status", "0");
-            map.put("data", "暂无数据");
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
         }
         return map;
     }
@@ -217,8 +281,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("data1", sysMonitoringList2);
             map.put("data2", sysMonitoringList3);
         } else {
-            map.put("status", "0");
-            map.put("data", "暂无数据");
+            map.put("data1", sysMonitoringList2);
+            map.put("data2", sysMonitoringList3);
         }
         return map;
     }

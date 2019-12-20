@@ -119,6 +119,14 @@ public class SysMonitoringController {
    public Object selTable(Long jobId){
        return sysMonitoringService.selTable(jobId);
    }
+    /**
+     * 根据表名模糊和状态查询
+     */
+    @ApiOperation(value = "根据表名模糊和状态查询", protocols = "POST", produces = "application/json", notes = "根据表名模糊和状态查询")
+    @PostMapping("/findTableAndStatus")
+   public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id){
+        return sysMonitoringService.findTableAndStatus(source_table,jobStatus,job_id);
+   }
 
 
     /**

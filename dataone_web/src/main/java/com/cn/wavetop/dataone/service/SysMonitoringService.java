@@ -21,5 +21,8 @@ public interface SysMonitoringService {
     void updateWriteMonitoring(long id, Long writeData,String table);
     Object dataChangeView(long job_id,Integer date);
     Object statusMonitoring(Long job_id,Integer jobStatus);
+    //写入设置查询表名
     Object selTable(Long jobId);
+      //根据状态和表名查询
+    Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id);
 }
