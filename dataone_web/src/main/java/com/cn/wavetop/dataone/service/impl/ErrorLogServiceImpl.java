@@ -5,6 +5,7 @@ import com.cn.wavetop.dataone.dao.SysJobrelaRespository;
 import com.cn.wavetop.dataone.dao.UserLogRepository;
 import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.ToData;
+import com.cn.wavetop.dataone.producer.Producer;
 import com.cn.wavetop.dataone.service.ErrorLogService;
 import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.PermissionUtils;
@@ -185,6 +186,31 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         userLogRepository.save(build2);
         return map;
     }
+
+    @Transactional
+    @Override
+    public Object resetErrorlog(Long jobId,String ids) {
+        HashMap<Object, Object> map = new HashMap();
+        String []id=ids.split(",");
+        // 查看该任务是否存在，存在删除任务，返回数据给前端
+        Producer producer = new Producer(null);
+        for(String idss:id) {
+
+            ErrorLog errorLog = repository.findById(Long.parseLong(idss));
+            producer.sendMsg("task-" + jobId + "-" + errorLog.getDestName(),  errorLog.getContent());
+
+            repository.deleteById(Long.valueOf(idss));
+            map.put("status", 1);
+            map.put("message", "重试成功");
+        }
+        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
+
+        Userlog  build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"重试了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
+        userLogRepository.save(build2);
+        producer.stop();
+        return map;
+    }
+
     //根据任务id查询表名，行数，和错误的数据量
     @Override
     public Object queryErrorlog(Long jobId) {

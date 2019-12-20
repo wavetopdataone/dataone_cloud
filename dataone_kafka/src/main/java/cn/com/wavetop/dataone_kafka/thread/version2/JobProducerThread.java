@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Author yongz
@@ -83,6 +85,8 @@ public class JobProducerThread extends Thread {
         int sync_range = restTemplate.getForObject("http://DATAONE-WEB/toback/find_range/" + jodId, Integer.class);
 
         // int sync_range = (int) toBackClient.findRangeByJobId(jodId);
+
+        //  用于计算写入速率
 
         while (stopMe) {
 
@@ -271,6 +275,28 @@ public class JobProducerThread extends Thread {
 
     }
 
+    static String sqlServerInsert(String insertSql) {
+        if (insertSql.contains("IF NOT EXISTS") && insertSql.contains("ELSE UPDATE")) {
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"), insertSql.indexOf("ELSE UPDATE"));
+        } else if (insertSql.contains("IF NOT EXISTS")) {
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"));
+        }
+        // 解析sqlserver函数
+        Pattern pattern = Pattern.compile("([A-Z])\\w+\\(+([A-Z])\\w+\\(+[0-9]+\\)+\\,+\\'+[0-9]+\\'+\\,+[0-9]+\\)");
+        Matcher matcher = pattern.matcher(insertSql);
+        while (matcher.find()) {
+            StringBuffer group = new StringBuffer(matcher.group(0));
+            StringBuffer substring = new StringBuffer(group.substring(group.indexOf("\'") + 1, group.lastIndexOf("\'")));
+//            System.out.println(substring);
+            insertSql = insertSql.replace(group, substring);
+            group = null;
+            substring = null;
+        }
+        pattern = null;
+        matcher = null;
+        return insertSql;
+    }
+
     public String readFile(String fileName, int index) {
         HashMap<String, Integer> tableTotal = new HashMap<>();
         HashMap<String, Double> tableMonito = new HashMap<>();
@@ -307,7 +333,7 @@ public class JobProducerThread extends Thread {
 
                 } else {
 
-                    if (str.contains("CREATE") || str.contains("create")) {
+                    if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
 
                         str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
@@ -320,10 +346,14 @@ public class JobProducerThread extends Thread {
                         log.info("createConnector:" + configSink.getName());
                         HttpClientKafkaUtil.createConnector("192.168.1.156", 8083, configSink.toJsonConfig()); //创建connector
                         configSink = null;
+
+                        // 创建线程计算写入量和写入速率
+                        new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate).start();
+
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
                         total++;
-
+                        str = sqlServerInsert(str);
                         String data = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
 //                        log.info(s);
                         readData++; // insert就++
@@ -477,10 +507,12 @@ public class JobProducerThread extends Thread {
 
                     String DROPTABLE;
                     for (Object destTable : destTables) {
-                        if (destTable != null && "".equals(destTable)) {
+                        if (destTable != null && !"".equals(destTable)) {
                             String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
-                            if (count != null && "0".equals(count)) {
+                            System.out.println(count);
+                            if (count != null && !"0".equals(count)) {
                                 DROPTABLE = "DROP TABLE  " + destTable;
+                                System.out.println(DROPTABLE);
                                 jdbcTemplate.execute(DROPTABLE);
                             }
                         }
@@ -582,8 +614,6 @@ public class JobProducerThread extends Thread {
                     e.printStackTrace();
                 }
             }
-
-
         }
     }
 

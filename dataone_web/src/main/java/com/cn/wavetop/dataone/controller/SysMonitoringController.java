@@ -96,63 +96,63 @@ public class SysMonitoringController {
         return sysMonitoringService.dataChangeView(job_id,date);
     }
 
-
-    @Scheduled(cron = "0 15 9 * * ?")
-    public void saveDataChange() {
-        SysDataChange dataChange = null;
-        HashMap<Object, Double> map = new HashMap<>();
-        List<SysRealTimeMonitoring> list=new ArrayList<>();
-        List<ErrorLog> errorLogs=new ArrayList<>();
-        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
-        SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
-        long errorData = 0;//错误量
-        long readData = 0;//读取量
-        long writeData = 0;//写入量
-        double readRate = 0;//读取速率
-        double disposeRate = 0;//处理速率
-        String nowDate = dfs.format(new Date());//几号
-        //todo 因为现在是凌晨抽取，那凌晨抽就要昨天的数据，所以要用yesterday
-        String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
-        String weekDay = DateUtil.todate(yesterDay);//星期几
-        List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId();//查询所有jobid
-        if (jobIdList != null && jobIdList.size() > 0) {
-            for (Long jobId : jobIdList) {
-                //根据jobid查询读写错误，处理写入值
-                list=sysRealTimeMonitoringRepository.findByJobId(jobId, DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                if(list!=null&&list.size()>0) {
-                    for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
-                        if (sysRealTimeMonitoring.getReadAmount() == null) {
-                            sysRealTimeMonitoring.setReadAmount( 0);
-                        }
-                        if (sysRealTimeMonitoring.getWriteAmount() == null) {
-                            sysRealTimeMonitoring.setWriteAmount( 0);
-                        }
-                        readData += sysRealTimeMonitoring.getReadAmount();
-                        writeData += sysRealTimeMonitoring.getWriteAmount();
-                    }
-                }
-                errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                errorData=errorLogs.size();
-                //todo 这个峰值，不知道能否自动映射进我们实体类
-                List<SysRealTimeMonitoring> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                readRate = sysRealTimeMonitorings.get(0).getReadRate();
-                disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
-                SysDataChange dataChange2 = new SysDataChange();
-                dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
-                dataChange2.setDisposeRate(disposeRate);
-                dataChange2.setJobId(jobId);
-                dataChange2.setWeekDay(weekDay);
-                dataChange2.setErrorData(errorData);
-                dataChange2.setReadData(readData);
-                dataChange2.setWriteData(writeData);
-                dataChange2.setReadRate(readRate);
-                sysDataChangeRepository.save(dataChange2);
-                sysRealTimeMonitoringRepository.deleteByJobId(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-            }
-        }
-
-    }
-
+//
+//    @Scheduled(cron = "0 15 9 * * ?")
+//    public void saveDataChange() {
+//        SysDataChange dataChange = null;
+//        HashMap<Object, Double> map = new HashMap<>();
+//        List<SysRealTimeMonitoring> list=new ArrayList<>();
+//        List<ErrorLog> errorLogs=new ArrayList<>();
+//        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
+//        SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
+//        long errorData = 0;//错误量
+//        long readData = 0;//读取量
+//        long writeData = 0;//写入量
+//        double readRate = 0;//读取速率
+//        double disposeRate = 0;//处理速率
+//        String nowDate = dfs.format(new Date());//几号
+//        //todo 因为现在是凌晨抽取，那凌晨抽就要昨天的数据，所以要用yesterday
+//        String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
+//        String weekDay = DateUtil.todate(yesterDay);//星期几
+//        List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId();//查询所有jobid
+//        if (jobIdList != null && jobIdList.size() > 0) {
+//            for (Long jobId : jobIdList) {
+//                //根据jobid查询读写错误，处理写入值
+//                list=sysRealTimeMonitoringRepository.findByJobId(jobId, DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+//                if(list!=null&&list.size()>0) {
+//                    for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
+//                        if (sysRealTimeMonitoring.getReadAmount() == null) {
+//                            sysRealTimeMonitoring.setReadAmount( 0);
+//                        }
+//                        if (sysRealTimeMonitoring.getWriteAmount() == null) {
+//                            sysRealTimeMonitoring.setWriteAmount( 0);
+//                        }
+//                        readData += sysRealTimeMonitoring.getReadAmount();
+//                        writeData += sysRealTimeMonitoring.getWriteAmount();
+//                    }
+//                }
+//                errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+//                errorData=errorLogs.size();
+//                //todo 这个峰值，不知道能否自动映射进我们实体类
+//                List<SysRealTimeMonitoring> sysRealTimeMonitorings= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+//                readRate = sysRealTimeMonitorings.get(0).getReadRate();
+//                disposeRate = sysRealTimeMonitorings.get(0).getWriteRate();
+//                SysDataChange dataChange2 = new SysDataChange();
+//                dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
+//                dataChange2.setDisposeRate(disposeRate);
+//                dataChange2.setJobId(jobId);
+//                dataChange2.setWeekDay(weekDay);
+//                dataChange2.setErrorData(errorData);
+//                dataChange2.setReadData(readData);
+//                dataChange2.setWriteData(writeData);
+//                dataChange2.setReadRate(readRate);
+//                sysDataChangeRepository.save(dataChange2);
+//                sysRealTimeMonitoringRepository.deleteByJobId(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+//            }
+//        }
+//
+//    }
+//
 
 //    }
 }
