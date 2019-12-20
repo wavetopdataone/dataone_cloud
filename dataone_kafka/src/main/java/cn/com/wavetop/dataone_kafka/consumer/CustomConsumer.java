@@ -29,7 +29,7 @@ public class CustomConsumer extends Thread {
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
-        props.put("group.id", "test12");
+        props.put("group.id", "test21");
         props.put("enable.auto.commit", "false");
         props.put("auto.commit.interval.ms", "1000");
         HashMap<String, String> map = new HashMap<>();
@@ -118,8 +118,8 @@ public class CustomConsumer extends Thread {
                             e.printStackTrace();
                         }
                     }
-                    int index = 0;
-                    if (index<1 && iterator.hasNext()) {
+
+                    if (/*index<1 && */iterator.hasNext()) {
                         String value1 = iterator.next().value();
                         JSONObject jsonObject1 = JSONObject.parseObject(value1);
                         String payload1 = (String) jsonObject1.get("payload");
@@ -128,6 +128,7 @@ public class CustomConsumer extends Thread {
                             String[] split3 = payload1.split(":");
                             if (split3.length > 0) {
                                 //errorflag是错误标志,如果是普通异常就往中台传1,如果死进程则传2
+
                                 if (split3[0].contains("Exception")) {
                                     Integer errorflag = 1;
                                     String errortype = split3[0];
@@ -141,7 +142,7 @@ public class CustomConsumer extends Thread {
                                 }
                             }
                         }
-                        index ++;
+                        /*index ++;*/
                     }
                 }
 
@@ -150,7 +151,7 @@ public class CustomConsumer extends Thread {
                  * 如果是死进程异常,则将异常插入到syslog表中,便修改状态
                  * 如果是普通的系统异常,则直接插入到syslog表中,不需要修改状态
                  */
-
+                //筛选出系统错误信息,其中还包含死进程
                 if (!payload.contains("ERROR Error")&&payload.contains("ERROR")) {
                     if (payload.contains("being killed")){
                         HashMap<String, String> hashMap = new HashMap<>();
@@ -166,6 +167,18 @@ public class CustomConsumer extends Thread {
                                 hashMap.put(split2[0].trim(),split2[1].trim());
                             }
                         }
+                        //拿出时间
+                        String time = null;
+                        String[] split2 = payload.split("\\[");
+                        if (split2.length>0){
+                            String[] split1 = split2[0].split("]");
+                            if (split1[0].length()>0){
+                                String[] split3 = split1[0].split(",");
+                                if (split3.length>0){
+                                    time = split3[0];
+                                }
+                            }
+                        }
                         String topic = null;
                         if (hashMap.get("id") != null) {
                             topic = hashMap.get("id");
@@ -179,11 +192,14 @@ public class CustomConsumer extends Thread {
                                 jobId = Long.valueOf(split1[2]);
                                 destTable = split1[3];
                             }
-                            String time = "2019-12-16 10:23:32";
+                            //这里的时间是一个虚假的值,为了后期扩展用
+                            //String time = "2019-12-16 10:23:32";
                             Integer errorflag = 2;
                             String sourceTable = toBackClient.selectTable(jobId, destTable, time, errorflag);
+
                         }
                     }
+                    //到Error的下一行
                     if (iterator.hasNext()){
                         String exception = iterator.next().value();
                         JSONObject jsonObject1 = JSONObject.parseObject(exception);
@@ -194,6 +210,7 @@ public class CustomConsumer extends Thread {
                             for (String syserror : split) {
                                 if (syserror.contains("Exception")){
                                     toBackClient.inserSyslog(syserror,method);
+                                    //只消费到下一行.然后跳出
                                     break;
                                 }
                             }
@@ -224,6 +241,7 @@ public class CustomConsumer extends Thread {
 
 
        /* SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+       1.错误日志对
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
@@ -567,6 +585,9 @@ public class CustomConsumer extends Thread {
                 String payload = (String)jsonObject.get("payload");
                 //System.out.println("payload = " + payload);
                 boolean error = payload.contains("ERROR Error");
+
+                boolean ls = payload.contains("ls");
+
                 //boolean error1 = payload.contains("ERROR");
                 if (error){
 
@@ -601,6 +622,7 @@ public class CustomConsumer extends Thread {
                     }
                     if (map.get("partition") != null){
                         partition = Integer.valueOf(map.get("partition"));
+
                     }
                     if (map.get("offset") != null){
                         offset = Long.valueOf(map.get("offset"));

@@ -215,7 +215,8 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         Date parse = null;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
-            parse = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+            //parse = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+            parse = simpleDateFormat.parse(time);
         } catch (ParseException e) {
             e.printStackTrace();
         }

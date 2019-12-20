@@ -389,10 +389,11 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         userlog.setJobId(jobId);
         userlog.setJobName(jobName);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date parse = new Date();
+        //Date parse = new Date();
         Date format = null;
         try {
-            format = simpleDateFormat.parse(simpleDateFormat.format(parse));
+            //format = simpleDateFormat.parse(simpleDateFormat.format(parse));
+            format = simpleDateFormat.parse(time);
         } catch (ParseException e) {
             e.printStackTrace();
         }
