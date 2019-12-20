@@ -527,7 +527,10 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("data1", list1);
             map.put("data2", list2);
             map.put("data3", list3);
-
+        }else{
+            map.put("data1", list1);
+            map.put("data2", list2);
+            map.put("data3", list3);
         }
         return map;
     }
