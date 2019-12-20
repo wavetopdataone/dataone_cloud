@@ -20,7 +20,7 @@
       {
         "field": "flag",
         "optional": true,
-        "type": "bit(1)"
+        "type": "int8"
       },
       {
         "field": "role_id",
@@ -78,14 +78,14 @@
   "payload": {
     "role_sort": null,
     "del_flag": null,
-    "flag": "'1",
-    "create_time": 1576478049000,
-    "role_name": "??",
+    "flag": 1,
+    "create_time": 1575959645000,
+    "role_name": "???",
     "update_time": null,
     "update_user": null,
     "role_id": null,
     "role_key": null,
-    "id": 2,
+    "id": 1,
     "create_user": null,
     "data_scope": null,
     "status": null

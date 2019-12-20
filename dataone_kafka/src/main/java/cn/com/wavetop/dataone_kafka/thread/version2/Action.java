@@ -1,7 +1,9 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
 import cn.com.wavetop.dataone_kafka.client.ToBackClient;
+import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
+import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
 import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +22,6 @@ import java.util.Map;
  */
 public class Action extends Thread {
 
-    @Autowired
-    private ToBackClient toBackClient;
 
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
@@ -37,10 +37,14 @@ public class Action extends Thread {
     // 存放消费者的线程
 //    private static Map<String, JobConsumerThread> jobconsumers = new HashMap<>();
 
+
+    //注入http客户端
+    private static ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
+
+
     public void stopMe() {
         stopMe = false;
     }
-
 
 
     @Override
@@ -59,7 +63,12 @@ public class Action extends Thread {
                 int jobId = Integer.valueOf(s.split("_")[2]);  // 获取jobId
                 String sqlPath = ""; //  sql的路径
                 if (s.split("_")[1].equals("start")) {
-//                    log.info("开启任务线程，jobId：" + jobId);
+                    log.info(s.split("_")[1] + "-jobId：" + jobId);
+
+//                    restTemplate.putForObject("http://DATAONE-WEB/toback/deleteMonitoring/" + jodId, SysDbinfo.class);
+                    toBackClient.resetMonitoring((long) jobId);  // 重置监听表数据
+
+
                     // 开启任务线程
                     try {
                         br = new BufferedReader(new FileReader(actionDir + s));
@@ -74,8 +83,7 @@ public class Action extends Thread {
                         if (jobProducerThread == null) {
                             Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
                             Action.jobProducerThread.get("producer_job_" + jobId).start();
-                            // 同时开启消费线程
-                            Thread.sleep(1000);
+
 
                         } else {
                             jobProducerThread.stopMe();
@@ -94,7 +102,7 @@ public class Action extends Thread {
                 } else if (s.split("_")[1].equals("stop") || s.split("_")[1].equals("pause")) {
 
 //                    System.out.println("关闭任务线程，jobId：" + jobId);
-//                    log.info("关闭任务线程，jobId：" + jobId);
+                    log.info(s.split("_")[1] + "-jobId：" + jobId);
                     // 关闭任务线程
                     JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
                     if (jobProducerThread != null) {
@@ -103,9 +111,12 @@ public class Action extends Thread {
                     }
                     new File(actionDir + s).delete(); // 删除文件
 
+                    // todo 暂停kafka connector sink
+
                 } else if (s.split("_")[1].equals("resume")) {
-                    log.info("重启任务线程，jobId：" + jobId);
-                    System.out.println("重启任务线程，jobId：" + jobId);
+
+
+                    log.info(s.split("_")[1] + "-jobId：" + jobId);
                     // 重启任务线程
                     JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
 
@@ -127,6 +138,9 @@ public class Action extends Thread {
                     new File(actionDir + s).delete(); // 删除文件
                 }
 
+
+
+                // todo 重启kafka connector sink
 
             }
             try {

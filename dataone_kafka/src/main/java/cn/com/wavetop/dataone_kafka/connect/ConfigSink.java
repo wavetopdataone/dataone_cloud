@@ -19,7 +19,7 @@ public class ConfigSink {
     private String auto_evolve = "false";
     private String connection_url = "jdbc:oracle:thin:@192.168.103.238:1521:orcl";
     private String connection_user;
-    private String connection_password ;
+    private String connection_password;
     private String insert_mode = "insert";
     private String table_name_format = "TEST1.EMPLOYEES";
     private String errors_tolerance = "all";
@@ -35,12 +35,18 @@ public class ConfigSink {
         this.table_name_format = destTable;
         this.errors_deadletterqueue_topic_name = "error-logs-" + jobId + "-" + destTable;
 
-        if (sysDbinfo.getType() == 1L ) {
+        if (sysDbinfo.getType() == 1L) {
             this.connection_url = "jdbc:oracle:thin:@" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + ":orcl";
             this.connection_user = sysDbinfo.getUser();
             this.connection_password = sysDbinfo.getPassword();
-        }else if (sysDbinfo.getType() == 2L ){
+        } else if (sysDbinfo.getType() == 2L) {
             this.connection_url = "jdbc:mysql://" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + "/" + sysDbinfo.getDbname() + "?user=" + sysDbinfo.getUser() + "&password=" + sysDbinfo.getPassword();
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
+        } else if (sysDbinfo.getType() == 3L) {
+            this.connection_url = "jdbc:sqlserver://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+";databaseName="+sysDbinfo.getDbname();
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
         }
 
     }
@@ -74,5 +80,9 @@ public class ConfigSink {
         name = null;
         config = null;
         return data;
+    }
+
+    public String getName() {
+        return this.name;
     }
 }

@@ -4,10 +4,13 @@ import cn.com.wavetop.dataone_kafka.connect.model.Schema;
 import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
 import cn.com.wavetop.dataone_kafka.utils.PrassingUtil;
 import net.sf.jsqlparser.JSQLParserException;
+import org.apache.kafka.common.protocol.types.Field;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Author yongz
@@ -16,14 +19,13 @@ import java.util.*;
 public class TestModel {
 
     public static void main(String[] args) throws JSQLParserException {
-        Schema schema = mysqlToSchema("DECLARE V_SQL LONG;BEGIN V_SQL:='CREATE TABLE \"TEST\".\"employees\" (\"id\" NUMBER(19),\"fname\" VARCHAR2(30),\"lname\" VARCHAR2(30),\"birth\" VARCHAR2(64),\"hired\" date,\"separated\" date,\"job_code\" NUMBER(19),\"store_id\" NUMBER(19) )';EXECUTE IMMEDIATE V_SQL;EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END; ", 1);
-//        System.out.println(schema);
+        Schema schema = mysqlToSchema("IF NOT EXISTS (SELECT TAB.NAME FROM TEST1.SYS.TABLES AS TAB LEFT JOIN TEST1.SYS.SCHEMAS AS SC ON TAB.SCHEMA_ID = SC.SCHEMA_ID WHERE TAB.NAME='sys_menu' AND SC.NAME='dbo') CREATE TABLE TEST1.dbo.sys_menu (id bigint ,icon NVARCHAR(255) NULL,menu_id bigint NULL,menu_name NVARCHAR(255) NULL,menu_type NVARCHAR(255) NULL,order_num NVARCHAR(255) NULL,parent_id bigint NULL,parent_name NVARCHAR(255) NULL,perms NVARCHAR(255) NULL,target NVARCHAR(255) NULL,url NVARCHAR(255) NULL,visible NVARCHAR(255) NULL,create_time datetime NULL,create_user NVARCHAR(255) NULL,update_time datetime NULL,update_user NVARCHAR(255) NULL,PRIMARY KEY (id ))", 2);
 //        getStringTime(1575455606000L);
-//        System.out.println(schema);
+        System.out.println(schema);
         HashMap<String, Schema> schemas = new HashMap<>();
         schemas.put(schema.getName(), schema);
-        toJsonString2("INSERT INTO \"TEST\".\"employees\"(\"id\",\"fname\",\"lname\",\"birth\",\"hired\",\"separated\",\"job_code\",\"store_id\") VALUES ('59641','chen59641','haixiang59641','2019-10-09 23:17:40',TO_DATE('2019-10-09 00:00:00','YYYY-MM-DD HH24:MI:SS'),TO_DATE('2019-10-09 00:00:00','YYYY-MM-DD HH24:MI:SS'),'1','59641')", schemas, 1);
-
+        String data = toJsonString2("IF NOT EXISTS (SELECT * FROM TEST1.dbo.sys_menu WHERE id='1')INSERT INTO TEST1.dbo.sys_menu(id,icon,menu_id,menu_name,menu_type,order_num,parent_id,parent_name,perms,target,url,visible,create_time,create_user,update_time,update_user) VALUES ('1',NULL,NULL,'??',NULL,NULL,NULL,NULL,'supper?ss',NULL,NULL,NULL,NULL,NULL,NULL,NULL) ELSE UPDATE TEST1.dbo.sys_menu SET icon=NULL,menu_id=NULL,menu_name='??',menu_type=NULL,order_num=NULL,parent_id=NULL,parent_name=NULL,perms='supper?ss',target=NULL,url=NULL,visible=NULL,create_time=NULL,create_user=NULL,update_time=NULL,update_user=NULL WHERE id='1'", schemas, 2);
+        System.out.println(data);
     }
 
     /**
@@ -59,13 +61,18 @@ public class TestModel {
      */
     public static Schema mysqlToSchema(String creat_table, int dbType) {
         ArrayList fileds = new ArrayList<>();
+        if (creat_table.contains("IF NOT EXISTS (SELECT")) {
+            creat_table = creat_table.substring(creat_table.indexOf("CREATE TABLE"));
+        }
 
+//        System.out.println(creat_table);
         String tableName = "";
         // todo 表名获取待优化
         String[] s1 = creat_table.split(" ");
         for (String s : s1) {
             if (s.contains(".")) {
-                s = s.split("\\.")[1];
+                String[] s2 = s.split("\\.");
+                s = s2[s2.length - 1];
                 if (s.contains("'") || s.contains("\"")) {
                     s = s.substring(1, s.length() - 1);
                 }
@@ -81,20 +88,23 @@ public class TestModel {
         HashMap map;
         for (int i = 0; i < strings.length; i++) {
             map = new HashMap<>();
+            if (strings[i].contains("PRIMARY KEY")) continue; //这个不是字段的调过
+            if (strings[i].split(" ").length < 2) continue; // 精度
+
             filedType = strings[i].split(" ")[1];
-            if (filedType.equalsIgnoreCase("TINYINT")) {
+            if (filedType.equalsIgnoreCase("TINYINT") || filedType.contains("bit") || filedType.contains("BINARY")) {
                 filedType = "int8";
             } else if (filedType.equalsIgnoreCase("SMALLINT")) {
                 filedType = "int16";
             } else if (filedType.equalsIgnoreCase("INT")) {
                 filedType = "int32";
-            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("NUMBER")|| filedType.contains("DECIMAL")) {
+            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("bigint") || filedType.contains("NUMBER") || filedType.contains("DECIMAL") || filedType.contains("decimal")) {
                 filedType = "int64";
             } else if (filedType.equalsIgnoreCase("FLOAT")) {
                 filedType = "float32";
             } else if (filedType.equalsIgnoreCase("DOUBLE")) {
                 filedType = "float64";
-            } else if (filedType.contains("VARCHAR")) {
+            } else if (filedType.contains("VARCHAR") || filedType.contains("varchar")) {
                 filedType = "string";
             } else if (filedType.contains("VARBINARY")) {
                 filedType = "bytes";
@@ -119,23 +129,18 @@ public class TestModel {
             map = null;
         }
 
-
-        Schema schema = Schema.builder().type("struct").fields(fileds).name(tableName).build();
-//        HashMap<Object, Object> map = new HashMap<>();
-//        map.put("ID", 1);
-//        map.put("NAME", "帅啊");
-//
-//        HashMap<Object, Object> map2 = new HashMap<>();
-//        map2.put("schema", hehe);
-//        map2.put("payload", map);
-//
-//        System.out.println(map2);
-//        String s = JSONUtil.toJSONString(map2);
-//        System.out.println(s);
-        return schema;
+        if (dbType == 1) {
+            tableName = tableName.toUpperCase();
+        }
+        return Schema.builder().type("struct").fields(fileds).name(tableName).build();
     }
 
     public static String toJsonString2(String insertSql, HashMap<String, Schema> schemas, int dbType) throws JSQLParserException {
+
+
+//        System.out.println(insertSql);
+
+
         HashMap<Object, Object> map = new HashMap<>();
         List<String> insert_columns = null;
         List<String> insert_values = null;
@@ -143,18 +148,26 @@ public class TestModel {
             insert_columns = PrassingUtil.get_insert_column(insertSql);
             insert_values = PrassingUtil.get_insert_values(insertSql);
 
-        } catch (JSQLParserException e) {
+        } catch (
+                JSQLParserException e) {
             e.printStackTrace();
         }
+
         String insert_table = PrassingUtil.get_insert_table(insertSql);
 
         if (insert_table.contains("'") || insert_table.contains("\"")) {
             insert_table = insert_table.substring(1, insert_table.length() - 1);
         }
+
+        if (dbType == 1l) {//  todo Oacle表名转大写的问题
+            insert_table = insert_table.toUpperCase();
+        }
+//        System.out.println(insert_table);
         Schema schema = schemas.get(insert_table);
         String column;
         String value;
-        for (int i = 0; i < insert_columns.size(); i++) {
+        for (
+                int i = 0; i < insert_columns.size(); i++) {
             column = insert_columns.get(i);
             value = insert_values.get(i);
             if (column.contains("'") || column.contains("\"")) {
@@ -166,7 +179,7 @@ public class TestModel {
             if ((value.contains("DATE") || value.contains("data")) && value.contains("(")) {
                 String[] split = value.substring(value.indexOf("("), value.lastIndexOf(")")).split(",");
                 split[0] = split[0].substring(2, split[0].length() - 1); // 获取时间
-                System.out.println(split[0]);
+//                System.out.println(split[0]);
                 if (split[0].length() <= 4) {
 //                    System.out.println(getTimestamp(split[0], "yyyy"));
                     map.put(column, getTimestamp(split[0], "yyyy"));
@@ -183,7 +196,7 @@ public class TestModel {
                 if (value.contains("'") || value.contains("\"")) {
                     value = value.substring(1, value.length() - 1);
                 }
-
+//                System.out.println(value);
 
                 List<Map> schemaFields = schema.getFields();
                 for (Map schemaField : schemaFields) {
@@ -191,18 +204,38 @@ public class TestModel {
                     if (field.equalsIgnoreCase(column)) {
 
                         // 首先她两必须相等
-                        System.out.println(field);
+//                        System.out.println(field);
                         String type = (String) schemaField.get("type");
-                        if (type.contains("int")) {
-                            map.put(column, Long.parseLong(value));
-                        } else if (type.contains("float")) {
-                            map.put(column, Double.parseDouble(value));
-                        } else if (type.contains("boolean")) {
-                            map.put(column, Boolean.parseBoolean(value));
-                        } else {
-                            map.put(column, value);
-                        }
 
+                        String name = (String) schemaField.get("name");
+                        if ("NULL".equalsIgnoreCase(value)) {
+                            map.put(column, null);
+                        } else {
+                            if ("org.apache.kafka.connect.data.Timestamp".equals(name)) {
+                                if (value.length() <= 4) {
+                                    map.put(column, getTimestamp(value, "yyyy"));
+                                } else if (value.length() <= 10) {
+                                    map.put(column, getTimestamp(value, "yyyy-MM-dd"));
+
+                                } else if (value.length() <= 19) {
+                                    map.put(column, getTimestamp(value, "yyyy-MM-dd HH:mm:ss"));
+                                }
+                            } else {
+
+                                if (type.contains("int")) {
+                                    value = value.replaceAll("[\']", "");
+                                    map.put(column, Long.parseLong(value));
+                                } else if (type.contains("float")) {
+                                    value = value.replaceAll("[\']", "");
+                                    map.put(column, Double.parseDouble(value));
+                                } else if (type.contains("boolean")) {
+                                    value = value.replaceAll("[\']", "");
+                                    map.put(column, Boolean.parseBoolean(value));
+                                } else {
+                                    map.put(column, value);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -264,9 +297,13 @@ public class TestModel {
         map2.put("schema", schema);
         map2.put("payload", map);
 
-        System.out.println(map2);
+        //        System.out.println(map2);
         String s = JSONUtil.toJSONString(map2);
-        System.out.println(s);
+//        System.out.println(s);
+        map.clear();
+        map=null;
+        map2.clear();
+        map2=null;
         return s;
     }
 

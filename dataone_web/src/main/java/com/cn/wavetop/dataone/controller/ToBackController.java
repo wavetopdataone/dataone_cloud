@@ -38,6 +38,7 @@ public class ToBackController {
     private KafkaDestTableRepository kafkaDestTableRepository;
     @Autowired
     private SysRealTimeMonitoringRepository sysRealTimeMonitoringRepository;
+
     /**
      * 根据jobid查询数据信息
      *
@@ -143,6 +144,25 @@ public class ToBackController {
     }
 
     /**
+     * 重置读写速率
+     *
+     * @param jobId
+     * @Author yongz
+     */
+    @PutMapping("/resetMonitoring/{jobId}")
+    public void resetMonitoring(@PathVariable Long jobId) {
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
+        for (SysMonitoring sysMonitoring : sysMonitoringList) {
+            sysMonitoring.setReadData(0l);
+            sysMonitoring.setWriteData(0l);
+            sysMonitoring.setReadRate(0l);
+            sysMonitoring.setDisposeRate(0l);
+            sysMonitoring.setErrorData(0l);
+            sysMonitoringRepository.save(sysMonitoring);
+        }
+    }
+
+    /**
      * 分表更新读监听数据
      *
      * @param
@@ -164,11 +184,12 @@ public class ToBackController {
                 for (SysMonitoring sysMonitoring : sysMonitoringList) {
 
                     String destTable = sysMonitoring.getDestTable();
-                    if (destTable==null || "".equals(destTable) ){
+                    if (destTable == null || "".equals(destTable)) {
                         destTable = sysMonitoring.getSourceTable();
+                        sysMonitoring.setDestTable(destTable);
                     }
                     if (table.equalsIgnoreCase(destTable)) {
-                        Double  readRate = Double.parseDouble(tableMonito.get(table).toString()) ;
+                        Double readRate = Double.parseDouble(tableMonito.get(table).toString());
 //                        System.out.println(tableTotal.get(table));
                         long readData = Long.parseLong(tableTotal.get(table).toString());
                         sysMonitoring.setOptTime(new Date());
@@ -208,6 +229,46 @@ public class ToBackController {
 //
 //            }
         }
+
+    }
+
+
+    /**
+     * 分表更新读监听数据
+     *
+     * @param
+     * @athor yongz
+     * @para
+     */
+    @ApiOperation(value = "new写入速率", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
+    @GetMapping("/updateWriteRate/{jobId}")
+    public void monitoringWriteRate(@PathVariable Long jobId, String destTable, Long writeAmount, Double writeRate, Long realWriteAmount) {
+
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
+        System.out.println(sysMonitoringList);
+        for (SysMonitoring sysMonitoring : sysMonitoringList) {
+            if (sysMonitoring.getDestTable() == null || "".equals(sysMonitoring.getDestTable())) {
+                if (destTable.equalsIgnoreCase(sysMonitoring.getSourceTable())) {
+                    sysMonitoring.setWriteData(writeAmount);
+                    sysMonitoring.setDisposeRate(new Double(writeRate).longValue());
+                    sysMonitoringRepository.save(sysMonitoring);
+                    SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(destTable).readRate(writeRate).readAmount(Math.toIntExact(realWriteAmount)).build();
+                    if (sysRealTimeMonitoring.getWriteAmount() != 0 && sysRealTimeMonitoring.getWriteAmount() != null)
+                        sysRealTimeMonitoringRepository.save(sysRealTimeMonitoring);
+                }
+            } else {
+                if (destTable.equalsIgnoreCase(sysMonitoring.getDestTable())) {
+                    sysMonitoring.setWriteData(writeAmount);
+                    sysMonitoring.setDisposeRate(new Double(writeRate).longValue());
+                    sysMonitoringRepository.save(sysMonitoring);
+                    SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(destTable).writeRate(writeRate).writeAmount(Math.toIntExact(realWriteAmount)).build();
+                    if (sysRealTimeMonitoring.getWriteAmount() != 0 && sysRealTimeMonitoring.getWriteAmount() != null)
+                        sysRealTimeMonitoringRepository.save(sysRealTimeMonitoring);
+                }
+            }
+
+        }
+
 
     }
 

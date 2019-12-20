@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.client.RestTemplate;
@@ -27,10 +26,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Author yongz
- * @Date 2019/11/18、9:37
+ * @Date 2019/12/11、9:37
  */
 public class JobProducerThread extends Thread {
 
@@ -83,7 +84,9 @@ public class JobProducerThread extends Thread {
         // sync_range::1是全量，2是增量，3是增量+全量，4是存量
         int sync_range = restTemplate.getForObject("http://DATAONE-WEB/toback/find_range/" + jodId, Integer.class);
 
-//        int sync_range = (int) toBackClient.findRangeByJobId(jodId);
+        // int sync_range = (int) toBackClient.findRangeByJobId(jodId);
+
+        //  用于计算写入速率
 
         while (stopMe) {
 
@@ -100,14 +103,11 @@ public class JobProducerThread extends Thread {
                     break;
 
                 case 3:
-
-
                     fullAndIncrementRang(); // 增量+全量
                     break;
 
                 case 4:
 
-                    System.out.println("执行存量任务:" + jodId);
                     stockRang(); // 存量
                     break;
 
@@ -116,13 +116,7 @@ public class JobProducerThread extends Thread {
                     universalRang(file, "FULL", "_0.sql", true);
             }
 
-            //  不一样的时候 需要更新
-//            if (lastReadData != readData) {
-//                lastReadData = readData;
-//               // List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class); // todo 待测
-//               // restTemplate.getForObject("http://DATAONE-WEB/toback/readmonitoring/" + jodId + "?readData=" + readData + "&table=" + destTables.get(0).toString().split("\\.")[1], Object.class);
-//
-//            }
+
             try {
 
                 Thread.sleep(1000); // 每秒监听一次
@@ -170,7 +164,6 @@ public class JobProducerThread extends Thread {
 
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), file);  // 读取文件，并更新offset信息
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -233,7 +226,6 @@ public class JobProducerThread extends Thread {
                 if ((fileName.contains("FULL") && fileName.contains("_0.sql"))) {
                     try {
                         FileUtils.writeTxtFile(readFile(sqlPath + "/" + fileName, 0), full_offset);  // 读取文件，并更新offset信息
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -283,12 +275,42 @@ public class JobProducerThread extends Thread {
 
     }
 
+    static String sqlServerInsert(String insertSql) {
+        if (insertSql.contains("IF NOT EXISTS") && insertSql.contains("ELSE UPDATE")) {
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"), insertSql.indexOf("ELSE UPDATE"));
+        } else if (insertSql.contains("IF NOT EXISTS")) {
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"));
+        }
+        // 解析sqlserver函数
+        Pattern pattern = Pattern.compile("([A-Z])\\w+\\(+([A-Z])\\w+\\(+[0-9]+\\)+\\,+\\'+[0-9]+\\'+\\,+[0-9]+\\)");
+        Matcher matcher = pattern.matcher(insertSql);
+        while (matcher.find()) {
+            StringBuffer group = new StringBuffer(matcher.group(0));
+            StringBuffer substring = new StringBuffer(group.substring(group.indexOf("\'") + 1, group.lastIndexOf("\'")));
+//            System.out.println(substring);
+            insertSql = insertSql.replace(group, substring);
+            group = null;
+            substring = null;
+        }
+        pattern = null;
+        matcher = null;
+        return insertSql;
+    }
+
     public String readFile(String fileName, int index) {
         HashMap<String, Integer> tableTotal = new HashMap<>();
         HashMap<String, Double> tableMonito = new HashMap<>();
         int total = 0;  // 记录总量
 
         SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
+
+        JdbcTemplate jdbcTemplate = null;
+        try {
+            jdbcTemplate = SpringJDBCUtils.register(source);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         Producer producer = new Producer(null); // 参数为配置信息
         boolean flag = false; // 标识是否添加了数据
         BufferedReader br = null;
@@ -311,29 +333,42 @@ public class JobProducerThread extends Thread {
 
                 } else {
 
-                    if (str.contains("CREATE") || str.contains("create")) {
+                    if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
+
+                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
+
+                        jdbcTemplate.execute(str); // 创建表
                         // 出现create就创建connect sink等待消费，还要获取schema  todo
                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
                         schemas.put(schema.getName(), schema);
+//                        System.out.println(schema);
+                        ConfigSink configSink = new ConfigSink(jodId, schema.getName(), source);
+                        log.info("createConnector:" + configSink.getName());
+                        HttpClientKafkaUtil.createConnector("192.168.1.156", 8083, configSink.toJsonConfig()); //创建connector
+                        configSink = null;
 
-                        String s = new ConfigSink(jodId, schema.getName(), source).toJsonConfig();
-//                        System.out.println(s);
+                        // 创建线程计算写入量和写入速率
+                        new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate).start();
 
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
                         total++;
-
-                        String s = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
-                        log.info(s);
+                        str = sqlServerInsert(str);
+                        String data = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
+//                        log.info(s);
                         readData++; // insert就++
                         String insert_table = PrassingUtil.get_insert_table(str);
                         if (insert_table.contains("'") || insert_table.contains("\"")) {
                             insert_table = insert_table.substring(1, insert_table.length() - 1);
                         }
-                        producer.sendMsg("task-" + jodId + "-" + insert_table, s);
+                        if (source.getType() == 1l) { //  todo Oracle表名转大写的问题
+                            insert_table = insert_table.toUpperCase();
+                        }
+
+                        producer.sendMsg("task-" + jodId + "-" + insert_table, data);
 
                         Integer tableIndex = tableTotal.get(insert_table);
-                        System.out.println(insert_table);
+//                        System.out.println(insert_table);
                         if (tableIndex == null) {
                             tableIndex = 0;
                         }
@@ -348,8 +383,8 @@ public class JobProducerThread extends Thread {
             }
             long endTime = System.currentTimeMillis();   //获取结束读取时间
             double runtime = (endTime - startTime) / 1000;
-            System.out.println(total);
-            System.out.println(runtime);
+//            System.out.println(total);
+//            System.out.println(runtime);
             if (runtime == 0.0) {
                 runtime = 0.001;
             }
@@ -361,21 +396,21 @@ public class JobProducerThread extends Thread {
                     tableTotal.get(tableName);
                     String tableMonitoJson = JSONUtil.toJSONString(tableMonito);
                     String tableTotalJson = JSONUtil.toJSONString(tableTotal);
-                    System.out.println(tableMonitoJson);
-                    System.out.println(tableTotalJson);
+//                    System.out.println(tableMonitoJson);
+//                    System.out.println(tableTotalJson);
 
 
                     HashMap<Object, Object> Monito = new HashMap<>();
                     Monito.put("tableMonito", tableMonito);
                     Monito.put("tableTotal", tableTotal);
-                    System.out.println(Monito);
+//                    System.out.println(Monito);
 
                     //创建请求头
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.APPLICATION_JSON);
                     String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
                     HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
-                    System.out.println(JSONUtil.toJSONString(Monito));
+//                    System.out.println(JSONUtil.toJSONString(Monito));
                     restTemplate.postForEntity(url, entity, String.class);
 
                     Monito.clear();
@@ -392,6 +427,7 @@ public class JobProducerThread extends Thread {
             producer.stop(); // 关闭生产者
         } catch (Exception e) {
             e.printStackTrace();
+            log.error(e.getMessage());
             System.out.println(e.getMessage());
         }
         tableTotal.clear();
@@ -458,7 +494,7 @@ public class JobProducerThread extends Thread {
                     // 删除目标端表
 
                     SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
-                    System.out.println(source);
+//                    System.out.println(source);
 
                     JdbcTemplate jdbcTemplate = null;
                     try {
@@ -471,8 +507,15 @@ public class JobProducerThread extends Thread {
 
                     String DROPTABLE;
                     for (Object destTable : destTables) {
-                        DROPTABLE = "DROP TABLE IF EXISTS " + destTable;
-                        jdbcTemplate.execute(DROPTABLE);
+                        if (destTable != null && !"".equals(destTable)) {
+                            String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
+                            System.out.println(count);
+                            if (count != null && !"0".equals(count)) {
+                                DROPTABLE = "DROP TABLE  " + destTable;
+                                System.out.println(DROPTABLE);
+                                jdbcTemplate.execute(DROPTABLE);
+                            }
+                        }
                     }
                     source = null;
                     jdbcTemplate = null;
@@ -571,8 +614,6 @@ public class JobProducerThread extends Thread {
                     e.printStackTrace();
                 }
             }
-
-
         }
     }
 
