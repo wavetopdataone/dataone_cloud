@@ -61,7 +61,7 @@ public class ShiroFormAuthenticationFilter extends FormAuthenticationFilter {
                 out.flush();
                 out.close();
             } else {
-               // return false;
+//                return false;
                 saveRequestAndRedirectToLogin(request, response);
             }
             return false;

@@ -485,9 +485,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     public Object SyncMonitoring(Long jobId, String num) {
         Date date = new Date();
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
-
         SimpleDateFormat df = new SimpleDateFormat("MM-dd");// 设置日期格式
-
         Map<String, List<String>> map = new HashMap<>();
         Map<Object, Double> map2 = new HashMap<>();
         List<String> list1 = new ArrayList<>();
@@ -499,34 +497,39 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         String sum = "-" + num;
         Integer r = Integer.parseInt(sum) + 1;
         ab = DateUtil.dateAdd(ab, r);
+        List<SysDataChange> sysDataChanges=new ArrayList<>();
         for (int i = r; i < 0; i++) {
             String ef = DateUtil.dateAdd(cd, i);
             list4.add(ef);
             list1.add(df.format(DateUtil.StringToDate(ef)));//09-25
         }
-        List<SysDataChange> sysDataChanges = sysDataChangeRepository.findByJobIdAndTime(jobId, DateUtil.StringToDate(ab));
-        if (sysDataChanges != null && sysDataChanges.size() > 0) {
-            for (SysDataChange sysDataChange : sysDataChanges) {
-                for (int i = 0; i < list4.size(); i++) {
-                    String time = String.valueOf(sysDataChange.getCreateTime());
-                    if (time.substring(0, 10).equals(list4.get(i))) {
-//                      list2.add(String.valueOf(sysDataChange.getCreateTime()));
-                        list2.add(String.valueOf(sysDataChange.getReadRate()));
-                        list3.add(String.valueOf(sysDataChange.getDisposeRate()));
-
-                    } else {
-                        list2.add("0");
-                        list3.add("0");
-                    }
+        //获取日历对象
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, r);
+        for(int i=0;i<Integer.parseInt(num);i++){
+            //获取每天的时间
+            Date time = calendar.getTime();
+            if(i<Integer.parseInt(num)-1) {
+                sysDataChanges = sysDataChangeRepository.findByJobIdAndTime(jobId, dfs.format(time));
+                if (sysDataChanges != null && sysDataChanges.size() > 0) {
+                    //不能出现同一天同一个jobid的两条数据
+                    list2.add(String.valueOf(sysDataChanges.get(0).getReadRate()));
+                    list3.add(String.valueOf(sysDataChanges.get(0).getDisposeRate()));
+                } else {
+                    list2.add("0");
+                    list3.add("0");
                 }
-            }
-        }
-        map2 = (HashMap<Object, Double>) showMonitoring(jobId);
-        String nowdate = df.format(new Date());
+            }else{
+                map2 = (HashMap<Object, Double>) showMonitoring(jobId);
+                String nowdate = df.format(new Date());
 //            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
-        list1.add(nowdate);
-        list2.add(String.valueOf(map2.get("read_rate")));
-        list3.add(String.valueOf(map2.get("dispose_rate")));
+                list1.add(nowdate);
+                list2.add(String.valueOf(map2.get("read_rate")));
+                list3.add(String.valueOf(map2.get("dispose_rate")));
+            }
+            //每次循环都在日历的天数+1
+            calendar.add(Calendar.DATE, +1);
+        }
         map.put("data1", list1);
         map.put("data2", list2);
         map.put("data3", list3);

@@ -2,10 +2,7 @@ package com.cn.wavetop.dataone.controller;
 
 import com.cn.wavetop.dataone.config.SpringContextUtil;
 import com.cn.wavetop.dataone.dao.*;
-import com.cn.wavetop.dataone.entity.ErrorQueueSettings;
-import com.cn.wavetop.dataone.entity.SysJobrela;
-import com.cn.wavetop.dataone.entity.SysMonitoring;
-import com.cn.wavetop.dataone.entity.SysUser;
+import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.EmailJobrelaVo;
 import com.cn.wavetop.dataone.entity.vo.EmailPropert;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
@@ -28,7 +25,7 @@ public class EmailClient extends Thread {
     private ErrorQueueSettingsRespository errorQueueSettingsRespository = (ErrorQueueSettingsRespository) SpringContextUtil.getBean("errorQueueSettingsRespository");
     private SysMonitoringRepository sysMonitoringRepository = (SysMonitoringRepository) SpringContextUtil.getBean("sysMonitoringRepository");
     private SysUserJobrelaRepository sysUserJobrelaRepository = (SysUserJobrelaRepository) SpringContextUtil.getBean("sysUserJobrelaRepository");
-
+    private ErrorLogRespository errorLogRespository=(ErrorLogRespository)SpringContextUtil.getBean("errorLogRespository");
     private SysUserRepository sysUserRepository = (SysUserRepository) SpringContextUtil.getBean("sysUserRepository");
 
     private boolean stopMe = true;
@@ -43,6 +40,7 @@ public class EmailClient extends Thread {
         EmailUtils emailUtils = new EmailUtils();
         EmailPropert emailPropert = null;
         Optional<SysJobrela> sysJobrela = null;
+        List<ErrorLog> errorLogs=new ArrayList<>();
         while (stopMe) {
             double readData = 0;
             double errorData = 0;
@@ -59,10 +57,12 @@ public class EmailClient extends Thread {
                     sysMonitoringList = sysMonitoringRepository.findByJobId(emailJobrelaVo.getJobId());
                     errorQueueSettings = errorQueueSettingsRespository.findByJobId(emailJobrelaVo.getJobId());
                     for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                        if (sysMonitoring.getReadData() != null && sysMonitoring.getErrorData() != null) {
-                            if (sysMonitoring.getReadData() != 0 && sysMonitoring.getErrorData() != 0) {
+                        //按表查询出错误队列的错误数量
+                        errorLogs= errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(),sysMonitoring.getSourceTable());
+                        if (sysMonitoring.getReadData() != null && errorLogs!=null) {
+                            if (sysMonitoring.getReadData() != 0 && errorLogs.size()>0) {
                                 readData = sysMonitoring.getReadData();
-                                errorData = sysMonitoring.getErrorData();
+                                errorData = errorLogs.size();
                                 result = errorData / readData;
 
                             } else {

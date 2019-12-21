@@ -35,6 +35,7 @@ public class MyShiroRelam extends AuthorizingRealm {
     @Override
     public AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         SimpleAuthorizationInfo authorizationInfo=new SimpleAuthorizationInfo();
+
         SysUser tbUsers=(SysUser) principalCollection.getPrimaryPrincipal();
         List<SysUserRoleVo> list=sysUserRespository.findByLoginName(tbUsers.getLoginName());
         for(SysUserRoleVo sysRole:list){
@@ -47,7 +48,6 @@ public class MyShiroRelam extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         String username=(String)authenticationToken.getPrincipal();
-
         System.out.println(authenticationToken.getCredentials());
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
 
@@ -76,6 +76,8 @@ public class MyShiroRelam extends AuthorizingRealm {
 //                userInfo.
                 getName()
         );
+        //todo  我在登陆成功后清除了一次缓存
+        clearCachedAuthorizationInfo();
         return authenticationInfo;
     }
 

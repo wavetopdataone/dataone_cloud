@@ -1043,7 +1043,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             }
             return ToData.builder().status("1").data(sysUserJobVoList).build();
         } else {
-            return ToDataMessage.builder().status("0").message("权限不足");
+            return ToDataMessage.builder().status("0").message("权限不足").build();
         }
     }
 

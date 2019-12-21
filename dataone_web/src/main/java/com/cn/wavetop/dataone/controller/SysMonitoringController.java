@@ -139,7 +139,7 @@ public class SysMonitoringController {
      * 抽取速率读写量
      */
     @Transactional
-    @Scheduled(cron = "0 45 12 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void saveDataChange() {
         SysDataChange dataChange = null;
         HashMap<Object, Double> map = new HashMap<>();
@@ -158,10 +158,8 @@ public class SysMonitoringController {
         String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
         String weekDay = DateUtil.todate(yesterDay);//星期几
         List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId(yesterDay);//查询当天的所有jobid
-        System.out.println(jobIdList+"xuezihaohahah");
         if (jobIdList != null && jobIdList.size() > 0) {
             for (Long jobId : jobIdList) {
-                System.out.println(jobId+"NISHUOSHA");
                 long errorData = 0;//错误量
                 long readData = 0;//读取量
                 long writeData = 0;//写入量
@@ -169,7 +167,6 @@ public class SysMonitoringController {
                 double disposeRate = 0;//处理速率
                 //根据jobid查询读写错误，处理写入值
                 list=sysRealTimeMonitoringRepository.findByJobId(jobId, DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                System.out.println(list+"lizhixiang");
                 if(list!=null&&list.size()>0) {
                     for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
                         if (sysRealTimeMonitoring.getReadAmount() != null) {
@@ -189,7 +186,6 @@ public class SysMonitoringController {
                 }
                 //todo 读取速率数，然取值是不为空的中间后分页查询1条
                  result= sysRealTimeMonitoringRepository.findByJobIdAndTimeRead(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                System.out.println(result+"fdsfsdf");
                 if(result>0) {
                      //读取速率的分页取不为空中间
                      page = PageRequest.of(result - 1, 1, Sort.Direction.ASC, "readRate");
@@ -208,8 +204,6 @@ public class SysMonitoringController {
                          }
                      };
                      sysRealTimeMonitoring1 = sysRealTimeMonitoringRepository.findAll(querySpecifi,page);
-                     System.out.print(sysRealTimeMonitoring1.getContent()+"------");
-                     System.out.println(sysRealTimeMonitoring1.getContent().get(0)+"222");
                      if(sysRealTimeMonitoring1.getContent().get(0).getReadRate()!=null){
                          readRate=sysRealTimeMonitoring1.getContent().get(0).getReadRate();
                      }
