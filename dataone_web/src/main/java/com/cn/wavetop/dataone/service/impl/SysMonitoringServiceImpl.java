@@ -24,6 +24,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -311,7 +312,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
         String date = dfs.format(new Date());
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByIdAndDate(job_id, DateUtil.StringToDate(date));
+        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
         List<SysLog> sysLogList = sysLogRepository.findByJobIdAndOperation(job_id, "添加任务");
         //StringBuffer sum=new StringBuffer();
         double sum = 0;
@@ -394,8 +395,10 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         }
         //把同步速率更新到任务表用于首页的显示
         SysJobrela sysJobrela = sysJobrelaRespository.findById(job_id);
-        sysJobrela.setJobRate(synchronous);
-        sysJobrelaRespository.save(sysJobrela);
+        if(sysJobrela!=null) {
+            sysJobrela.setJobRate(synchronous);
+            sysJobrelaRespository.save(sysJobrela);
+        }
         return map;
     }
 
@@ -517,21 +520,16 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                     }
                 }
             }
-            map2 = (HashMap<Object, Double>) showMonitoring(jobId);
-            String nowdate = df.format(new Date());
-//            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
-            list1.add(nowdate);
-            list2.add(String.valueOf(map2.get("read_rate")));
-            list3.add(String.valueOf(map2.get("dispose_rate")));
-
-            map.put("data1", list1);
-            map.put("data2", list2);
-            map.put("data3", list3);
-        }else{
-            map.put("data1", list1);
-            map.put("data2", list2);
-            map.put("data3", list3);
         }
+        map2 = (HashMap<Object, Double>) showMonitoring(jobId);
+        String nowdate = df.format(new Date());
+//            String strss = nowdate.substring(5, 7) + "." + nowdate.substring(8, 10);
+        list1.add(nowdate);
+        list2.add(String.valueOf(map2.get("read_rate")));
+        list3.add(String.valueOf(map2.get("dispose_rate")));
+        map.put("data1", list1);
+        map.put("data2", list2);
+        map.put("data3", list3);
         return map;
     }
 
@@ -695,34 +693,39 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         //查詢关联的数据库连接表jobrela
         SysJobrela sysJobrelaList=sysJobrelaRepository.findById((long)jobId);
         //查询到数据库连接
-        if(sysJobrelaList!=null) {
-            sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.getSourceId().longValue());
-        }else{
-            return ToDataMessage.builder().status("0").message("该任务没有连接").build();
-        }
-        if(sysDbinfo.getType()==2){
-            //mysql
-            sql = "show tables";
-        }else if(sysDbinfo.getType()==1){
-            //oracle
-            sql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
-        }
-
-        List<SysFilterTable> sysFilterTables = sysFilterTableRepository.findJobId(jobId);
-        if (sysFilterTables != null && sysFilterTables.size() > 0) {
-            for (SysFilterTable sysFilterTable : sysFilterTables) {
-                stringBuffer.append(sysFilterTable.getFilterTable());
-                stringBuffer.append(",");
+        try {
+            if(sysJobrelaList!=null) {
+                sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.getSourceId().longValue());
+            }else{
+                return ToDataMessage.builder().status("0").message("该任务没有连接").build();
             }
-            tablerule.setSourceTable(stringBuffer.toString());
-            stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
+            if(sysDbinfo.getType()==2){
+                //mysql
+                sql = "show tables";
+            }else if(sysDbinfo.getType()==1){
+                //oracle
+                sql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
+            }
 
-            tablerule=new SysTablerule();
-        }else{
-            stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
-        }
-        for(String s:stringList){
-            list.add(SysTablerule.builder().sourceTable(s).build());
+            List<SysFilterTable> sysFilterTables = sysFilterTableRepository.findJobId(jobId);
+            if (sysFilterTables != null && sysFilterTables.size() > 0) {
+                for (SysFilterTable sysFilterTable : sysFilterTables) {
+                    stringBuffer.append(sysFilterTable.getFilterTable());
+                    stringBuffer.append(",");
+                }
+                tablerule.setSourceTable(stringBuffer.toString());
+                stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
+
+                tablerule=new SysTablerule();
+            }else{
+                stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
+            }
+            for(String s:stringList){
+                list.add(SysTablerule.builder().sourceTable(s).build());
+            }
+        } catch (Exception e) {
+            logger.error("异常",e);
+            e.printStackTrace();
         }
         return ToData.builder().status("1").data(list).build();
     }

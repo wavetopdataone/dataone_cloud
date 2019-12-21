@@ -71,13 +71,18 @@ public class ErrorLogController {
         return service.editErrorlog(errorLog);
     }
 
-    @ApiImplicitParam(name = "id", value = "id", dataType = "long")
+
     @PostMapping("/delete_errorlog")
     public Object delete_errorlog(Long jobId,String ids) {
 
         return service.deleteErrorlog( jobId,ids);
     }
 
+    @PostMapping("/reset_errorlog")
+    public Object reset_errorlog(Long jobId,String ids) {
+        System.out.println(ids);
+        return service.resetErrorlog( jobId,ids);
+    }
     @ApiOperation(value = "根据任务ID查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
     public Object query_errorlog(Long jobId,Integer current,Integer size) {

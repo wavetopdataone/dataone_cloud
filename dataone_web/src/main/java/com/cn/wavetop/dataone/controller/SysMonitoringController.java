@@ -16,10 +16,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import javax.xml.transform.Result;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -133,7 +139,7 @@ public class SysMonitoringController {
      * 抽取速率读写量
      */
     @Transactional
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 45 12 * * ?")
     public void saveDataChange() {
         SysDataChange dataChange = null;
         HashMap<Object, Double> map = new HashMap<>();
@@ -141,35 +147,38 @@ public class SysMonitoringController {
         List<ErrorLog> errorLogs=new ArrayList<>();
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
-        long errorData = 0;//错误量
-        long readData = 0;//读取量
-        long writeData = 0;//写入量
-        double readRate = 0;//读取速率
-        double disposeRate = 0;//处理速率
         Pageable page=null;//读取速率分页
         Pageable page2=null;//写入速率分页
-        Integer result=0;//中间数
+        Integer result=0;//读取速率中间数
+        Integer result2=0;//写入速率中间数
         Page<SysRealTimeMonitoring> sysRealTimeMonitoring1=null;
         Page<SysRealTimeMonitoring> sysRealTimeMonitoring2=null;
         String nowDate = dfs.format(new Date());//几号
         //todo 因为现在是凌晨抽取，那凌晨抽就要昨天的数据，所以要用yesterday
         String yesterDay = DateUtil.dateAdd(nowDate, -1);//昨天
         String weekDay = DateUtil.todate(yesterDay);//星期几
-        List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId();//查询所有jobid
+        List<Long> jobIdList = sysRealTimeMonitoringRepository.selJobId(yesterDay);//查询当天的所有jobid
+        System.out.println(jobIdList+"xuezihaohahah");
         if (jobIdList != null && jobIdList.size() > 0) {
             for (Long jobId : jobIdList) {
+                System.out.println(jobId+"NISHUOSHA");
+                long errorData = 0;//错误量
+                long readData = 0;//读取量
+                long writeData = 0;//写入量
+                double readRate = 0;//读取速率
+                double disposeRate = 0;//处理速率
                 //根据jobid查询读写错误，处理写入值
                 list=sysRealTimeMonitoringRepository.findByJobId(jobId, DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                System.out.println(list+"lizhixiang");
                 if(list!=null&&list.size()>0) {
                     for (SysRealTimeMonitoring sysRealTimeMonitoring:list) {
-                        if (sysRealTimeMonitoring.getReadAmount() == null) {
-                            sysRealTimeMonitoring.setReadAmount(0);
+                        if (sysRealTimeMonitoring.getReadAmount() != null) {
+                            readData += sysRealTimeMonitoring.getReadAmount();
+
                         }
-                        if (sysRealTimeMonitoring.getWriteAmount() == null) {
-                            sysRealTimeMonitoring.setWriteAmount(0);
+                        if (sysRealTimeMonitoring.getWriteAmount() != null) {
+                            writeData += sysRealTimeMonitoring.getWriteAmount();
                         }
-                        readData += sysRealTimeMonitoring.getReadAmount();
-                        writeData += sysRealTimeMonitoring.getWriteAmount();
                     }
                 }
                 errorLogs=errorLogRespository.findByJobIdAndOptTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
@@ -178,26 +187,58 @@ public class SysMonitoringController {
                 }else{
                     errorData=0;
                 }
-                //todo 取值是中间数，然后分页查询1条
-                 result= sysRealTimeMonitoringRepository.findByJobIdAndTime(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
-                 if(result>0) {
-                     //读取速率的分页取中间
+                //todo 读取速率数，然取值是不为空的中间后分页查询1条
+                 result= sysRealTimeMonitoringRepository.findByJobIdAndTimeRead(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                System.out.println(result+"fdsfsdf");
+                if(result>0) {
+                     //读取速率的分页取不为空中间
                      page = PageRequest.of(result - 1, 1, Sort.Direction.ASC, "readRate");
-                     //写入速率分页取中间
-                     page2 = PageRequest.of(result - 1, 1, Sort.Direction.ASC, "writeRate");
                      //读取速率
-                     sysRealTimeMonitoring1 = sysRealTimeMonitoringRepository.findAll(page);
-                     //写入速率
-                     sysRealTimeMonitoring2 = sysRealTimeMonitoringRepository.findAll(page2);
-                     if(sysRealTimeMonitoring2.getContent().get(0).getWriteRate()==null){
-                         sysRealTimeMonitoring2.getContent().get(0).setWriteRate(0.0);
+                     Specification<SysRealTimeMonitoring> querySpecifi = new Specification<SysRealTimeMonitoring>() {
+                         @Override
+                         public Predicate toPredicate(Root<SysRealTimeMonitoring> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                             List<Predicate> predicates = new ArrayList<>();
+                             predicates.add(cb.equal(root.get("jobId").as(Long.class), jobId));
+                             predicates.add(cb.like(root.get("optTime").as(String.class), yesterDay+"%"));
+                             predicates.add(cb.isNotNull(root.get("readRate").as(Double.class)));
+                             criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+//
+                             // and到一起的话所有条件就是且关系，or就是或关系
+                             return criteriaQuery.getRestriction();
+                         }
+                     };
+                     sysRealTimeMonitoring1 = sysRealTimeMonitoringRepository.findAll(querySpecifi,page);
+                     System.out.print(sysRealTimeMonitoring1.getContent()+"------");
+                     System.out.println(sysRealTimeMonitoring1.getContent().get(0)+"222");
+                     if(sysRealTimeMonitoring1.getContent().get(0).getReadRate()!=null){
+                         readRate=sysRealTimeMonitoring1.getContent().get(0).getReadRate();
                      }
-                     if(sysRealTimeMonitoring2.getContent().get(0).getReadRate()==null){
-                         sysRealTimeMonitoring2.getContent().get(0).setReadRate(0.0);
-                     }
-                     readRate=sysRealTimeMonitoring1.getContent().get(0).getReadRate();
-                     disposeRate=sysRealTimeMonitoring2.getContent().get(0).getWriteRate();
                  }
+                 //写入速率不为空的中间值
+                result2= sysRealTimeMonitoringRepository.findByJobIdAndTimeWrite(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+                if(result2>0){
+                    //写入速率分页取不为空的中间
+                    page2 = PageRequest.of(result2 - 1, 1, Sort.Direction.ASC, "writeRate");
+                    //写入速率
+                    Specification<SysRealTimeMonitoring> querySpecifi = new Specification<SysRealTimeMonitoring>() {
+                        @Override
+                        public Predicate toPredicate(Root<SysRealTimeMonitoring> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                            List<Predicate> predicates = new ArrayList<>();
+                            predicates.add(cb.equal(root.get("jobId").as(Long.class), jobId));
+                            predicates.add(cb.like(root.get("optTime").as(String.class), yesterDay+"%"));
+                            predicates.add(cb.isNotNull(root.get("writeRate").as(Double.class)));
+
+                            criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+//                criteriaQuery.orderBy(cb.desc(root.get("createDate")));
+                            // and到一起的话所有条件就是且关系，or就是或关系
+                            return criteriaQuery.getRestriction();
+                        }
+                    };
+                    sysRealTimeMonitoring2 = sysRealTimeMonitoringRepository.findAll(querySpecifi,page2);
+                    if(sysRealTimeMonitoring2.getContent().get(0).getWriteRate()!=null){
+                        disposeRate=sysRealTimeMonitoring2.getContent().get(0).getWriteRate();
+                    }
+                }
                 SysDataChange dataChange2 = new SysDataChange();
                 dataChange2.setCreateTime(DateUtil.StringToDate(yesterDay));
                 dataChange2.setDisposeRate(disposeRate);
@@ -208,8 +249,11 @@ public class SysMonitoringController {
                 dataChange2.setWriteData(writeData);
                 dataChange2.setReadRate(readRate);
                 sysDataChangeRepository.save(dataChange2);
-                sysRealTimeMonitoringRepository.deleteByJobId(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
+//                //删除
+//                sysRealTimeMonitoringRepository.deleteByJobId(jobId,DateUtil.StringToDate(yesterDay), DateUtil.StringToDate(nowDate));
             }
+            //删除表结构
+            sysRealTimeMonitoringRepository.delete();
         }
 
     }

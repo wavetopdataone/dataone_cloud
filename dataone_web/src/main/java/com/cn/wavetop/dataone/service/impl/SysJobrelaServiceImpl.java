@@ -1121,9 +1121,13 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Override
     public Object copyJob(Long jobId) {
         HashMap<String, Object> map = new HashMap<>();
+        Optional<SysJobrela> sysJobrela = repository.findById(jobId);
+        if(sysJobrela.get()==null||"5".equals(sysJobrela.get().getJobStatus())||"0".equals(sysJobrela.get())||"4".equals(sysJobrela.get())){
+            return ToDataMessage.builder().status("0").message("未激活,待完善,异常中任务不能够复制").build();
+        }
         if (PermissionUtils.isPermitted("2")) {
             try {
-                Optional<SysJobrela> sysJobrela = repository.findById(jobId);
+
                 //查看有多少个复制的任务
                 List<SysJobrela> list = repository.findByJobNameLike(sysJobrela.get().getJobName() + "_copy%");
                 SysJobrela sysJobrela1 = new SysJobrela();

@@ -227,8 +227,6 @@ public class SysUserServiceImpl implements SysUserService {
             opsForValue.set("logintime"+name+index, String.valueOf(new Date().getTime()),300,TimeUnit.SECONDS);
             map.put("date",opsForValue.get("logintime"+name+"1"));
         } catch (Exception e){
-
-
             lefttime=Integer.parseInt(opsForValue.get("lefttime"+name));
             lefttime--;
             opsForValue.set("lefttime"+name,String.valueOf(lefttime));
@@ -497,21 +495,27 @@ public class SysUserServiceImpl implements SysUserService {
         return s;
     }
 
+
     //超级管理员对管理员的模糊查询或者该管理员所在部门的用户的模糊查询
     @Override
     public Object findByUserName(String userName) {
         List<SysUserDept> list=new ArrayList<>();
         if(PermissionUtils.isPermitted("1")){
-            if(userName!=null) {
+            if(userName!=null&&!"".equals(userName)) {
                 //超级管理员对管理员的模糊查询
                 list = sysUserRepository.findByUserName(userName);
+                List<SysUser> sysUserList= sysUserRepository.findByUserOrEmail(userName);
+                if(sysUserList!=null&&sysUserList.size()>0){
+                    SysUserDept sysUserDept=new SysUserDept(PermissionUtils.getSysUser().getId(),PermissionUtils.getSysUser().getDeptId(),PermissionUtils.getSysUser().getLoginName(),PermissionUtils.getSysUser().getPassword(),PermissionUtils.getSysUser().getEmail(),"","超级管理员",PermissionUtils.getSysUser().getStatus());
+                    list.add(0,sysUserDept);
+                }
             }else{
                 list=sysUserRepository.findUserByUserPerms("2");
                 SysUserDept sysUserDept=new SysUserDept(PermissionUtils.getSysUser().getId(),PermissionUtils.getSysUser().getDeptId(),PermissionUtils.getSysUser().getLoginName(),PermissionUtils.getSysUser().getPassword(),PermissionUtils.getSysUser().getEmail(),"","超级管理员",PermissionUtils.getSysUser().getStatus());
                 list.add(0,sysUserDept);
             }
         }else if(PermissionUtils.isPermitted("2")){
-            if(userName!=null) {
+            if(userName!=null&&!"".equals(userName)) {
             //该管理员所在部门的用户的模糊查询
             list=sysUserRepository.findByDeptUserName(PermissionUtils.getSysUser().getDeptId(),userName);
             }else{

@@ -53,13 +53,13 @@ public class SysFieldruleController {
 
     @ApiImplicitParam
     @PostMapping("/link_table_details")
-    public Object link_table_details(@RequestBody SysDbinfo sysDbinfo,String tablename,Long job_id) {
+    public Object link_table_details(@RequestBody(required = false) SysDbinfo sysDbinfo,String tablename,Long job_id) {
         return service.linkTableDetails(sysDbinfo,tablename,job_id);
     }
     @ApiOperation(value = "查询修改的表字段信息", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询修改的表字段信息")
     @ApiImplicitParam
     @PostMapping("/DestlinkTableDetails")
-    public Object DestlinkTableDetails(@RequestBody SysDbinfo sysDbinfo,String tablename,Long job_id) {
+    public Object DestlinkTableDetails(@RequestBody(required = false) SysDbinfo sysDbinfo,String tablename,Long job_id) {
         return service.DestlinkTableDetails(sysDbinfo,tablename,job_id);
     }
     @ApiOperation(value = "验证源端目的端是否存在表", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "验证源端目的端是否存在表")

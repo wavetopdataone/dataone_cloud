@@ -22,7 +22,7 @@ public interface SysErrorRepository extends JpaRepository<SysError,Long> {
     @Query("delete from SysError where createDate>=:oldDate and createDate<:newDate")
     int deleteDate(Date oldDate,Date newDate);
     @Modifying
-    @Query(nativeQuery = true,value = "TRUNCATE table SysError")
+    @Query(nativeQuery = true,value = "TRUNCATE table sys_error")
     int delete();
 
 }

@@ -601,9 +601,11 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     map.put("destName", null);
                 }
             }
-            if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
-                map.put("data2", sysDesensitizations);
-            }
+            //todo tuomin
+            map.put("data2", sysDesensitizations);
+//            if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
+//                map.put("data2", sysDesensitizations);
+//            }
         } catch (Exception e) {
             StackTraceElement stackTraceElement = e.getStackTrace()[0];
             logger.error("*"+stackTraceElement.getLineNumber()+e);
