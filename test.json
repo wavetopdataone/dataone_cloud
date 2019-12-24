@@ -1,12 +1,1 @@
-{
-  "schema": {
-    "type": "struct",
-    "optional": false,
-    "name": "person"
-  },
-  "payload": {
-    "pid": 2,
-    "asd": "2",
-    "age": "ha"
-  }
-}
+{"schema":{"type":"struct","fields":[{"field":"id","optional":true,"type":"int64"},{"field":"icon","optional":true,"type":"string"},{"field":"menu_id","optional":true,"type":"int64"},{"field":"menu_name","optional":true,"type":"string"},{"field":"menu_type","optional":true,"type":"string"},{"field":"order_num","optional":true,"type":"string"},{"field":"parent_id","optional":true,"type":"int64"},{"field":"parent_name","optional":true,"type":"string"},{"field":"perms","optional":true,"type":"string"},{"field":"target","optional":true,"type":"string"},{"field":"url","optional":true,"type":"string"},{"field":"visible","optional":true,"type":"string"},{"field":"create_time","name":"org.apache.kafka.connect.data.Timestamp","optional":true,"type":"int64","version":1},{"field":"create_user","optional":true,"type":"string"},{"field":"update_time","name":"org.apache.kafka.connect.data.Timestamp","optional":true,"type":"int64","version":1},{"field":"update_user","optional":true,"type":"string"}],"optional":false,"name":"sys_menu"},"payload":{"parent_name":null,"visible":null,"create_time":null,"menu_type":null,"icon":null,"url":null,"target":null,"update_time":null,"update_user":null,"parent_id":null,"menu_name":"??","perms":"supper?ss","id":5,"order_num":null,"create_user":null,"menu_id":null}}

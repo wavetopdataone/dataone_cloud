@@ -394,8 +394,8 @@ public class JobProducerThread extends Thread {
                 for (String tableName : tableTotal.keySet()) {
                     tableMonito.put(tableName, tableTotal.get(tableName) / runtime);
                     tableTotal.get(tableName);
-                    String tableMonitoJson = JSONUtil.toJSONString(tableMonito);
-                    String tableTotalJson = JSONUtil.toJSONString(tableTotal);
+//                    String tableMonitoJson = JSONUtil.toJSONString(tableMonito);
+//                    String tableTotalJson = JSONUtil.toJSONString(tableTotal);
 //                    System.out.println(tableMonitoJson);
 //                    System.out.println(tableTotalJson);
 
@@ -509,10 +509,10 @@ public class JobProducerThread extends Thread {
                     for (Object destTable : destTables) {
                         if (destTable != null && !"".equals(destTable)) {
                             String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
-                            System.out.println(count);
+//                            System.out.println(count);
                             if (count != null && !"0".equals(count)) {
                                 DROPTABLE = "DROP TABLE  " + destTable;
-                                System.out.println(DROPTABLE);
+//                                System.out.println(DROPTABLE);
                                 jdbcTemplate.execute(DROPTABLE);
                             }
                         }

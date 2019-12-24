@@ -21,19 +21,19 @@ public class ConfigSink {
     private String connection_user;
     private String connection_password;
     private String insert_mode = "insert";
-    private String table_name_format = "TEST1.EMPLOYEES";
+    private String table_name_format = "";
     private String errors_tolerance = "all";
-    private String errors_deadletterqueue_topic_name = "error-logs";
-    private int errors_deadletterqueue_topic_replication_factor = 1;
+//    private String errors_deadletterqueue_topic_name = "error-logs";
+//    private int errors_deadletterqueue_topic_replication_factor = 1;
     private boolean errors_deadletterqueue_context_headers_enable = true;
     private boolean errors_log_enable = true;
     private boolean errors_log_include_messages = true;
 
     public ConfigSink(long jobId, String destTable, SysDbinfo sysDbinfo) {
-        this.name = "oracle-sink-" + jobId + "-" + destTable;
+        this.name = "connect-sink-" + jobId + "-" + destTable;
         this.topics = "task-" + jobId + "-" + destTable;
         this.table_name_format = destTable;
-        this.errors_deadletterqueue_topic_name = "error-logs-" + jobId + "-" + destTable;
+//        this.errors_deadletterqueue_topic_name = "error-logs-" + jobId + "-" + destTable;
 
         if (sysDbinfo.getType() == 1L) {
             this.connection_url = "jdbc:oracle:thin:@" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + ":orcl";
@@ -67,8 +67,8 @@ public class ConfigSink {
         config.put("insert.mode", this.insert_mode);
         config.put("table.name.format", this.table_name_format);
         config.put("errors.tolerance", this.errors_tolerance);
-        config.put("errors.deadletterqueue.topic.name", this.errors_deadletterqueue_topic_name);
-        config.put("errors.deadletterqueue.topic.replication.factor", this.errors_deadletterqueue_topic_replication_factor);
+//        config.put("errors.deadletterqueue.topic.name", this.errors_deadletterqueue_topic_name);
+//        config.put("errors.deadletterqueue.topic.replication.factor", this.errors_deadletterqueue_topic_replication_factor);
         config.put("errors.deadletterqueue.context.headers.enable", this.errors_deadletterqueue_context_headers_enable);
         config.put("errors.log.enable", this.errors_log_enable);
         config.put("errors.log.include.messages", this.errors_log_include_messages);

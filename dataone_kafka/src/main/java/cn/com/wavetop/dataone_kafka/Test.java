@@ -6,9 +6,11 @@ import cn.com.wavetop.dataone_kafka.utils.HttpClientKafkaUtil;
 import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
 import cn.com.wavetop.dataone_kafka.utils.SpringJDBCUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +22,9 @@ public class Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) {
+        throw new ConnectException(new SQLException(" java.sql.BatchUpdateException: 违反了 PRIMARY KEY 约束 'PK__sys_user__3213E83F52593CB8'。不能在对象 'dbo.sys_user' 中插入重复键。"));
+    }
+    public static void test1(String[] args) {
         SysDbinfo source = SysDbinfo.builder()
                 .host("192.168.103.238")
                 .dbname("test2")
