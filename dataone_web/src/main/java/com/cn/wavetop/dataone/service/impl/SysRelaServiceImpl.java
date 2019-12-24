@@ -32,7 +32,7 @@ public class SysRelaServiceImpl implements SysRelaService {
     @Override
     public Object findByDbinfoId(long dbinfo_id) {
         List<SysRela> sysUserList=sysRelaRepository.findByDbinfoId(dbinfo_id);
-        System.out.println(sysUserList);
+
         if(sysUserList!=null&&sysUserList.size()>0){
             return ToData.builder().status("1").data(sysUserList).build();
         }else{
@@ -45,7 +45,7 @@ public class SysRelaServiceImpl implements SysRelaService {
     public Object update(SysRela sysRela) {
         try{
             List<SysRela> sysUserList= sysRelaRepository.findByDbinfoId(sysRela.getDbinfoId());
-            System.out.println(sysUserList);
+
             List<SysRela> userList=new ArrayList<SysRela>();
             if(sysUserList!=null&&sysUserList.size()>0){
                 //sysUserList.get(0).setId(sysRela.getId());
@@ -53,7 +53,6 @@ public class SysRelaServiceImpl implements SysRelaService {
                 sysUserList.get(0).setType(sysRela.getType());
 
                 SysRela user=  sysRelaRepository.save(sysUserList.get(0));
-                System.out.println(user);
                 sysUserList= sysRelaRepository.findById(user.getId());
                 if(user!=null&&!"".equals(user)){
                     return ToData.builder().status("1").data(sysUserList).message("修改成功").build();
@@ -78,7 +77,6 @@ public class SysRelaServiceImpl implements SysRelaService {
     @Override
     public Object addSysUser(SysRela sysRela) {
         try{
-            System.out.println(sysRela+"-----------"+sysRela.getId());
             if(sysRelaRepository.findByDbinfoId(sysRela.getDbinfoId())!=null&&sysRelaRepository.findByDbinfoId(sysRela.getDbinfoId()).size()>0){
 
                 return ToDataMessage.builder().status("0").message("已存在").build();

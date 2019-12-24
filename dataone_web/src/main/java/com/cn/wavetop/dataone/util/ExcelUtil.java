@@ -96,7 +96,7 @@ public class ExcelUtil{
             row = sheet.createRow(i + 1);
             for(int j=0;j<values[i].length;j++){
                 //将内容按顺序赋给对应的列对象
-                System.out.println("ssss");
+
                 row.createCell(j).setCellValue(values[i][j]);
             }
         }

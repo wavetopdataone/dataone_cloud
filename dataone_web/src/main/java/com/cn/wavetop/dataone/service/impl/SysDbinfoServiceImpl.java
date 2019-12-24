@@ -99,7 +99,9 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
                     }
                 else if(sysDbinfo.getType()==3){
                     conn=DBConns.getSqlserverConn(sysDbinfo);
-                }
+                }else if(sysDbinfo.getType()==4){
+                        conn=DBConns.getDaMengConn(sysDbinfo);
+                    }
 
                     if (conn != null) {
                         SysDbinfo data = repository.save(sysDbinfo);
@@ -146,7 +148,6 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
      List<SysJobrela> list=sysJobrelarepository.findDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());
             try {
                 boolean flag = sysJobrelarepository.existsByDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName());
-                System.out.println(flag);
                 if(list==null||list.size()<=0){
 //                if (!flag) {
                     boolean flag2 = repository.existsByName(sysDbinfo.getName());
@@ -157,6 +158,10 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
                             conn = DBConns.getOracleConn(sysDbinfo);
                         } else if (sysDbinfo.getType() == 2) {
                             conn = DBConns.getMySQLConn(sysDbinfo);
+                        }else if(sysDbinfo.getType()==3){
+                            conn=DBConns.getSqlserverConn(sysDbinfo);
+                        }else if(sysDbinfo.getType()==4){
+                            conn=DBConns.getDaMengConn(sysDbinfo);
                         }
                         //判断修改的数据源名称该部门下已经存在了
                         List<SysDbinfo> listss=repository.findNameByUser(sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());

@@ -178,10 +178,11 @@ public class SysUserServiceImpl implements SysUserService {
                     map.put("authToken", tokenId);
                     map.put("data", s);
                     map.put("check", check);
-                    opsForValue.set(SHIRO_LOGIN_COUNT+name, "0");
-                    opsForValue.set(SHIRO_IS_LOCK+name, "UNLOCK");
-                    opsForValue.set("lefttime"+name,"5");
-                    opsForValue.set("index"+name,"0");
+                    //todo 加入了缓存过期策略
+                    opsForValue.set(SHIRO_LOGIN_COUNT+name, "0",5,TimeUnit.SECONDS);
+                    opsForValue.set(SHIRO_IS_LOCK+name, "UNLOCK",5,TimeUnit.SECONDS);
+                    opsForValue.set("lefttime"+name,"5",5,TimeUnit.SECONDS);
+                    opsForValue.set("index"+name,"0",5,TimeUnit.SECONDS);
                     SysLoginlog sysLog=new SysLoginlog();
                     sysLog.setCreateDate(new Date());
                     if(PermissionUtils.getSysUser().getDeptId()!=null&&PermissionUtils.getSysUser().getDeptId()!=0) {
@@ -223,11 +224,9 @@ public class SysUserServiceImpl implements SysUserService {
              index= Integer.parseInt(opsForValue.get("index"+name));
              index++;
             opsForValue.set("index"+name,String.valueOf(index));
-            opsForValue.set("logintime"+name+index, String.valueOf(new Date().getTime()));
+            opsForValue.set("logintime"+name+index, String.valueOf(new Date().getTime()),300,TimeUnit.SECONDS);
             map.put("date",opsForValue.get("logintime"+name+"1"));
         } catch (Exception e){
-
-            System.out.println(e);
             lefttime=Integer.parseInt(opsForValue.get("lefttime"+name));
             lefttime--;
             opsForValue.set("lefttime"+name,String.valueOf(lefttime));
@@ -245,22 +244,25 @@ public class SysUserServiceImpl implements SysUserService {
 
         SysLoginlog sysLog=new SysLoginlog();
         sysLog.setCreateDate(new Date());
-        if(PermissionUtils.getSysUser().getDeptId()!=0&&PermissionUtils.getSysUser().getDeptId()!=null) {
-            //获取部门信息
-            Optional<SysDept> sysDepts = sysDeptRepository.findById(PermissionUtils.getSysUser().getDeptId());
-            String deptName = "";
-            if (sysDepts != null) {
-                deptName = sysDepts.get().getDeptName();
-                sysLog.setDeptName(deptName);
+        if(PermissionUtils.getSysUser()!=null) {
+            if (PermissionUtils.getSysUser().getDeptId() != 0 && PermissionUtils.getSysUser().getDeptId() != null) {
+                //获取部门信息
+                Optional<SysDept> sysDepts = sysDeptRepository.findById(PermissionUtils.getSysUser().getDeptId());
+                String deptName = "";
+                if (sysDepts != null) {
+                    deptName = sysDepts.get().getDeptName();
+                    sysLog.setDeptName(deptName);
+                }
+            }
+            //获取角色信息
+            List<SysRole> sysRoles= sysUserRepository.findUserById(PermissionUtils.getSysUser().getId());
+            String roleName = "";
+            if(sysRoles!=null&&sysRoles.size()>0) {
+                roleName = sysRoles.get(0).getRoleName();
+                sysLog.setRoleName(roleName);
             }
         }
-        //获取角色信息
-        List<SysRole> sysRoles= sysUserRepository.findUserById(PermissionUtils.getSysUser().getId());
-        String roleName = "";
-        if(sysRoles!=null&&sysRoles.size()>0) {
-            roleName = sysRoles.get(0).getRoleName();
-            sysLog.setRoleName(roleName);
-        }
+
         sysLog.setIp(subject.getSession().getHost());
         sysLog.setMethod("com.cn.wavetop.dataone.controller.SysUserController.loginOut");
         Object[] args=null;
@@ -348,6 +350,15 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional
     @Override
     public Object addSysUser(SysUser sysUser,String id){
+        String orderId="1";
+        String key = "checkInsurance_"+sysUser.getLoginName();
+        boolean flag = stringRedisTemplate.getConnectionFactory().getConnection().setNX(key.getBytes(), orderId.getBytes());
+         if(!flag){
+             return ToDataMessage.builder().status("0").message(sysUser.getLoginName()+"已存在").build();
+         }
+        stringRedisTemplate.expire(key, 5, TimeUnit.SECONDS);
+
+
         Long ids=Long.valueOf(id);
         if(!PermissionUtils.flag(sysUser.getEmail())){
             return ToDataMessage.builder().status("0").message("邮箱不正确").build();
@@ -484,21 +495,27 @@ public class SysUserServiceImpl implements SysUserService {
         return s;
     }
 
+
     //超级管理员对管理员的模糊查询或者该管理员所在部门的用户的模糊查询
     @Override
     public Object findByUserName(String userName) {
         List<SysUserDept> list=new ArrayList<>();
         if(PermissionUtils.isPermitted("1")){
-            if(userName!=null) {
+            if(userName!=null&&!"".equals(userName)) {
                 //超级管理员对管理员的模糊查询
                 list = sysUserRepository.findByUserName(userName);
+                List<SysUser> sysUserList= sysUserRepository.findByUserOrEmail(userName);
+                if(sysUserList!=null&&sysUserList.size()>0){
+                    SysUserDept sysUserDept=new SysUserDept(PermissionUtils.getSysUser().getId(),PermissionUtils.getSysUser().getDeptId(),PermissionUtils.getSysUser().getLoginName(),PermissionUtils.getSysUser().getPassword(),PermissionUtils.getSysUser().getEmail(),"","超级管理员",PermissionUtils.getSysUser().getStatus());
+                    list.add(0,sysUserDept);
+                }
             }else{
                 list=sysUserRepository.findUserByUserPerms("2");
                 SysUserDept sysUserDept=new SysUserDept(PermissionUtils.getSysUser().getId(),PermissionUtils.getSysUser().getDeptId(),PermissionUtils.getSysUser().getLoginName(),PermissionUtils.getSysUser().getPassword(),PermissionUtils.getSysUser().getEmail(),"","超级管理员",PermissionUtils.getSysUser().getStatus());
                 list.add(0,sysUserDept);
             }
         }else if(PermissionUtils.isPermitted("2")){
-            if(userName!=null) {
+            if(userName!=null&&!"".equals(userName)) {
             //该管理员所在部门的用户的模糊查询
             list=sysUserRepository.findByDeptUserName(PermissionUtils.getSysUser().getDeptId(),userName);
             }else{
@@ -527,7 +544,6 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional
     @Override
     public Object updateUser(Long id,Long DeptId) {
-        System.out.println(id+"-----------"+DeptId+"----------------");
         if(PermissionUtils.isPermitted("1")) {
             List<SysUser> list = sysUserRepository.findUserByDeptIdAndRoleKey(Long.valueOf(2),DeptId);
             if (list != null && list.size() > 0) {
@@ -679,7 +695,7 @@ public class SysUserServiceImpl implements SysUserService {
             opsForValue = stringRedisTemplate.opsForValue();
              a=email;
 //            opsForValue.set(a,a);//如果是用户名发送邮件的话
-            opsForValue.set("codeold"+a,code);
+            opsForValue.set("codeold"+a,code,1,TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("*redis服务未连接");
             e.printStackTrace();
@@ -764,6 +780,7 @@ public class SysUserServiceImpl implements SysUserService {
             return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
         }
         if(authCode.equals(opsForValue.get("codeold"+email))){
+            stringRedisTemplate.expire("codeold"+email, 5, TimeUnit.SECONDS);
             return ToDataMessage.builder().status("1").message("验证码正确").build();
         }else{
             return ToDataMessage.builder().status("0").message("请输入正确的验证码").build();

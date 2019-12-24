@@ -23,5 +23,6 @@ public interface SysFieldruleService {
     Object linkTableDetails(SysDbinfo sysDbinfo,String tablename,Long job_id) ;
     //查询修改过后的表字段
     Object DestlinkTableDetails(SysDbinfo sysDbinfo, String tablename,Long job_id);
-
+    //验证源端目标端是否存在表
+    Object VerifyDb(Long job_id,String source_name,String dest_name);
 }

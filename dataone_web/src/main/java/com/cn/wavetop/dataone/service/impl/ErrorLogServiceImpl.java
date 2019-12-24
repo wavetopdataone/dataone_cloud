@@ -12,6 +12,10 @@ import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -43,13 +47,13 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     }
     //条件查询
     @Override
-    public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
-        // Pageable page = PageRequest.of(current - 1, size, Sort.Direction.DESC, "id");
+    public Object getCheckError(Long jobId,String tableName,String type,String startTime,String endTime,String context,Integer current,Integer size) {
+
+         Pageable page = PageRequest.of(current - 1, size);
         List<ErrorLog> sysErrorlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
-        System.out.println(endTime+"-------------------heng");
-        if(endTime!=null&&!"".equals(endTime)) {
+        if(endTime!=null&&!"null".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }
         if(PermissionUtils.isPermitted("1")||PermissionUtils.isPermitted("2")){
@@ -60,23 +64,23 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                     public Predicate toPredicate(Root<ErrorLog> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
                         List<Predicate> predicates = new ArrayList<>();
                         //大于或等于传入时间
-                        if(startTime!=null&&!"".equals(startTime)) {
+                        if(startTime!=null&&!"null".equals(startTime)) {
                             predicates.add(cb.greaterThanOrEqualTo(root.get("optTime").as(String.class),startTime));
                         }
                         //小于或等于传入时间
-                        if(endTime!=null&&!"".equals(endTime)) {
+                        if(endTime!=null&&!"null".equals(endTime)) {
                             predicates.add(cb.lessThanOrEqualTo(root.get("optTime").as(String.class), finalEndDate));
                         }
-                        if(type!=null&&!"".equals(type)){
+                        if(type!=null&&!"null".equals(type)){
                             predicates.add(cb.equal(root.get("optType").as(String.class), type));
 
                         }
-                        if(tableName!=null&&!"".equals(tableName)){
+                        if(tableName!=null&&!"null".equals(tableName)){
                             predicates.add(cb.equal(root.get("sourceName").as(String.class), tableName));
 
                         }
-                        if(context!=null&&!"".equals(context)){
-                            predicates.add(cb.like(root.get("optContext").as(String.class), "%"+context+"%"));
+                        if(context!=null&&!"null".equals(context)){
+                            predicates.add(cb.like(root.get("content").as(String.class), "%"+context+"%"));
                         }
                         predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
 
@@ -89,21 +93,27 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                         // return cb.and(predicates.toArray(new Predicate[predicates.size()]));
                     }
                 };
-                List<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi);
+                Page<ErrorLog> sysUserlogPage=repository.findAll(querySpecifi,page);
+                List<ErrorLog> errorLogList=repository.findAll(querySpecifi);//为了拿条件查询的所有id
+                List<Long> ids=new ArrayList<>();
+                for(ErrorLog errorLog:errorLogList){
+                    ids.add(errorLog.getId());
+                }
                 map.put("status","1");
-                map.put("data",sysUserlogPage);
-                map.put("totalCount",sysUserlogPage.size());
+                map.put("data",sysUserlogPage.getContent());
+                map.put("total",sysUserlogPage.getTotalElements());
+                map.put("ids",ids);
                 Userlog build2=null;
                 //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
                 //todo 要不要在这里加上所有的错误队列判断
-                if (sysUserlogPage.size()>=100000) {
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
+                if (sysUserlogPage.getTotalElements()>=100000) {
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
                    Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
                    sysJobrela.get().setJobStatus("21");//改为暂停
                     sysJobrelaRespository.save(sysJobrela.get());
                     userLogRepository.save(build2);
-                }else if(sysUserlogPage.size()>=90000&&sysUserlogPage.size()<=100000){
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.get(0).getJobName()).operate("错误队列"+sysUserlogPage.get(0).getJobName()+"已接近上限").jobId(jobId).build();
+                }else if(sysUserlogPage.getTotalElements()>=90000&&sysUserlogPage.getTotalElements()<100000){
+                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已接近上限").jobId(jobId).build();
                     userLogRepository.save(build2);
                 }
             } catch (Exception e) {
@@ -174,11 +184,13 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         HashMap<Object, Object> map = new HashMap();
         String []id=ids.split(",");
         // 查看该任务是否存在，存在删除任务，返回数据给前端
-        for(String idss:id) {
+        if(id!=null) {
+            for (String idss : id) {
 
                 repository.deleteById(Long.valueOf(idss));
                 map.put("status", 1);
                 map.put("message", "删除成功");
+            }
         }
         Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
 
@@ -186,7 +198,85 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         userLogRepository.save(build2);
         return map;
     }
+    //根据任务id查询
+    @Override
+    public Object queryErrorlog(Long jobId,Integer current,Integer size) {
+        Pageable page = PageRequest.of(current - 1, size);
+        HashMap<Object, Object> map = new HashMap();
+        Set<String> set=new HashSet<>();
+        List<Object> list=new ArrayList<>();
+        List<String> listsss=null;
 
+        List<ErrorLog> errorLogs=null;
+        Specification<ErrorLog> querySpecifi = new Specification<ErrorLog>() {
+            @Override
+            public Predicate toPredicate(Root<ErrorLog> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                List<Predicate> predicates = new ArrayList<>();
+                predicates.add(cb.equal(root.get("jobId").as(String.class), jobId));
+
+                criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+                criteriaQuery.orderBy(cb.desc(root.get("optTime")));
+
+                // and到一起的话所有条件就是且关系，or就是或关系
+                return criteriaQuery.getRestriction();
+                // and到一起的话所有条件就是且关系，or就是或关系
+                // return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            }
+        };
+        Page<ErrorLog> data = repository.findAll(querySpecifi,page);
+        //todo 根据任务id查询出有多少张表出现错误
+        List<ErrorLog> data1=repository.findByJobId(jobId);
+        List<Long> ids=new ArrayList<>();
+        if (data1 != null&&data1.size()>0) {
+            for(ErrorLog errorLog:data1){
+                set.add(errorLog.getSourceName());
+                ids.add(errorLog.getId());
+            }
+            for(String tableName:set){
+                errorLogs=new ArrayList<>();
+                listsss=new ArrayList<>();
+                errorLogs= repository.findByJobIdAndSourceName(jobId,tableName);
+                listsss.add(tableName);
+                listsss.add(String.valueOf(errorLogs.size()));
+                list.add(listsss);
+            }
+            map.put("status", 1);
+            map.put("data", data.getContent());
+            map.put("total", data.getTotalElements());
+            map.put("table",list);//表名
+            map.put("ids",ids);
+        } else {
+            map.put("status", 0);
+            map.put("message", "该任务没有错误队列");
+        }
+        return  map;
+    }
+
+    //根据id查询错误详情
+    @Override
+    public Object selErrorlogById(Long id) {
+        HashMap<Object, Object> map = new HashMap();
+        Optional<ErrorLog> sysError=repository.findById(id);
+        map.put("data",sysError);
+        map.put("status","1");
+        return map;
+    }
+    //查询错误类型
+    public Object selType(){
+      List<ErrorLog> errorLogs=repository.findAll();
+      Set<String> set=new HashSet<>();
+      if(errorLogs!=null&&errorLogs.size()>0) {
+          for (ErrorLog errorLog : errorLogs) {
+              if(errorLog.getOptType()!=null&&!"".equals(errorLog.getOptType())) {
+                  set.add(errorLog.getOptType());
+              }
+          }
+      }
+        List<String> list = new ArrayList<>(set);
+
+        return ToData.builder().status("1").data(list).build();
+
+    }
     @Transactional
     @Override
     public Object resetErrorlog(Long jobId,String ids) {
@@ -204,42 +294,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
             map.put("message", "重试成功");
         }
         Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
-
         Userlog  build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"重试了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
         userLogRepository.save(build2);
         producer.stop();
-        return map;
-    }
-
-    //根据任务id查询表名，行数，和错误的数据量
-    @Override
-    public Object queryErrorlog(Long jobId) {
-        HashMap<Object, Object> map = new HashMap();
-        Set<String> set=new HashSet<>();
-        List<ErrorLog> data = repository.findByJobId(jobId);
-        //todo 根据任务id查询出有多少张表出现错误
-        if (data != null&&data.size()>0) {
-            for(ErrorLog errorLog:data){
-                set.add(errorLog.getSourceName());
-            }
-            map.put("status", 1);
-            map.put("data", data);
-            map.put("total", data.size());
-            map.put("table",set);//表名
-        } else {
-            map.put("status", 0);
-            map.put("message", "任务不存在");
-        }
-        return  map;
-    }
-
-    //根据id查询错误详情
-    @Override
-    public Object selErrorlogById(Long id) {
-        HashMap<Object, Object> map = new HashMap();
-        Optional<ErrorLog> sysError=repository.findById(id);
-        map.put("data",sysError);
-        map.put("status","1");
         return map;
     }
 }

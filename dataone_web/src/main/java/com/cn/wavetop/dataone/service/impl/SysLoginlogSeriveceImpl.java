@@ -84,7 +84,7 @@ public class SysLoginlogSeriveceImpl implements SysLoginlogSerivece {
         Map<Object,Object> map=new HashMap<>();
 
             String endDate=null;
-            System.out.println(endTime+"-------------------heng");
+
         if(endTime!=null&&!"".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }
@@ -148,7 +148,6 @@ public class SysLoginlogSeriveceImpl implements SysLoginlogSerivece {
         List<SysLoginlog> sysUserLoginlogList=new ArrayList<>();
         Map<Object,Object> map=new HashMap<>();
         String endDate=null;
-        System.out.println(endTime+"-------------------heng");
         if(endTime!=null&&!"".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }

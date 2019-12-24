@@ -1,11 +1,14 @@
 package com.cn.wavetop.dataone.util;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
+import com.cn.wavetop.dataone.config.ResponseModel;
 import com.cn.wavetop.dataone.entity.SysDbinfo;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysTablerule;
 import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import java.sql.*;
 import java.util.*;
 
 public class DBConns {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 获取Mysql对象
@@ -43,6 +47,16 @@ public class DBConns {
     public static Connection getSqlserverConn(SysDbinfo sysDbinfo) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         String url = "jdbc:sqlserver://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+";DatabaseName="+sysDbinfo.getDbname();
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        DriverManager.setLoginTimeout(10);
+        return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
+    }
+
+    /**DBConns
+     * 获取达梦数据库对象
+     */
+    public static Connection getDaMengConn(SysDbinfo sysDbinfo) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        String url = "jdbc:dm://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+"/"+sysDbinfo.getDbname();
+        Class.forName("dm.jdbc.driver.DmDriver");
         DriverManager.setLoginTimeout(10);
         return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
     }
@@ -145,6 +159,7 @@ public class DBConns {
             System.out.println("類型錯誤");
             return list;
         }
+
         Iterator<String>  iterator=list.iterator();
         while (iterator.hasNext()) {
             String num = iterator.next();
@@ -301,10 +316,19 @@ public class DBConns {
                         list.add(tableName);
                     }
                 }
+            }else if (sysDbinfo.getType() == 4){
+                conn = DBConns.getDaMengConn(sysDbinfo);
+                ps = conn.prepareStatement(sql);
+                rs = ps.executeQuery();
+                while (rs.next()){
+                    tableName = rs.getString(1);
+                    if(tableName.equals(destName)){
+                        list.add(tableName);
+                    }
+                }
             }
         } catch (SQLException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
-            System.out.println("类型错误");
         } finally {
             if(ps!=null){
                 try {

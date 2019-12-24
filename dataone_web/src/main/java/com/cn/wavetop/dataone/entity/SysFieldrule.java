@@ -36,5 +36,5 @@ public class SysFieldrule {
   private String sourceName;
   private String destName;
   private Long varFlag;
-
+  private Integer addFlag;//新增字段标识
 }

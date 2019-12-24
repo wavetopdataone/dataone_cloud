@@ -39,11 +39,10 @@ public class DataoneApplicationTests {
 //        opsForValue.set("a","1",10,TimeUnit.SECONDS);
 //        redisUtil.set("b",map);
         if(opsForValue.get("a")!=null){
-            System.out.println("xuezihao");
+
         }else{
-            System.out.println("lizhixiang");
+
         }
-        System.out.println(opsForValue.get("a"));
 //        System.out.println(redisUtil.get("b"));
 
     }

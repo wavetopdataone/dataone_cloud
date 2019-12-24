@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.shiro.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +49,6 @@ public class SysLogController  {
     @ApiOperation(value = "导出操作日志表", httpMethod = "GET", protocols = "HTTP",produces="application/octet-stream", notes = "导出操作日志表")
     @GetMapping("/OutPutExcel")
     public void outPutExcel(HttpServletRequest request,HttpServletResponse response, @RequestParam Long deptId, @RequestParam Long userId, @RequestParam String operation, @RequestParam String startTime, @RequestParam String endTime, @RequestParam String loginName, @RequestParam String roleKey, @RequestParam Long dept) throws UnsupportedEncodingException {
-        System.out.println(deptId+"----"+userId+"---"+operation+loginName+roleKey+"----"+dept+"------------------");
         response.setCharacterEncoding("utf-8");
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -164,7 +164,9 @@ public class SysLogController  {
             response.setHeader("Content-Disposition",
                                         "attachment;fileName=" + finalFileName);
             ServletOutputStream out = null;
+
             try {
+
                 out = response.getOutputStream();
                 wb.write(out);
                 out.flush();
@@ -178,5 +180,14 @@ public class SysLogController  {
 
         }
 
+    /**
+     * 定时任务每周一早上六点删除日志,把超过十万条的都删了
+     * @return 0 0 21 * * ?    0 0 6 ? * MON
+     */
+    //@ApiOperation(value = "每周一早上六点删除日志",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "条件查询操作日志")
+    @Scheduled(cron = "0 0 6 ? * MON")
+    public void deleteLog() {
+        sysLogService.deleteLog();
+    }
 
 }

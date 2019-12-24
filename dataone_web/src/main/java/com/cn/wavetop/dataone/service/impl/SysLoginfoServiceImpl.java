@@ -31,7 +31,7 @@ public class SysLoginfoServiceImpl implements SysLoginfoService {
     @Override
     public Object findById(long id) {
         List<SysLoginfo> sysUserList=sysLoginfoRepository.findById(id);
-        System.out.println(sysUserList);
+
         if(sysUserList!=null&&sysUserList.size()>0){
             return ToData.builder().status("1").data(sysUserList).build();
         }else{
@@ -43,7 +43,7 @@ public class SysLoginfoServiceImpl implements SysLoginfoService {
     public Object update(SysLoginfo sysLoginfo) {
         try{
             List<SysLoginfo> sysUserList= sysLoginfoRepository.findById(sysLoginfo.getId());
-            System.out.println(sysUserList);
+
             List<SysLoginfo> userList=new ArrayList<SysLoginfo>();
             if(sysUserList!=null&&sysUserList.size()>0){
                 //sysUserList.get(0).setId(sysLoginfo.getId());
@@ -55,7 +55,7 @@ public class SysLoginfoServiceImpl implements SysLoginfoService {
                 sysUserList.get(0).setLimite(sysLoginfo.getLimite());
                 sysUserList.get(0).setSection(sysLoginfo.getSection());
                 SysLoginfo user=  sysLoginfoRepository.save(sysUserList.get(0));
-                System.out.println(user);
+
                 sysUserList= sysLoginfoRepository.findById(user.getId());
                 if(user!=null&&!"".equals(user)){
                     return ToData.builder().status("1").data(sysUserList).message("修改成功").build();
@@ -76,7 +76,6 @@ public class SysLoginfoServiceImpl implements SysLoginfoService {
     @Override
     public Object addSysUser(SysLoginfo sysLoginfo) {
         try{
-            System.out.println(sysLoginfo+"-----------"+sysLoginfo.getId());
             if(sysLoginfoRepository.findById(sysLoginfo.getId())!=null&&sysLoginfoRepository.findById(sysLoginfo.getId()).size()>0){
 
                 return ToDataMessage.builder().status("0").message("已存在").build();
@@ -122,7 +121,6 @@ public class SysLoginfoServiceImpl implements SysLoginfoService {
     @Override
     public Object queryLoginfo(String job_name) {
         List<SysLoginfo> sysUserList= sysLoginfoRepository.findAllByJobNameContaining(job_name);
-        System.out.println(sysUserList);
         if(sysUserList!=null&&sysUserList.size()>0){
             return ToData.builder().status("1").data(sysUserList).build();
         }else{

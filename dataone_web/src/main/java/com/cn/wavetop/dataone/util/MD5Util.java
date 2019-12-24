@@ -13,7 +13,6 @@ public  class MD5Util {
         try{
             md5 = MessageDigest.getInstance("MD5");
         }catch (Exception e){
-            System.out.println(e.toString());
             e.printStackTrace();
             return "";
         }

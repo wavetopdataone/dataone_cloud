@@ -52,7 +52,7 @@ public class SysMonitoring {
   @Column(name="dispose_rate", columnDefinition="INT default 0")
   private Long disposeRate;
  // @Column(name="job_status", columnDefinition="VARCHAR(128) default '0'")
-  private String jobStatus;
+  private Integer jobStatus;
   @Column(name="read_data", columnDefinition="INT default 0")
   private Long readData;
   @Column(name="write_data", columnDefinition="INT default 0")
@@ -60,5 +60,4 @@ public class SysMonitoring {
   @Column(name="error_data", columnDefinition="INT default 0")
   private Long errorData;
 
-    private Double synchronous;//同步进程
 }

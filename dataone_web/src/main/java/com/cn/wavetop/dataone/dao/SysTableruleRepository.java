@@ -15,11 +15,14 @@ public interface SysTableruleRepository extends JpaRepository<SysTablerule,Long>
 
     List<SysTablerule> findBySourceTableAndJobId(String sourceTable,long jobId);
     List<SysTablerule> findByJobId(long job_id);
+    List<SysTablerule> findByJobIdAndVarFlag(Long jobId,Long varflag);
     List<SysTablerule> findById(long id);
     @Transactional
     @Modifying
     @Query("delete from SysTablerule where jobId = :job_id")
     int deleteByJobId(long job_id);
+
+    List<SysTablerule> findBySourceTableContainingAndVarFlag(String sourceTable,Long varflag);
 
 
 }

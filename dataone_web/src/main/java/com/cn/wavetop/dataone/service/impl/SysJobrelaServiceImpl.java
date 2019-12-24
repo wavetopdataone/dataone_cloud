@@ -9,6 +9,7 @@ import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysDesensitizationService;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
+import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.util.LogUtil;
 import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
@@ -67,6 +68,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     private SysDataChangeRepository sysDataChangeRepository;
     @Autowired
     private SysMonitoringRepository sysMonitoringRepository;
+    @Autowired
+    private  ErrorLogRespository errorLogRespository;
+    @Autowired
+    private SysMonitoringService sysMonitoringService;
     @Autowired
     private LogUtil logUtil;
 
@@ -192,9 +197,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                             sysUserJobrela.setDeptId(PermissionUtils.getSysUser().getDeptId());
                             sysUserJobrela.setJobrelaId(save.getId());
                             sysUserJobrelaRepository.save(sysUserJobrela);
-                            System.out.println(sysUserJobrela+"----------");
+
                         }
                         //python的操作流程
+
                         Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(jobName).operate(PermissionUtils.getSysUser().getLoginName()+"创建了任务"+jobName).jobId(save.getId()).build();
                         userlogRespository.save(build);
                         SysJobrela s = repository.findByJobName(jobName);
@@ -265,7 +271,6 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     List<SysJobrela> list = repository.findJobByUserIdJobName(PermissionUtils.getSysUser().getId(), sysJobrela.getJobName());
                     if (list != null && list.size() > 0) {
                         if (!list.get(0).getId().equals(sysJobrela.getId())) {
-                            System.out.println(list.get(0).getId() + "-----" + sysJobrela.getId());
                             return ToDataMessage.builder().status("0").message("该部门下任务名称已存在").build();
                         }
                     }
@@ -556,6 +561,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 map.put("status", 0);
                 map.put("message", "任务不存在");
             }
+            //todo 查询同步进程
+            for(SysJobrela s:data){
+                sysMonitoringService.showMonitoring(s.getId());
+            }
         } else if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
             data = repository.findByUserIdJobName(id, job_name, page);
             list = repository.findByUserIdJobName(id, job_name);
@@ -566,6 +575,9 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             } else {
                 map.put("status", 0);
                 map.put("message", "任务不存在");
+            }
+            for(SysJobrela s:data){
+                sysMonitoringService.showMonitoring(s.getId());
             }
         } else {
             map.put("status", 0);
@@ -592,10 +604,15 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     if (data != null && data.size() > 0) {
                         list = repository.findByDeptIdAndJobStatus(job_status, deptId, page);
                         sysJobrelaList = repository.findByDeptIdAndJobStatus(job_status, deptId);
+
                     } else {
                         list = null;
                         sysJobrelaList = null;
                     }
+                }
+                //todo
+                for(SysJobrela s:list){
+                    sysMonitoringService.showMonitoring(s.getId());
                 }
                 map.put("status", "1");
                 map.put("totalCount", sysJobrelaList.size());
@@ -613,6 +630,12 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                         sysJobrelaList = null;
                     }
                 }
+                //todo
+                if(list!=null&&list.size()>0) {
+                    for (SysJobrela s : list) {
+                        sysMonitoringService.showMonitoring(s.getId());
+                    }
+                }
                 map.put("status", "1");
                 map.put("totalCount", sysJobrelaList.size());
                 map.put("data", list);
@@ -627,7 +650,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object start(Long id) {
-        System.out.println(id);
+
         HashMap<Object, Object> map = new HashMap();
         //把主任务的id添加到集合中
         List<Long> jobIds = new ArrayList<>();
@@ -670,6 +693,11 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     map.put("status", 1);
                     map.put("data", sysJobrelas);
                     map.put("message", "激活完成");
+                    //重启删除错误队列
+                    List<ErrorLog> list1=  errorLogRespository.findByJobId(id);
+                    if(list1!=null&&list1.size()>0){
+                        errorLogRespository.deleteByJobId(id);
+                    }
                 } else {
                     map.put("status", 0);
                     map.put("message", "无法激活");
@@ -688,12 +716,11 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object pause(Long id) {
-        System.out.println(id);
         HashMap<Object, Object> map = new HashMap();
         long id1 = id;
         SysJobrela byId = repository.findById(id1);
         String jobStatus = byId.getJobStatus();
-        System.out.println(jobStatus);
+
         if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
             if ("1".equals(jobStatus)) {
                 byId.setJobStatus("21"); //  2 代表暂停中，21代表暂停动作
@@ -730,7 +757,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Transactional
     @Override
     public Object end(Long id) {
-        System.out.println(id);
+
         HashMap<Object, Object> map = new HashMap();
         long id1 = id;
         SysJobrela byId = repository.findById(id1);
@@ -832,7 +859,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
         if (PermissionUtils.isPermitted("2")) {
             List<SysJobrelaUser> list = repository.findJobrelaByUserId(PermissionUtils.getSysUser().getId());
             List<SysJobrelaUser> list1 = repository.findJobrelaByUserId(userId);
-            System.out.println(list);
+
             Iterator<SysJobrelaUser> iterator = list.iterator();
             while (iterator.hasNext()) {
                 SysJobrelaUser s = iterator.next();
@@ -928,7 +955,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
 
     //根据用户id查询参与的任务
     public Object findUserJob(Long userId) {
-        System.out.println(new Date() + "start");
+
         List<SysJobrela> list = repository.findByUserId(userId);
         StringBuffer stringBuffer = new StringBuffer("");
         SysUserJobVo sysUserJobVo = null;
@@ -960,11 +987,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 } else {
                     sysUserJobVo.setOperate("查看详情");
                 }
-                sysUserJobVo.setJobStatus(sysUserJobVo.getJobStatus());//任务状态
+                sysUserJobVo.setJobStatus(sysJobrela.getJobStatus());//任务状态
                 stringBuffer.setLength(0);
                 sysUserJobVoList.add(sysUserJobVo);
             }
-            System.out.println(new Date() + "end");
             return ToData.builder().status("1").data(sysUserJobVoList).build();
         } else {
             return ToDataMessage.builder().status("0").message("权限不足").build();
@@ -1002,6 +1028,13 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                         stringBuffer.append(",");
                     }
                 }
+                //操作详情
+                if (sysJobrela.getJobStatus().equals("5")) {
+                    sysUserJobVo.setOperate("等待完善");
+                } else {
+                    sysUserJobVo.setOperate("查看详情");
+                }
+                sysUserJobVo.setJobStatus(sysJobrela.getJobStatus());//任务状态
                 sysUserJobVo.setJobId(sysJobrela.getId());
                 sysUserJobVo.setJobName(sysJobrela.getJobName());
                 sysUserJobVo.setUserName(String.valueOf(stringBuffer));
@@ -1010,7 +1043,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             }
             return ToData.builder().status("1").data(sysUserJobVoList).build();
         } else {
-            return ToDataMessage.builder().status("0").message("权限不足");
+            return ToDataMessage.builder().status("0").message("权限不足").build();
         }
     }
 
@@ -1018,6 +1051,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     //首页根据部门查询任务
     @Override
     public Object selJobrelaByDeptIdPage(Long deptId, Integer current, Integer size) {
+
         Pageable pageable = new PageRequest(current - 1, size);
         Map<Object, Object> map = new HashMap<>();
         List<SysJobrela> list = new ArrayList<>();
@@ -1026,8 +1060,14 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if (deptId != 0) {
                 list = repository.findByDeptId(deptId, pageable);
                 data = repository.findByDeptId(deptId);
+                for(SysJobrela s:list){
+                    sysMonitoringService.showMonitoring(s.getId());
+                }
             } else {
                 Page<SysJobrela> page = repository.findAll(pageable);
+                for(SysJobrela s:page.getContent()){
+                    sysMonitoringService.showMonitoring(s.getId());
+                }
                 map.put("status", "1");
                 map.put("data", page.getContent());
                 map.put("totalCount", page.getTotalElements());
@@ -1037,9 +1077,14 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if (deptId != 0) {
                 list = repository.findByUserId(deptId, pageable);
                 data = repository.findByUserId(deptId);
+
             } else {
                 list = repository.findByUserId(PermissionUtils.getSysUser().getId(), pageable);
                 data = repository.findByUserId((PermissionUtils.getSysUser().getId()));
+
+            }
+            for(SysJobrela s:list){
+                sysMonitoringService.showMonitoring(s.getId());
             }
         }
         map.put("status", "1");
@@ -1076,9 +1121,13 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
     @Override
     public Object copyJob(Long jobId) {
         HashMap<String, Object> map = new HashMap<>();
+        Optional<SysJobrela> sysJobrela = repository.findById(jobId);
+        if(sysJobrela.get()==null||"5".equals(sysJobrela.get().getJobStatus())||"0".equals(sysJobrela.get())||"4".equals(sysJobrela.get())){
+            return ToDataMessage.builder().status("0").message("未激活,待完善,异常中任务不能够复制").build();
+        }
         if (PermissionUtils.isPermitted("2")) {
             try {
-                Optional<SysJobrela> sysJobrela = repository.findById(jobId);
+
                 //查看有多少个复制的任务
                 List<SysJobrela> list = repository.findByJobNameLike(sysJobrela.get().getJobName() + "_copy%");
                 SysJobrela sysJobrela1 = new SysJobrela();
@@ -1239,6 +1288,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 userlogRespository.save(build);
                 map.put("status", "1");
                 map.put("data", sysJobrela2);
+                map.put("message","复制成功");
             } catch (Exception e) {
                 StackTraceElement stackTraceElement = e.getStackTrace()[0];
 

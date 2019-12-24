@@ -26,4 +26,5 @@ public interface ErrorLogRespository extends JpaRepository<ErrorLog,Long>, JpaSp
     List<ErrorLog> findByJobIdAndOptTime(Long jobId,Date optTimeOld, Date optTimeNew);
     List<ErrorLog> findByJobIdAndDestName(Long jobId,String destName);
     void deleteByJobId(Long job_id);
+    List<ErrorLog> findByJobIdAndSourceName(Long jobId,String sourceName);
 }

@@ -71,7 +71,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
     @Transactional
     @Override
     public Object editJobinfo(SysJobinfo jobinfo) {
-        System.out.println(jobinfo);
+
         HashMap<Object, Object> map = new HashMap();
         long syncRange = jobinfo.getSyncRange();
         if (syncRange == 0) {
@@ -89,10 +89,16 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                 data.setBeginTime(jobinfo.getBeginTime());
                 data.setDataEnc(jobinfo.getDataEnc());
                 data.setDestCaseSensitive(jobinfo.getDestCaseSensitive());
+                data.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
+
                 data.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
                 data.setEndTime(jobinfo.getEndTime());
                 data.setMaxDestWrite(jobinfo.getMaxDestWrite());
                 data.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                //todo 第二种限制
+                data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
+
                 data.setPlayers(jobinfo.getPlayers());
                 data.setReadBegin(jobinfo.getReadBegin());
                 data.setReadWay(jobinfo.getReadWay());
@@ -108,7 +114,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                     }
                 }
                 repository.save(data);
-                if(PermissionUtils.isPermitted("3")) {
+//                if(PermissionUtils.isPermitted("3")) {
                     //查询该任务有没有关联的子任务
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
@@ -116,7 +122,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
                         }
                     }
-                }
+//                }
                     if(sysJobrelaRelateds!=null&&sysJobrelaRelateds.size()>0) {
                         SysJobinfo datas=null;
                         for(SysJobrelaRelated sysJobrelaRelated:sysJobrelaRelateds) {
@@ -126,12 +132,15 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             datas.setJobId(sysJobrelaRelated.getSlaveJobId());
                             datas.setBeginTime(jobinfo.getBeginTime());
                             datas.setDataEnc(jobinfo.getDataEnc());
-
+                            datas.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
                             datas.setDestCaseSensitive(jobinfo.getDestCaseSensitive());
                             datas.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
                             datas.setEndTime(jobinfo.getEndTime());
                             datas.setMaxDestWrite(jobinfo.getMaxDestWrite());
                             datas.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                            //todo 第二种限制
+                            data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                            data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
 
                             datas.setPlayers(jobinfo.getPlayers());
                             datas.setReadBegin(jobinfo.getReadBegin());
@@ -169,6 +178,14 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             sysJobinfo1.setReadFrequency(jobinfo.getReadFrequency());
                             sysJobinfo1.setSyncRange(jobinfo.getSyncRange());
                             sysJobinfo1.setSyncWay(jobinfo.getSyncWay());
+                        //todo 读取写入并发量和速率限制
+                        sysJobinfo1.setSourceReadConcurrentNum(jobinfo.getSourceReadConcurrentNum());
+                        sysJobinfo1.setDestWriteConcurrentNum(jobinfo.getDestWriteConcurrentNum());
+                        sysJobinfo1.setMaxDestWrite(jobinfo.getMaxDestWrite());
+                        sysJobinfo1.setMaxSourceRead(jobinfo.getMaxSourceRead());
+                        //todo 第二种限制
+                        data.setMaxDestWriteTo(jobinfo.getMaxDestWriteTo());
+                        data.setMaxSourceReadTo(jobinfo.getMaxSourceReadTo());
                             if(jobinfo.getReadBegin()==1) {
                                 sysJobinfo1.setSourceType(jobinfo.getSourceType());
                             if (jobinfo.getSourceType().equals("1")) {
@@ -178,7 +195,6 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                                 sysJobinfo1.setBinlogPostion(jobinfo.getBinlogPostion());
                             }
                         }
-                            System.out.println(sysJobrelaRelated.getSlaveJobId()+"renwu");
                             repository.save(sysJobinfo1);
 
                     }

@@ -52,9 +52,18 @@ public class SysTableruleController {
     }
     @ApiImplicitParam
     @PostMapping("/link_data_table")
-    public Object linkDataTable(@RequestBody SysDbinfo sysDbinfo){
-        System.out.println("--------------------------");
-        return sysTableruleService.linkDataTable(sysDbinfo);
+    public Object linkDataTable(@RequestBody SysDbinfo sysDbinfo,Long job_id){
+        return sysTableruleService.linkDataTable(sysDbinfo,job_id);
+    }
+    @ApiOperation(value = "模糊查询映射的表", protocols = "HTTP", produces = "application/json", notes = "模糊查询映射的表")
+    @PostMapping("/selByTableName")
+    public Object selByTableName(Long jobId,String tableName){
+        return sysTableruleService.selByTableName(jobId,tableName);
     }
 
+    @ApiOperation(value = "模糊查询所有的表", protocols = "HTTP", produces = "application/json", notes = "模糊查询所有的表")
+    @PostMapping("/findByAllTableName")
+   public Object findByAllTableName(Long jobId,String tableName){
+        return sysTableruleService.findByAllTableName(jobId,tableName);
+    }
 }

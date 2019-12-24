@@ -50,42 +50,43 @@ public class ErrorLogController {
 
     @ApiOperation(value = "根据表名，时间查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据表名，时间查询错误队列")
     @PostMapping("/check_errorlog")
-    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String context) {
-        return service.getCheckError(jobId,tableName,type,startTime,endTime,context);
+    public Object check_errorlog(Long jobId,String tableName,String type,String startTime,String endTime,String content,Integer current,Integer size) {
+        return service.getCheckError(jobId,tableName,type,startTime,endTime,content,current,size);
     }
-
+    @ApiOperation(value = "查询错误队列类型", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询错误队列类型")
+    @PostMapping("/selType")
+    public Object selType() {
+        return service.selType();
+    }
     @ApiImplicitParam
     @PostMapping("/add_errorlog")
     public Object add_errorlog( @RequestBody ErrorLog errorLog) {
-        System.out.println(errorLog);
+
         return service.addErrorlog(errorLog);
     }
 
     @ApiImplicitParam
     @PostMapping("/edit_errorlog")
     public Object edit_errorlog(@RequestBody ErrorLog errorLog) {
-        System.out.println(errorLog);
         return service.editErrorlog(errorLog);
     }
 
-    @ApiImplicitParam(name = "id", value = "id", dataType = "long")
+
     @PostMapping("/delete_errorlog")
     public Object delete_errorlog(Long jobId,String ids) {
-        System.out.println(ids);
+
         return service.deleteErrorlog( jobId,ids);
     }
 
-    @ApiImplicitParam(name = "id", value = "id", dataType = "long")
     @PostMapping("/reset_errorlog")
     public Object reset_errorlog(Long jobId,String ids) {
         System.out.println(ids);
         return service.resetErrorlog( jobId,ids);
     }
-
-    @ApiOperation(value = "根据任务ID查询错误队列，表名，错误量", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
+    @ApiOperation(value = "根据任务ID查询错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据任务ID查询错误队列，表名，错误量")
     @PostMapping("/query_errorlog")
-    public Object query_errorlog(Long jobId) {
-        return service.queryErrorlog(jobId);
+    public Object query_errorlog(Long jobId,Integer current,Integer size) {
+        return service.queryErrorlog(jobId,current,size);
     }
     @ApiOperation(value = "根据ID查询具体错误队列", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "根据ID查询具体错误队列")
     @PostMapping("/selErrorlog")
@@ -95,11 +96,12 @@ public class ErrorLogController {
 
     @ApiOperation(value = "导出错误队列量", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "导出错误队列量")
     @GetMapping("/outErrorlog")
-    public void outErrorlog(Long jobId,String  ids, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
+    public void outErrorlog(Long jobId,String ids,String loginName, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException{
+
        String []id=ids.split(",");
         //消息列表
        Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
-       Userlog build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"导出了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
+       Userlog build2 = Userlog.builder().time(new Date()).user(loginName).jobName(sysJobrela.get().getJobName()).operate(loginName+"导出了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
        userlogRespository.save(build2);
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd ");
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH：mm：ss");//设置日期格式
@@ -112,9 +114,11 @@ public class ErrorLogController {
 //        map = (HashMap<String, Object>) service.getCheckError(jobId,tableName,startTime,endTime);
 //        list = (List) map.get("data");
         ErrorLog errorLog=null;
-        for(String idss:id){
-            errorLog= errorLogRespository.findById(Long.valueOf(idss).longValue());
-            list.add(errorLog);
+        if(id!=null) {
+            for (String idss : id) {
+                errorLog = errorLogRespository.findById(Long.valueOf(idss).longValue());
+                list.add(errorLog);
+            }
         }
 
         //设置表格
@@ -172,7 +176,7 @@ public class ErrorLogController {
                 cells = rows.createCell(3);
                 cells.setCellValue(list.get(i).getOptType());
                 cells = rows.createCell(4);
-                cells.setCellValue(list.get(i).getOptContext());
+                cells.setCellValue(list.get(i).getContent());
 
             }
             final String userAgent = request.getHeader("USER-AGENT");

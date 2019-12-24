@@ -31,7 +31,6 @@ public class CredentialMatcher extends SimpleCredentialsMatcher {
          List<SysUser> s=sysUserRespository.findAllByLoginName(new String(usernamePasswordToken.getUsername()));
         String ciphertext = new Md5Hash(password,s.get(0).getSalt(),3).toString(); //生成的密文
         String dbpassword = (String) info.getCredentials();
-        System.out.println(ciphertext+"---xxxxxxxx---"+dbpassword);
         return this.equals(ciphertext, dbpassword);
     }
 

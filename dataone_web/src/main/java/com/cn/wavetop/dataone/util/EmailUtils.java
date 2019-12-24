@@ -48,7 +48,6 @@ public class EmailUtils {
         String password=sysUser.getEmailPassword();
         try {
             SimpleEmail mail = new SimpleEmail();
-            System.out.println(sysUser.getEmailType() + "-----" + sysUser.getEmail());
             mail.setHostName(hostName);//发送邮件的服务器
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, emailPropert.getForm());  //发送邮件的邮箱和发件人
@@ -85,7 +84,7 @@ public class EmailUtils {
         String password=sysUser.getEmailPassword();
         try {
             SimpleEmail mail = new SimpleEmail();
-            System.out.println(sysUser.getEmailType() + "-----" + sysUser.getEmail());
+
             mail.setHostName(hostName);//发送邮件的服务器
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, "上海浪擎科技有限公司");  //发送邮件的邮箱和发件人
@@ -112,7 +111,6 @@ public class EmailUtils {
 
     public static void main(String[] args) {
         boolean flag=isEmailValid("Sfhzyxzh@163.com");
-        System.out.println(flag);
         //  this.sendAuthCodeEmail("1696694856@qq.com",achieveCode());
     }
 

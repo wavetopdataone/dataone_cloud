@@ -15,6 +15,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -54,6 +55,14 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/login/**", "anon");
         filterChainDefinitionMap.put("/sys_user/login**", "anon");
         filterChainDefinitionMap.put("/sys_user/login/", "anon");
+        //导出
+        filterChainDefinitionMap.put("/sys_loginlog/OutPutLoginExcel**", "anon");
+        filterChainDefinitionMap.put("/sys_log/OutPutExcel**", "anon");
+        filterChainDefinitionMap.put("/sys_userlog/OutPutUserExcel**", "anon");
+        filterChainDefinitionMap.put("/errorlog/outErrorlog**", "anon");
+        filterChainDefinitionMap.put("/userlog/OutputError**", "anon");
+        filterChainDefinitionMap.put("/sysError/**", "anon");
+
 //        filterChainDefinitionMap.put("/sys_user/login_out/", "anon");
         //后台kafka调用的接口
         filterChainDefinitionMap.put("/toback/**", "anon");
@@ -215,6 +224,17 @@ public class ShiroConfig {
         simpleMappingExceptionResolver.setDefaultErrorView("error");    // No default
         simpleMappingExceptionResolver.setExceptionAttribute("ex");     // Default is "exception"
         return simpleMappingExceptionResolver;
+    }
+    /**
+     *
+     * @return MethodInvokingFactoryBean 实例
+     */
+    @Bean
+    public MethodInvokingFactoryBean methodInvokingFactoryBean(@Qualifier("securityManager") SecurityManager securityManager) {
+        MethodInvokingFactoryBean bean = new MethodInvokingFactoryBean();
+        bean.setStaticMethod("org.apache.shiro.SecurityUtils.setSecurityManager");
+        bean.setArguments(securityManager);
+        return bean;
     }
 
 }

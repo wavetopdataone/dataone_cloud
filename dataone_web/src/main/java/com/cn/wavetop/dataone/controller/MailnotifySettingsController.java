@@ -26,28 +26,28 @@ public class MailnotifySettingsController {
 
     @ApiImplicitParam
     @PostMapping("/check_mailnotify")
-    public Object check_mailnotify(long job_id) {
-        return service.getCheckMailnotifyByJobId(job_id);
+    public Object check_mailnotify(long jobId) {
+        return service.getCheckMailnotifyByJobId(jobId);
     }
 
     @ApiImplicitParam
     @PostMapping("/add_mailnotify")
     public Object add_mailnotify( @RequestBody MailnotifySettings mailnotifySettings) {
-        System.out.println(mailnotifySettings);
+
         return service.addMailnotify(mailnotifySettings);
     }
 
     @ApiImplicitParam
     @PostMapping("/edit_mailnotify")
     public Object edit_mailnotify( @RequestBody MailnotifySettings mailnotifySettings) {
-        System.out.println(mailnotifySettings);
+
         return service.editMailnotify(mailnotifySettings);
     }
 
     @ApiImplicitParam
     @PostMapping("/delete_mailnotify")
     public Object delete_errorlog(long job_id) {
-        System.out.println(job_id);
+
         return service.deleteErrorlog(job_id);
     }
 

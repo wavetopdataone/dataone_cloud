@@ -89,7 +89,7 @@ public class MonitoringClient extends Thread {
 
         }
             try {
-                System.out.println(new Date() + "结束时间：");
+
                 now=df.format(new Date());
                 Thread.sleep(24 * 1000 * 60);
             } catch (InterruptedException e) {

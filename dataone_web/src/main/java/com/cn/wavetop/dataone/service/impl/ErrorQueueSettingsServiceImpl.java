@@ -47,7 +47,7 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
             map.put("data", errorQueueSettings);
             return map;
         } else {
-            return ToData.builder().status("0").message("任务不存在").build();
+            return ToData.builder().status("0").message("不存在错误队列设置").build();
 
         }
     }
@@ -86,15 +86,16 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         ErrorQueueSettings errorQueueSettings1=null;
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                            if(PermissionUtils.isPermitted("3")) {
+//                            if(PermissionUtils.isPermitted("3")) {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
 
-                        }
+//                        }
                             errorQueueSettings1=new ErrorQueueSettings();
                             errorQueueSettings1.setPauseSetup(errorQueueSettings.getPauseSetup());
                             errorQueueSettings1.setPreSteup(errorQueueSettings.getPreSteup());
                             errorQueueSettings1.setWarnSetup(errorQueueSettings.getWarnSetup());
                             errorQueueSettings1.setJobId(sysJobrelaRelated.getSlaveJobId());
+                            repository.save(errorQueueSettings1);
                     }
                 }
                 map.put("status", 1);
@@ -110,6 +111,7 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
                         errorQueueSettings1.setPreSteup(errorQueueSettings.getPreSteup());
                         errorQueueSettings1.setWarnSetup(errorQueueSettings.getWarnSetup());
                         errorQueueSettings1.setJobId(sysJobrelaRelated.getSlaveJobId());
+                        repository.save(errorQueueSettings1);
                     }
                 }
                 map.put("status", 2);

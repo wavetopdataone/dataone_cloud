@@ -2,10 +2,7 @@ package com.cn.wavetop.dataone.controller;
 
 import com.cn.wavetop.dataone.config.SpringContextUtil;
 import com.cn.wavetop.dataone.dao.*;
-import com.cn.wavetop.dataone.entity.ErrorQueueSettings;
-import com.cn.wavetop.dataone.entity.SysJobrela;
-import com.cn.wavetop.dataone.entity.SysMonitoring;
-import com.cn.wavetop.dataone.entity.SysUser;
+import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.EmailJobrelaVo;
 import com.cn.wavetop.dataone.entity.vo.EmailPropert;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
@@ -13,6 +10,7 @@ import com.cn.wavetop.dataone.util.EmailUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +25,7 @@ public class EmailClient extends Thread {
     private ErrorQueueSettingsRespository errorQueueSettingsRespository = (ErrorQueueSettingsRespository) SpringContextUtil.getBean("errorQueueSettingsRespository");
     private SysMonitoringRepository sysMonitoringRepository = (SysMonitoringRepository) SpringContextUtil.getBean("sysMonitoringRepository");
     private SysUserJobrelaRepository sysUserJobrelaRepository = (SysUserJobrelaRepository) SpringContextUtil.getBean("sysUserJobrelaRepository");
-
+    private ErrorLogRespository errorLogRespository=(ErrorLogRespository)SpringContextUtil.getBean("errorLogRespository");
     private SysUserRepository sysUserRepository = (SysUserRepository) SpringContextUtil.getBean("sysUserRepository");
 
     private boolean stopMe = true;
@@ -42,10 +40,14 @@ public class EmailClient extends Thread {
         EmailUtils emailUtils = new EmailUtils();
         EmailPropert emailPropert = null;
         Optional<SysJobrela> sysJobrela = null;
+        List<ErrorLog> errorLogs=new ArrayList<>();
         while (stopMe) {
             double readData = 0;
             double errorData = 0;
             double result = 0;
+            double WarnSetup=0;
+            BigDecimal bg=null;
+            BigDecimal bg1=null;
             sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             list = repository.findEmailJobRelaUser();
             for (EmailJobrelaVo emailJobrelaVo : list) {
@@ -55,10 +57,12 @@ public class EmailClient extends Thread {
                     sysMonitoringList = sysMonitoringRepository.findByJobId(emailJobrelaVo.getJobId());
                     errorQueueSettings = errorQueueSettingsRespository.findByJobId(emailJobrelaVo.getJobId());
                     for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                        if (sysMonitoring.getReadData() != null && sysMonitoring.getErrorData() != null) {
-                            if (sysMonitoring.getReadData() != 0 && sysMonitoring.getErrorData() != 0) {
+                        //按表查询出错误队列的错误数量
+                        errorLogs= errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(),sysMonitoring.getSourceTable());
+                        if (sysMonitoring.getReadData() != null && errorLogs!=null) {
+                            if (sysMonitoring.getReadData() != 0 && errorLogs.size()>0) {
                                 readData = sysMonitoring.getReadData();
-                                errorData = sysMonitoring.getErrorData();
+                                errorData = errorLogs.size();
                                 result = errorData / readData;
 
                             } else {
@@ -67,9 +71,14 @@ public class EmailClient extends Thread {
                         } else {
                             result = 0;
                         }
-                        System.out.println(errorQueueSettings.getWarnSetup() + "---" + result);
-                        if (errorQueueSettings.getWarnSetup() < result) {
 
+                        WarnSetup=errorQueueSettings.getWarnSetup()/100;
+                         bg = new BigDecimal(WarnSetup);
+                        WarnSetup = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();//3wei
+                        bg1 = new BigDecimal(result);
+                        result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+
+                        if (WarnSetup < result) {
                             emailPropert = new EmailPropert();
                             emailPropert.setForm("上海浪擎科技有限公司");
                             emailPropert.setSubject("浪擎dataone错误预警通知：");
