@@ -695,7 +695,7 @@ public class SysUserServiceImpl implements SysUserService {
             opsForValue = stringRedisTemplate.opsForValue();
              a=email;
 //            opsForValue.set(a,a);//如果是用户名发送邮件的话
-            opsForValue.set("codeold"+a,code);
+            opsForValue.set("codeold"+a,code,1,TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("*redis服务未连接");
             e.printStackTrace();

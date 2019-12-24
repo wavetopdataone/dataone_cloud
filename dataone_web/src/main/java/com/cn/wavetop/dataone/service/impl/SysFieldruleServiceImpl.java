@@ -83,7 +83,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         boolean flag = false;
         for (String s : split) {
             String[] ziduan = s.split(",");
-            //若字段改变则存入字段规则表
+            //若字段改变则存入字段规则表 todo
 //                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[5].equals(ziduan[8])) {
             if (!ziduan[0].equals(ziduan[1])) {
                 flag = true;
@@ -173,8 +173,9 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 }
                 //查询是否关联的有子任务
                 List<SysJobrelaRelated> sysJobrelaRelateds = sysJobrelaRelatedRespository.findByMasterJobId(job_id);
+                //删除主任务的表规则
                 int a = sysTableruleRespository.deleteByJobIdAndSourceTable(job_id, source_name);
-                if (PermissionUtils.isPermitted("3")) {
+//                if (PermissionUtils.isPermitted("3")) {
                     //查询该任务有没有关联的子任务
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
@@ -184,10 +185,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                             sysFilterTableRepository.deleteByJobIdAndFilterTable(sysJobrelaRelated.getSlaveJobId(), source_name);
                         }
                     }
-                }
-
-                //删除主任务的表规则
-                sysTableruleRespository.deleteByJobIdAndSourceTable(job_id, source_name);
+//                }
                 //若源端表和目标端不一致则添加表规则
                 if (!source_name.equals(dest_name)) {
                     byJobIdAndSourceTable.setDestTable(dest_name);
@@ -199,17 +197,13 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     //若有子任务为子任务添加表规则
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-//                        SysTablerule sysTablerule= sysTableruleRespository.findByJobId(sysJobrelaRelated.getSlaveJobId());
-//                        if(sysTablerule!=null){
-//                            continue;
-//                        }else {
                             byJobIdAndSourceTable2 = new SysTablerule();
                             byJobIdAndSourceTable2.setDestTable(dest_name);
                             byJobIdAndSourceTable2.setJobId(sysJobrelaRelated.getSlaveJobId());
                             byJobIdAndSourceTable2.setSourceTable(source_name);
                             byJobIdAndSourceTable2.setVarFlag(Long.valueOf(2));
                             sysTableruleRespository.save(byJobIdAndSourceTable2);
-//                        }
+
                         }
                     }
                 } else {

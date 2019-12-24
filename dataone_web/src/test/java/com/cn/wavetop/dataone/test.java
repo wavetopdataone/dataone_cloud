@@ -25,36 +25,48 @@ public class test {
 
     @Test
     public void asq(){
-        String d="dsadsadsa技术支持";
-        if(d.contains("技术支持")){
-
+        List<String> list=new ArrayList<>();
+        List<String> list2=new ArrayList<>();
+        list.add("sys_dept");
+        list.add("sys_menu");
+        list.add("test1");
+        list.add("test2");
+        for(String a:list){
+            if(a.contains("test1")){
+                list2.add(a);
+            }
         }
-
-      double a=0.5;
-        double b=100;
-       double c= a/b;
-        BigDecimal bg = new BigDecimal(c);
-        double num1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-        if(0.5>c){
-            System.out.println("hha");
-        }
-        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
-        SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
-
-////
-        String nowDate = dfs.format(new Date());//几号
-        String nowDates = df.format(new Date());//几号
-
-        Set<String> set = new HashSet<>();
-//        Comparator<String> comp = new DescSort();
-        set.add("2019-12-11");
-        set.add("2019-12-13");
-        set.add("2019-12-12");
-
-        set.add("2019-12-12");
-        set.add("2019-12-12");
-
-        set.add("2019-12-10");
+        System.out.println(list2);
+//        String d="dsadsadsa技术支持";
+//        if(d.contains("技术支持")){
+//
+//        }
+//
+//      double a=0.5;
+//        double b=100;
+//       double c= a/b;
+//        BigDecimal bg = new BigDecimal(c);
+//        double num1 = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+//        if(0.5>c){
+//            System.out.println("hha");
+//        }
+//        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
+//        SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
+//
+//////
+//        String nowDate = dfs.format(new Date());//几号
+//        String nowDates = df.format(new Date());//几号
+//
+//        Set<String> set = new HashSet<>();
+////        Comparator<String> comp = new DescSort();
+//        set.add("2019-12-11");
+//        set.add("2019-12-13");
+//        set.add("2019-12-12");
+//
+//        set.add("2019-12-12");
+//        set.add("2019-12-12");
+//
+//        set.add("2019-12-10");
 //        Set<String> sest =getOrderByDate(set);
 //        System.out.println(sest);
 //////        String minue = nowDate.substring(3, 5);

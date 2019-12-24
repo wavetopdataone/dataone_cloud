@@ -55,7 +55,7 @@ public class UserLogController {
         response.setContentType("text/plain");
         FileInputStream in = null;
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
-        File file = new File("dataoneerror.log." + date + ".log");
+        File file = new File("dataoneerror-" + date + ".0.log");
         OutputStream out = null;
         try {
             out = response.getOutputStream();
@@ -105,7 +105,7 @@ public class UserLogController {
     public void showError2(HttpServletRequest request, HttpServletResponse response, String date) {
         FileInputStream in = null;
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
-        String fileName = "dataoneerror.log." + date + ".log";
+        String fileName = "dataoneerror-" + date + ".0.log";
         String FileNewName = "dataoneError-" + date + ".txt";
         OutputStream out = null;
         response.setContentType("text/plain");

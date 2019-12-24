@@ -114,7 +114,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                     }
                 }
                 repository.save(data);
-                if(PermissionUtils.isPermitted("3")) {
+//                if(PermissionUtils.isPermitted("3")) {
                     //查询该任务有没有关联的子任务
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
@@ -122,7 +122,7 @@ public class SysJobinfoServiceImpl implements SysJobinfoService {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
                         }
                     }
-                }
+//                }
                     if(sysJobrelaRelateds!=null&&sysJobrelaRelateds.size()>0) {
                         SysJobinfo datas=null;
                         for(SysJobrelaRelated sysJobrelaRelated:sysJobrelaRelateds) {

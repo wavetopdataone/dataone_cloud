@@ -92,9 +92,9 @@ public class DataChangeSettingsServiceImpl implements DataChangeSettingsService 
                 repository.updateByJobId(dataChangeSettings.getJobId(), dataChangeSettings.getDeleteSyncingSource(), dataChangeSettings.getDeleteSync(), dataChangeSettings.getNewSync(), dataChangeSettings.getNewtableSource());
                 if(sysJobrelaRelateds!=null&&sysJobrelaRelateds.size()>0) {
                     for(SysJobrelaRelated sysJobrelaRelated:sysJobrelaRelateds) {
-                        if(PermissionUtils.isPermitted("3")) {
+//                        if(PermissionUtils.isPermitted("3")) {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
-                        }
+//                        }
 
                          dataChangeSettings1=new DataChangeSettings();
                          dataChangeSettings1.setJobId(sysJobrelaRelated.getSlaveJobId());

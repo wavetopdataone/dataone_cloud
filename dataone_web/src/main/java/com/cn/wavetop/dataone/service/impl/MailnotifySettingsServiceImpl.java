@@ -90,9 +90,10 @@ public class MailnotifySettingsServiceImpl implements MailnotifySettingsService 
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         MailnotifySettings mailnotifySettings2=null;
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                            if(PermissionUtils.isPermitted("3")) {
+                            //todo 编辑者修改和管理员修改
+//                            if(PermissionUtils.isPermitted("3")) {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
-                        }
+//                        }
                             mailnotifySettings2=new MailnotifySettings();
                             mailnotifySettings2.setErrorQueueAlert(mailnotifySettings.getErrorQueueAlert());
                             mailnotifySettings2.setErrorQueuePause(mailnotifySettings.getErrorQueuePause());

@@ -329,20 +329,15 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         errorDatas = errorLogs.size();
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                if (sysMonitoring.getSqlCount() == null) {
-                    sysMonitoring.setSqlCount((long) 0);
+//                if (sysMonitoring.getSqlCount() == null) {
+//                    sysMonitoring.setSqlCount((long) 0);
+//                }
+                if (sysMonitoring.getReadData() != null) {
+                    readData += sysMonitoring.getReadData();
                 }
-                if (sysMonitoring.getReadData() == null) {
-                    sysMonitoring.setReadData((long) 0);
+                if (sysMonitoring.getWriteData() != null) {
+                    writeData += sysMonitoring.getWriteData();
                 }
-                if (sysMonitoring.getWriteData() == null) {
-                    sysMonitoring.setWriteData((long) 0);
-                }
-                if (sysMonitoring.getErrorData() == null) {
-                    sysMonitoring.setErrorData((long) 0);
-                }
-                readData += sysMonitoring.getReadData();
-                writeData += sysMonitoring.getWriteData();
                 if (sysMonitoring.getReadRate() == null || sysMonitoring.getReadRate() == 0) {
                     sysMonitoring.setReadRate((long) 0);
                     index++;

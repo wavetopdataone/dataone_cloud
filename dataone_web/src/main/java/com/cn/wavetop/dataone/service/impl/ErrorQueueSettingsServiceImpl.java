@@ -86,15 +86,16 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         ErrorQueueSettings errorQueueSettings1=null;
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                            if(PermissionUtils.isPermitted("3")) {
+//                            if(PermissionUtils.isPermitted("3")) {
                             repository.deleteByJobId(sysJobrelaRelated.getSlaveJobId());
 
-                        }
+//                        }
                             errorQueueSettings1=new ErrorQueueSettings();
                             errorQueueSettings1.setPauseSetup(errorQueueSettings.getPauseSetup());
                             errorQueueSettings1.setPreSteup(errorQueueSettings.getPreSteup());
                             errorQueueSettings1.setWarnSetup(errorQueueSettings.getWarnSetup());
                             errorQueueSettings1.setJobId(sysJobrelaRelated.getSlaveJobId());
+                            repository.save(errorQueueSettings1);
                     }
                 }
                 map.put("status", 1);
@@ -110,6 +111,7 @@ public class  ErrorQueueSettingsServiceImpl implements ErrorQueueSettingsService
                         errorQueueSettings1.setPreSteup(errorQueueSettings.getPreSteup());
                         errorQueueSettings1.setWarnSetup(errorQueueSettings.getWarnSetup());
                         errorQueueSettings1.setJobId(sysJobrelaRelated.getSlaveJobId());
+                        repository.save(errorQueueSettings1);
                     }
                 }
                 map.put("status", 2);
