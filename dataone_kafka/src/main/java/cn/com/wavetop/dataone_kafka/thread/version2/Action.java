@@ -4,15 +4,18 @@ import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
 import cn.com.wavetop.dataone_kafka.consumer.ConsumerHandler;
 import cn.com.wavetop.dataone_kafka.entity.web.SysDbinfo;
+import cn.com.wavetop.dataone_kafka.utils.HttpClientKafkaUtil;
 import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +43,8 @@ public class Action extends Thread {
 
     //注入http客户端
     private static ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
-
+    //注入http客户端
+    private static RestTemplate restTemplate = SpringContextUtil.getBean(RestTemplate.class);
 
     public void stopMe() {
         stopMe = false;
@@ -49,7 +53,7 @@ public class Action extends Thread {
 
     @Override
     public void run() {
-        System.out.println(toBackClient);
+//        System.out.println(toBackClient);
         System.out.println(actionDir);
         int index = 1;
         while (stopMe) {
@@ -112,6 +116,10 @@ public class Action extends Thread {
                     new File(actionDir + s).delete(); // 删除文件
 
                     // todo 暂停kafka connector sink
+                    List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
+                    for (Object destTable : destTables) {
+                        HttpClientKafkaUtil.getConnectPause("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                    }
 
                 } else if (s.split("_")[1].equals("resume")) {
 
@@ -141,7 +149,10 @@ public class Action extends Thread {
 
 
                 // todo 重启kafka connector sink
-
+                List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
+                for (Object destTable : destTables) {
+                    HttpClientKafkaUtil.getConnectResume("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                }
             }
             try {
                 Thread.sleep(5000);
