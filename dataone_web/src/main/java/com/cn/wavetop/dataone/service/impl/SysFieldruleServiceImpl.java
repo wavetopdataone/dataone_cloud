@@ -603,6 +603,12 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     }
                 }
             }
+
+            //判断是否有新增的字段
+            SysFieldrule sysFieldrule=sysFieldruleRepository.findByJobIdAndAddFlag(job_id,1L);
+            if(sysFieldrule!=null) {
+                data.add(sysFieldrule);
+            }
             map.put("status", "1");
             map.put("data", data);
             if (sysFieldruleList != null && sysFieldruleList.size() > 0) {
