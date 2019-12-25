@@ -61,15 +61,6 @@ public class DBConns {
         return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
     }
 
-    /**DBConns
-     * 获取达梦数据库对象
-     */
-    public static Connection getDaMengConn(SysDbinfo sysDbinfo) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        String url = "jdbc:dm://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+"/"+sysDbinfo.getDbname();
-        Class.forName("dm.jdbc.driver.DmDriver");
-        DriverManager.setLoginTimeout(10);
-        return  DriverManager.getConnection(url, sysDbinfo.getUser(), sysDbinfo.getPassword());
-    }
 
     /**
      * 释放资源
