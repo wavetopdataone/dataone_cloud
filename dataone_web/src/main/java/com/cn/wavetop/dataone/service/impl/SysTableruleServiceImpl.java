@@ -375,8 +375,8 @@ public class SysTableruleServiceImpl implements SysTableruleService {
     @Override
     public String selectTable(Long jobId, String destTable, String time,Integer errorflag) {
         //查询源端表名
-        //List<SysTablerule> sysTableruleList = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndDestTable(jobId, destTable);
+        List<SysTablerule> sysTableruleList = sysTableruleRepository.findByJobIdAndDestTable(jobId, destTable);
+        //List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobIdAndDestTable(jobId, destTable);
         //查询任务名称
         Optional<SysJobrela> byId = sysJobrelaRespository.findById(jobId);
         Userlog userlog = new Userlog();
@@ -403,9 +403,9 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         //异常状态4,暂时只有死进程才会修改异常状态
         int status = 4;
 
-        if (sysMonitoringList != null && sysMonitoringList.size() > 0){
-            for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                sourceTable = sysMonitoring.getSourceTable();
+        if (sysTableruleList != null && sysTableruleList.size() > 0){
+            for (SysTablerule sysTablerule : sysTableruleList) {
+                sourceTable = sysTablerule.getSourceTable();
                 //死进程,更新状态4
                 if (errorflag == 2){
                     sysMonitoringRepository.updateStatus(jobId,sourceTable,status);

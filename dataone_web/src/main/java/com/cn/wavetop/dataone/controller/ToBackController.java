@@ -223,12 +223,18 @@ public class ToBackController {
      * @param syserror
      */
     @PostMapping("/insertsyslog")
-    void inserSyslog(@RequestParam String syserror,@RequestParam String method) throws ParseException {
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method,@RequestParam String time) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date parse = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+        Date format = null;
+        try {
+            //format = simpleDateFormat.parse(simpleDateFormat.format(parse));
+            format = simpleDateFormat.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         SysError sysError = new SysError();
         String errortype = "ConsumerError";
-        sysError.setCreateDate(parse);
+        sysError.setCreateDate(format);
         sysError.setErrorType(errortype);
         sysError.setMethod(method);
         sysError.setErrorName(syserror);

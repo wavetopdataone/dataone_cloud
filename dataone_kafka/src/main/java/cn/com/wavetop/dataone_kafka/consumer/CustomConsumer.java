@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class CustomConsumer extends Thread {
     /**
@@ -29,7 +30,7 @@ public class CustomConsumer extends Thread {
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
-        props.put("group.id", "test21");
+        props.put("group.id", "test6");
         props.put("enable.auto.commit", "false");
         props.put("auto.commit.interval.ms", "1000");
         HashMap<String, String> map = new HashMap<>();
@@ -119,7 +120,7 @@ public class CustomConsumer extends Thread {
                         }
                     }
 
-                    if (/*index<1 && */iterator.hasNext()) {
+                    if (/*index<1 && */iterator.hasNext()&&payload.contains("\\{")) {
                         String value1 = iterator.next().value();
                         JSONObject jsonObject1 = JSONObject.parseObject(value1);
                         String payload1 = (String) jsonObject1.get("payload");
@@ -137,22 +138,59 @@ public class CustomConsumer extends Thread {
 
                                     System.out.println("sourceTable = " + sourceTable);
                                     //远程调用插入错误日志信息
-                                    toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
+                                    if (message != null) {
+                                        toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
 
+
+                                    }
                                 }
                             }
                         }
-                        /*index ++;*/
                     }
                 }
 
                 /**
                  * 如果包含ERROR而不包含ERROR Error的要放入系统日志表中
-                 * 如果是死进程异常,则将异常插入到syslog表中,便修改状态
-                 * 如果是普通的系统异常,则直接插入到syslog表中,不需要修改状态
+                 * 如果是死进程异常,则将异常插入到syserror表中,便修改状态
+                 * 如果是普通的系统异常,则直接插入到syserror表中,不需要修改状态
                  */
                 //筛选出系统错误信息,其中还包含死进程
                 if (!payload.contains("ERROR Error")&&payload.contains("ERROR")) {
+
+
+                    //特殊异常处理,对那些异常进行处理
+                    if (payload.contains("zhengyong")){
+                        String substring = payload.substring(payload.indexOf("(") + 1, payload.indexOf(")"));
+                        System.out.println("substring = " + substring);
+                        String[] split = substring.split("-");
+                        if (split.length==5){
+                            String topic = split[0]+"-"+split[1]+"-"+split[2];
+                            Integer partiton = Integer.valueOf(split[3]);
+                            Long offset = Long.valueOf(split[4]);
+                            String message = CustomNewConsumer.topicPartion(topic, partiton, offset);
+                            String errortype = "org.apache.kafka.connect.errors.DuplicateKeyException";
+                            //String time = "2019-12-16 11:17:44";
+                            String time = null;
+                            String substring1 = payload.substring(payload.indexOf("[") + 1, payload.indexOf("]"));
+                            String[] split1 = substring1.split(",");
+
+                            if (split1.length>0){
+                                time = split1[0];
+                            }
+                            Long jobId = Long.valueOf(split[1]);
+                            String destTable = split[2];
+                            Integer errorflag = 1;
+                            String sourceTable = toBackClient.selectTable(jobId, destTable,time,errorflag);
+                            //远程调用插入错误日志信息
+                            if (message != null) {
+
+                                toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
+                            }
+                        }
+                    }
+
+
+                    //死进程的异常
                     if (payload.contains("being killed")){
                         HashMap<String, String> hashMap = new HashMap<>();
                         String[] split = payload.split("\\{");
@@ -168,17 +206,23 @@ public class CustomConsumer extends Thread {
                             }
                         }
                         //拿出时间
+                        //String time = "2019-12-16 11:17:44";
+                        String substring = payload.substring(payload.indexOf("[") + 1, payload.indexOf("]"));
+                        String[] split2 = substring.split(",");
                         String time = null;
-                        String[] split2 = payload.split("\\[");
-                        if (split2.length>0){
-                            String[] split1 = split2[0].split("]");
-                            if (split1[0].length()>0){
-                                String[] split3 = split1[0].split(",");
-                                if (split3.length>0){
-                                    time = split3[0];
-                                }
-                            }
+                        if (split2.length > 0){
+                            time = split2[0];
                         }
+                        //String[] split2 = payload.split("\\[");
+                        //if (split2.length>0){
+                        //    String[] split1 = split2[0].split("]");
+                        //    if (split1[0].length()>0){
+                        //        String[] split3 = split1[0].split(",");
+                        //        if (split3.length>0){
+                        //            time = split3[0];
+                        //        }
+                        //    }
+                        //}
                         String topic = null;
                         if (hashMap.get("id") != null) {
                             topic = hashMap.get("id");
@@ -187,20 +231,32 @@ public class CustomConsumer extends Thread {
 
                             Long jobId = null;
                             String destTable = null;
-                            if (split1.length > 3) {
-
+                            if (split1.length == 5) {
                                 jobId = Long.valueOf(split1[2]);
                                 destTable = split1[3];
+
                             }
                             //这里的时间是一个虚假的值,为了后期扩展用
                             //String time = "2019-12-16 10:23:32";
                             Integer errorflag = 2;
-                            String sourceTable = toBackClient.selectTable(jobId, destTable, time, errorflag);
-
+                            System.out.println("jobId = " + jobId);
+                            System.out.println("destTable = " + destTable);
+                            System.out.println("time = " + time);
+                            if (jobId != null && destTable!=null){
+                                String sourceTable = toBackClient.selectTable(jobId, destTable, time, errorflag);
+                            }
                         }
                     }
-                    //到Error的下一行
+
+
+                    /*//到Error的下一行,这里是普通异常的处理
                     if (iterator.hasNext()){
+                        String substring = payload.substring(payload.indexOf("[") + 1, payload.indexOf("]"));
+                        String[] split2 = substring.split(",");
+                        String time = null;
+                        if (split2.length > 0){
+                            time = split2[0];
+                        }
                         String exception = iterator.next().value();
                         JSONObject jsonObject1 = JSONObject.parseObject(exception);
                         String payload1 = (String) jsonObject1.get("payload");
@@ -209,13 +265,14 @@ public class CustomConsumer extends Thread {
                             String[] split = payload1.split(":");
                             for (String syserror : split) {
                                 if (syserror.contains("Exception")){
-                                    toBackClient.inserSyslog(syserror,method);
+
+                                    toBackClient.inserSyslog(syserror,method,time);
                                     //只消费到下一行.然后跳出
                                     break;
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
             }
             consumer.commitAsync();//如果一切正常，使用commitAsync来提交，这样速度更快，而且即使这次提交失败，下次提交很可能会成功
@@ -547,7 +604,7 @@ public class CustomConsumer extends Thread {
     public static void main(String[] args) throws Exception {
         //kafka-connect.log
         //BufferedReader br = new BufferedReader(new FileReader("D:\\wangcheng\\dataone\\kafka-connect.log"));
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        /*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
         Properties props = new Properties();
         props.put("bootstrap.servers", "192.168.1.156:9092");
@@ -622,7 +679,6 @@ public class CustomConsumer extends Thread {
                     }
                     if (map.get("partition") != null){
                         partition = Integer.valueOf(map.get("partition"));
-
                     }
                     if (map.get("offset") != null){
                         offset = Long.valueOf(map.get("offset"));
@@ -658,7 +714,7 @@ public class CustomConsumer extends Thread {
                     }
                 }
             }
-        }
+        }*/
 
 
 

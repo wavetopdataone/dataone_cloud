@@ -109,7 +109,7 @@ public interface ToBackClient {
      * @param
      */
     @PostMapping("/toback/insertsyslog")
-    void inserSyslog(@RequestParam String syserror,@RequestParam String method);
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method,@RequestParam String time);
 
     /**
      * 将错误信息4状态填入到监控表
