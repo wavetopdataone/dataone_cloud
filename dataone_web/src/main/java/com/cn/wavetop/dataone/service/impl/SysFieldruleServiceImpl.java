@@ -592,7 +592,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 if (sysTablerules != null && sysTablerules.size() > 0) {
                     map.put("destName", sysTablerules.get(0).getDestTable());
                 } else {
-                    map.put("destName", null);
+                    map.put("destName", tablename);
                 }
             }
             //todo tuomin
