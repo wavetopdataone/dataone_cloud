@@ -391,7 +391,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         ValueOperations<String, Object> opsForValue = null;
         opsForValue = redisTemplate.opsForValue();
         opsForValue.set(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName(), list);
-        logger.error(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName());
         return ToData.builder().status("1").data(list).build();
     }
 

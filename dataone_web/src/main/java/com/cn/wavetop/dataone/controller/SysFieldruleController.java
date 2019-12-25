@@ -41,8 +41,8 @@ public class SysFieldruleController {
 
     @ApiImplicitParam
     @PostMapping("/edit_fieldrule")
-    public Object edit_fieldrule(String list_data, String source_name, String dest_name, Long job_id) {
-        return service.editFieldrule(list_data, source_name, dest_name, job_id);
+    public Object edit_fieldrule(String list_data, String source_name, String dest_name, Long job_id,@RequestParam(required = false,defaultValue = "") String primaryKey,@RequestParam(required = false,defaultValue = "")String addFile) {
+        return service.editFieldrule(list_data, source_name, dest_name, job_id,primaryKey,addFile);
     }
 
     @ApiImplicitParam

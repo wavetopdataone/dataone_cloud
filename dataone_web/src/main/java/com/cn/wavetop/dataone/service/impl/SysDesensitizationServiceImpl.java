@@ -46,8 +46,8 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
                //若存在脱敏的规则则修改
                 if (list != null && list.size() > 0) {
 
+                    list.get(0).setDestField(destName[i]);
                     list.get(0).setDesensitizationWay(sysDesensitization.getDesensitizationWay());
-                    list.get(0).setDesensitizationWay(destName[i]);
                    if("2".equals(sysDesensitization.getDesensitizationWay())) {
                        list.get(0).setRemark(sysDesensitization.getRemark());
                    }

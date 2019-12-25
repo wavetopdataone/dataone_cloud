@@ -16,7 +16,7 @@ public interface SysFieldruleService {
 
     Object addFieldrule(SysFieldrule sysFieldrule);
 
-    Object editFieldrule(String list_data, String source_name,String dest_name,Long job_id);
+    Object editFieldrule(String list_data, String source_name,String dest_name,Long job_id,String primaryKey,String addFile);
 
     Object deleteFieldrule(String source_name);
 

@@ -176,9 +176,9 @@ public class DBConns {
               sysFieldrule=new SysFieldrule();
               String[] b = s.split(",");
               sysFieldrule.setFieldName(b[0]);
-              sysFieldrule.setType(b[2]);
-              if(!"".equals(b[3])) {
-                  sysFieldrule.setScale(b[3]);
+              sysFieldrule.setType(b[6]);
+              if(!"".equals(b[7])) {
+                  sysFieldrule.setScale(b[7]);
               }
               set.add(sysFieldrule);
           }
