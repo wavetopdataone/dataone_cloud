@@ -92,6 +92,6 @@ public class LinuxLogin {
 	
 	public static void main(String args[]){
 		Connection conn = login("192.168.1.156");
-		copyFile( conn, "/opt/kafka/connect-logs/kafka-connect.log.2019-12-24","D:");
+		copyFile( conn, "/opt/kafka/connect-logs/kafka-connect.log.2019-12-01","D:");
 	}
 }

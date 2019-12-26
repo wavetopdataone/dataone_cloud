@@ -113,10 +113,58 @@ public class UserLogController {
             }
         } else if (type == 2) {
             Connection conn = LinuxLogin.login(ip);
-            LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+            try {
+                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object, Object> map = new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a = String.valueOf(JSON.toJSON(map));
+                byte[] b = a.getBytes();
+                for (int i = 0; i < b.length; i++) {
+                    try {
+                        out.write(b[i]);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }finally {
+                        try {
+                            out.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
         } else if (type == 3) {
             Connection conn = LinuxLogin.login(ip);
-            LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
+            try {
+                LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
+            } catch (Exception e) {
+                {
+                    e.printStackTrace();
+                    response.setContentType("application/json; charset=utf-8");
+                    Map<Object, Object> map = new HashMap<>();
+                    map.put("status", "404");
+                    map.put("message", "系统找不到指定文件！");
+                    String a = String.valueOf(JSON.toJSON(map));
+                    byte[] b = a.getBytes();
+                    for (int i = 0; i < b.length; i++) {
+                        try {
+                            out.write(b[i]);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }finally {
+                            try {
+                                out.close();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -191,7 +239,30 @@ public class UserLogController {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+            try {
+                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object, Object> map = new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a = String.valueOf(JSON.toJSON(map));
+                byte[] b = a.getBytes();
+                for (int i = 0; i < b.length; i++) {
+                    try {
+                        out.write(b[i]);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }finally {
+                        try {
+                            out.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
         } else if (type == 3) {
             Connection conn = LinuxLogin.login(ip);
             response.reset();
@@ -203,7 +274,30 @@ public class UserLogController {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
+            try {
+                LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object, Object> map = new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a = String.valueOf(JSON.toJSON(map));
+                byte[] b = a.getBytes();
+                for (int i = 0; i < b.length; i++) {
+                    try {
+                        out.write(b[i]);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }finally {
+                        try {
+                            out.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
         }
 
     }
