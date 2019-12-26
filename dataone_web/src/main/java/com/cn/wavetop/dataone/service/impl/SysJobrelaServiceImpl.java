@@ -725,7 +725,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
             if ("1".equals(jobStatus)) {
                 byId.setJobStatus("21"); //  2 代表暂停中，21代表暂停动作
                 repository.save(byId);
-                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate("暂停任务"+byId.getJobName()).jobId(id).build();
+                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(byId.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"暂停任务"+byId.getJobName()).jobId(id).build();
                 userlogRespository.save(build);
                 try {
                     Thread.sleep(2000);

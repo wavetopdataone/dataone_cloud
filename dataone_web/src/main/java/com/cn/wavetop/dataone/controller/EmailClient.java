@@ -88,14 +88,17 @@ public class EmailClient extends Thread {
                         }
                         if (errorQueueSettings.getPauseSetup() < result) {
                             sysJobrela = repository.findById(emailJobrelaVo.getJobId());
-                            sysJobrela.get().setJobStatus("21");
-                            repository.save(sysJobrela.get());
-                            emailPropert = new EmailPropert();
-                            emailPropert.setForm("上海浪擎科技有限公司");
-                            emailPropert.setSubject("浪擎dataone错误暂停通知：");
-                            emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
-                            emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
-                            emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
+                            //todo  任务停止后 不在发送邮件了
+                            if (!"2".equals(sysJobrela.get().getJobStatus()) && !"21".equals(sysJobrela.get().getJobStatus()) && !"4".equals(sysJobrela.get().getJobStatus())) {
+                                sysJobrela.get().setJobStatus("21");
+                                repository.save(sysJobrela.get());
+                                emailPropert = new EmailPropert();
+                                emailPropert.setForm("上海浪擎科技有限公司");
+                                emailPropert.setSubject("浪擎dataone错误暂停通知：");
+                                emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
+                                emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
+                                emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
+                            }
                         }
                     }
                 }
