@@ -605,7 +605,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             }
 
             //判断是否有新增的字段
-            SysFieldrule sysFieldrule=sysFieldruleRepository.findByJobIdAndAddFlag(job_id,1L);
+            SysFieldrule sysFieldrule=sysFieldruleRepository.findByJobIdAndAddFlag(job_id, 1);
             if(sysFieldrule!=null) {
                 data.add(sysFieldrule);
             }
@@ -623,9 +623,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             }
             //todo tuomin
             map.put("data2", sysDesensitizations);
-//            if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
-//                map.put("data2", sysDesensitizations);
-//            }
         } catch (Exception e) {
             StackTraceElement stackTraceElement = e.getStackTrace()[0];
             logger.error("*" + stackTraceElement.getLineNumber() + e);
