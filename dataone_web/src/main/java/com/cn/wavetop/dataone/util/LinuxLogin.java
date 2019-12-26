@@ -53,13 +53,9 @@ public class LinuxLogin {
 	 * @param fileName
 	 * @param outputStream
 	 */
-	public static void copyFile(Connection conn, String fileName, ServletOutputStream outputStream){
+	public static void copyFile(Connection conn, String fileName, ServletOutputStream outputStream) throws IOException {
 		SCPClient sc = new SCPClient(conn);
-		try {
 			sc.get(fileName, outputStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**

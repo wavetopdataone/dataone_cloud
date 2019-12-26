@@ -1,5 +1,6 @@
 package com.cn.wavetop.dataone;
 
+import com.alibaba.fastjson.JSON;
 import com.cn.wavetop.dataone.dao.SysUserRepository;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysJobrela;
@@ -25,6 +26,13 @@ public class test {
 
     @Test
     public void asq(){
+
+
+        Map<Object, Object> map = new HashMap<>();
+        map.put("status", "404");
+        map.put("message", "系统找不到指定文件！");
+        String vv = String.valueOf(JSON.toJSON(map));
+        System.out.println(vv);
         List<String> list=new ArrayList<>();
         List<String> list2=new ArrayList<>();
         list.add("sys_dept");

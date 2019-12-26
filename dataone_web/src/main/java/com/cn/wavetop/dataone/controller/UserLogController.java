@@ -87,6 +87,7 @@ public class UserLogController {
                     byte[] b = new byte[512];
                     while (true) {
                         if (!((in.read(b)) != -1)) break;
+
                         out.write(b);
                     }
                 }
@@ -113,26 +114,29 @@ public class UserLogController {
         } else if (type == 2) {
             Connection conn = LinuxLogin.login(ip);
             try {
-                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-" + date + ".0.log", out);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("找不到指定文件", e);
                 response.setContentType("application/json; charset=utf-8");
                 Map<Object, Object> map = new HashMap<>();
                 map.put("status", "404");
                 map.put("message", "系统找不到指定文件！");
                 String a = String.valueOf(JSON.toJSON(map));
                 byte[] b = a.getBytes();
-                for (int i = 0; i < b.length; i++) {
-                    try {
+                try {
+                    for (int i = 0; i < b.length; i++) {
+
                         out.write(b[i]);
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        out.flush();
+                        out.close();
                     } catch (IOException ex) {
                         ex.printStackTrace();
-                    }finally {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
                     }
                 }
             }
@@ -141,30 +145,31 @@ public class UserLogController {
             try {
                 LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
             } catch (Exception e) {
-                {
-                    e.printStackTrace();
-                    response.setContentType("application/json; charset=utf-8");
-                    Map<Object, Object> map = new HashMap<>();
-                    map.put("status", "404");
-                    map.put("message", "系统找不到指定文件！");
-                    String a = String.valueOf(JSON.toJSON(map));
-                    byte[] b = a.getBytes();
+                logger.error("找不到指定文件", e);
+                response.setContentType("application/json; charset=utf-8");
+                Map<Object, Object> map = new HashMap<>();
+                map.put("status", "404");
+                map.put("message", "系统找不到指定文件！");
+                String a = String.valueOf(JSON.toJSON(map));
+                byte[] b = a.getBytes();
+                try {
                     for (int i = 0; i < b.length; i++) {
-                        try {
-                            out.write(b[i]);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }finally {
-                            try {
-                                out.close();
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
+                        out.write(b[i]);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        out.flush();
+                        out.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                 }
+
             }
         }
+
     }
 
     @ApiOperation(value = "系统错误日志下载", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "系统错误日志下载")
@@ -239,27 +244,30 @@ public class UserLogController {
                 e.printStackTrace();
             }
             try {
-                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-"+date+".0.log", out);
+                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-" + date + ".0.log", out);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("找不到指定文件", e);
                 response.setContentType("application/json; charset=utf-8");
                 Map<Object, Object> map = new HashMap<>();
                 map.put("status", "404");
                 map.put("message", "系统找不到指定文件！");
                 String a = String.valueOf(JSON.toJSON(map));
                 byte[] b = a.getBytes();
-                for (int i = 0; i < b.length; i++) {
-                    try {
+                try {
+                    for (int i = 0; i < b.length; i++) {
+
                         out.write(b[i]);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        out.flush();
+                        out.close();
                     } catch (IOException ex) {
                         ex.printStackTrace();
-                    }finally {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
                     }
+
                 }
             }
         } else if (type == 3) {
@@ -276,24 +284,26 @@ public class UserLogController {
             try {
                 LinuxLogin.copyFile(conn, "/opt/kafka/connect-logs/kafka-connect.log." + date, out);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("找不到指定文件", e);
                 response.setContentType("application/json; charset=utf-8");
                 Map<Object, Object> map = new HashMap<>();
                 map.put("status", "404");
                 map.put("message", "系统找不到指定文件！");
                 String a = String.valueOf(JSON.toJSON(map));
                 byte[] b = a.getBytes();
-                for (int i = 0; i < b.length; i++) {
-                    try {
+                try {
+                    for (int i = 0; i < b.length; i++) {
+
                         out.write(b[i]);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        out.flush();
+                        out.close();
                     } catch (IOException ex) {
                         ex.printStackTrace();
-                    }finally {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
                     }
                 }
             }
