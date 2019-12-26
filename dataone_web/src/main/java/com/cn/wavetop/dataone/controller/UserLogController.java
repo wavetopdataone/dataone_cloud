@@ -68,7 +68,6 @@ public class UserLogController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         if (type == 1) {
             FileInputStream in = null;
             File file = new File("dataoneerror-" + date + ".0.log");
