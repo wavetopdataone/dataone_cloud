@@ -106,6 +106,7 @@ public class UserLogController {
         FileInputStream in = null;
         DateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
         String fileName = "dataoneerror-" + date + ".0.log";
+//        String fileName2 = "dataoneerror-" + date + ".1.log";
         String FileNewName = "dataoneError-" + date + ".txt";
         OutputStream out = null;
         response.setContentType("text/plain");
@@ -133,6 +134,7 @@ public class UserLogController {
                     if (!((in.read(b)) != -1)) break;
                     out.write(b);
                 }
+
             }
             out.flush();
         } catch (IOException e) {
