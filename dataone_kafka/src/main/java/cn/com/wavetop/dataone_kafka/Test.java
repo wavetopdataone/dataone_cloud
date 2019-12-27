@@ -22,6 +22,7 @@ public class Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) {
+
         throw new ConnectException(new SQLException(" java.sql.BatchUpdateException: 违反了 PRIMARY KEY 约束 'PK__sys_user__3213E83F52593CB8'。不能在对象 'dbo.sys_user' 中插入重复键。"));
     }
     public static void test1(String[] args) {
