@@ -1284,8 +1284,10 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 //添加任务日志
                 logUtil.addJoblog(sysJobrela2, "com.cn.wavetop.dataone.service.impl.SysJobrelaServiceImpl.copyJob", "添加任务");
                 //python的操作流程
-                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela2.getJobName()).operate("添加").jobId(sysJobrela2.getId()).build();
+                Userlog build1 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"复制了任务"+sysJobrela.get().getJobName()).jobId(jobId).build();
+                Userlog build = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela2.getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"创建了任务"+sysJobrela2.getJobName()).jobId(sysJobrela2.getId()).build();
                 userlogRespository.save(build);
+                userlogRespository.save(build1);
                 map.put("status", "1");
                 map.put("data", sysJobrela2);
                 map.put("message","复制成功");

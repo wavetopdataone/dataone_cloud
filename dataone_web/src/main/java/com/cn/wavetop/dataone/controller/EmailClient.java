@@ -7,11 +7,13 @@ import com.cn.wavetop.dataone.entity.vo.EmailJobrelaVo;
 import com.cn.wavetop.dataone.entity.vo.EmailPropert;
 import com.cn.wavetop.dataone.service.SysJobrelaService;
 import com.cn.wavetop.dataone.util.EmailUtils;
+import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,9 +27,9 @@ public class EmailClient extends Thread {
     private ErrorQueueSettingsRespository errorQueueSettingsRespository = (ErrorQueueSettingsRespository) SpringContextUtil.getBean("errorQueueSettingsRespository");
     private SysMonitoringRepository sysMonitoringRepository = (SysMonitoringRepository) SpringContextUtil.getBean("sysMonitoringRepository");
     private SysUserJobrelaRepository sysUserJobrelaRepository = (SysUserJobrelaRepository) SpringContextUtil.getBean("sysUserJobrelaRepository");
-    private ErrorLogRespository errorLogRespository=(ErrorLogRespository)SpringContextUtil.getBean("errorLogRespository");
+    private ErrorLogRespository errorLogRespository = (ErrorLogRespository) SpringContextUtil.getBean("errorLogRespository");
     private SysUserRepository sysUserRepository = (SysUserRepository) SpringContextUtil.getBean("sysUserRepository");
-
+    private UserLogRepository userLogRepository=(UserLogRepository)SpringContextUtil.getBean("userLogRepository");
     private boolean stopMe = true;
 
     @Override
@@ -40,53 +42,69 @@ public class EmailClient extends Thread {
         EmailUtils emailUtils = new EmailUtils();
         EmailPropert emailPropert = null;
         Optional<SysJobrela> sysJobrela = null;
-        List<ErrorLog> errorLogs=new ArrayList<>();
+        List<ErrorLog> errorLogs = new ArrayList<>();
+
         while (stopMe) {
+            Userlog build=null;
             double readData = 0;
             double errorData = 0;
             double result = 0;
-            double WarnSetup=0;
-            BigDecimal bg=null;
-            BigDecimal bg1=null;
+            double WarnSetup = 0;
+            double ErrorSetup = 0;
+
+            BigDecimal bg = null;
+            BigDecimal bg1 = null;
+            BigDecimal bg2 = null;
             sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             list = repository.findEmailJobRelaUser();
             for (EmailJobrelaVo emailJobrelaVo : list) {
                 sysUserList = sysUserJobrelaRepository.selUserNameByJobId(emailJobrelaVo.getJobId());
                 emailJobrelaVo.setSysUserList(sysUserList);
-                if (emailJobrelaVo.getErrorQueueAlert() == 1 || emailJobrelaVo.getErrorQueuePause() == 1) {
-                    sysMonitoringList = sysMonitoringRepository.findByJobId(emailJobrelaVo.getJobId());
-                    errorQueueSettings = errorQueueSettingsRespository.findByJobId(emailJobrelaVo.getJobId());
-                    for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                        //按表查询出错误队列的错误数量
-                        errorLogs= errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(),sysMonitoring.getSourceTable());
-                        if (sysMonitoring.getReadData() != null && errorLogs!=null) {
-                            if (sysMonitoring.getReadData() != 0 && errorLogs.size()>0) {
-                                readData = sysMonitoring.getReadData();
-                                errorData = errorLogs.size();
-                                result = errorData / readData;
+                sysMonitoringList = sysMonitoringRepository.findByJobId(emailJobrelaVo.getJobId());
+                errorQueueSettings = errorQueueSettingsRespository.findByJobId(emailJobrelaVo.getJobId());
+                for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                    //按表查询出错误队列的错误数量
+                    errorLogs = errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(), sysMonitoring.getSourceTable());
+                    if (sysMonitoring.getReadData() != null && errorLogs != null) {
+                        if (sysMonitoring.getReadData() != 0 && errorLogs.size() > 0) {
+                            readData = sysMonitoring.getReadData();
+                            errorData = errorLogs.size();
+                            result = errorData / readData;
 
-                            } else {
-                                result = 0;
-                            }
                         } else {
                             result = 0;
                         }
+                    } else {
+                        result = 0;
+                    }
+                    //预警
+                    WarnSetup = errorQueueSettings.getWarnSetup() / 100;
+                    bg = new BigDecimal(WarnSetup);
+                    WarnSetup = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();//3wei
+                    //结果
+                    bg1 = new BigDecimal(result);
+                    result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    //暂停
+                    ErrorSetup=errorQueueSettings.getPauseSetup()/100;
+                    bg2 = new BigDecimal(ErrorSetup);
+                    ErrorSetup=bg2.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    log.info("WarnSetup"+WarnSetup);
+                    log.info("result"+result);
+                    log.info("jobID"+emailJobrelaVo.getJobId()+emailJobrelaVo.getJobrelaName());
+                    log.info("ErrorSetup"+ErrorSetup);
 
-                        WarnSetup=errorQueueSettings.getWarnSetup()/100;
-                         bg = new BigDecimal(WarnSetup);
-                        WarnSetup = bg.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();//3wei
-                        bg1 = new BigDecimal(result);
-                        result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-
-                        if (WarnSetup < result) {
+                    if (emailJobrelaVo.getErrorQueueAlert() == 1 || emailJobrelaVo.getErrorQueuePause() == 1) {
+                        if (WarnSetup <= result && emailJobrelaVo.getErrorQueueAlert() == 1) {
                             emailPropert = new EmailPropert();
                             emailPropert.setForm("上海浪擎科技有限公司");
                             emailPropert.setSubject("浪擎dataone错误预警通知：");
                             emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,特此通知");
                             emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,特此通知");
                             emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
+                             build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
+                             userLogRepository.save(build);
                         }
-                        if (errorQueueSettings.getPauseSetup() < result) {
+                        if (ErrorSetup <= result && emailJobrelaVo.getErrorQueuePause() == 1) {
                             sysJobrela = repository.findById(emailJobrelaVo.getJobId());
                             //todo  任务停止后 不在发送邮件了
                             if (!"2".equals(sysJobrela.get().getJobStatus()) && !"21".equals(sysJobrela.get().getJobStatus()) && !"4".equals(sysJobrela.get().getJobStatus())) {
@@ -98,13 +116,36 @@ public class EmailClient extends Thread {
                                 emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
                                 emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
                                 emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
+                                build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
+                                userLogRepository.save(build);
                             }
+                        }
+                    }else{
+                        //没有勾选邮件提醒
+
+                        //预警
+                        if(WarnSetup <= result&&emailJobrelaVo.getErrorQueueAlert() !=1){
+                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
+                            userLogRepository.save(build);
+                        }
+                        //暂停
+                        if(ErrorSetup <= result && emailJobrelaVo.getErrorQueuePause() != 1){
+                            if (!"2".equals(sysJobrela.get().getJobStatus()) && !"21".equals(sysJobrela.get().getJobStatus()) && !"4".equals(sysJobrela.get().getJobStatus())) {
+                                sysJobrela.get().setJobStatus("21");
+                                repository.save(sysJobrela.get());
+                            }
+                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
+                            userLogRepository.save(build);
                         }
                     }
                 }
             }
             try {
-                Thread.sleep(5 * 60 * 1000);
+                list.clear();
+                sysMonitoringList.clear();
+                sysUserList.clear();
+                errorLogs.clear();
+                Thread.sleep(10  * 60 * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
