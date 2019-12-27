@@ -1,40 +1,56 @@
 package cn.com.wavetop.dataone_kafka.consumer;
 
-import java.util.Arrays;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CustomNewConsumer {
 
-	public static void main(String[] args) {
-
+	//获取异常消息队列的信息
+	public static String topicPartion(String topic,int partition,Long offset) {
 		Properties props = new Properties();
-		// 定义kakfa 服务的地址，不需要将所有broker指定上 
-		props.put("bootstrap.servers", "192.168.1.187:9092");
-		// 制定consumer group 
-		props.put("group.id", "sa_2123");
-		// 是否自动确认offset 
-		props.put("enable.auto.commit", "true");
-		// 自动确认offset的时间间隔 
+		props.put("bootstrap.servers", "192.168.1.156:9092");
+		props.put("group.id", "test99");
+		props.put("enable.auto.commit", "false");
 		props.put("auto.commit.interval.ms", "1000");
-		// key的序列化类
-		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-		// value的序列化类 
-		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-		// 定义consumer 
+		props.put("auto.offset.reset", "earliest");
+		props.put("key.deserializer",
+						"org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("value.deserializer",
+						"org.apache.kafka.common.serialization.StringDeserializer");
 		KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-		
-		// 消费者订阅的topic, 可同时订阅多个 
-		//consumer.subscribe(Arrays.asList("first", "second","third"));
-		consumer.subscribe(Arrays.asList("file_source_11_1"));
-		while (true) {
-			// 读取数据，读取超时时间为100ms 
-			ConsumerRecords<String, String> records = consumer.poll(100);
-			
-			for (ConsumerRecord<String, String> record : records)
-				System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
+		//error-queue-logs
+		TopicPartition topicPartition = new TopicPartition(topic, partition);
+		consumer.assign(Arrays.asList(topicPartition));
+		//consumer.subscribe(Arrays.asList(topic));
+		consumer.seek(topicPartition,offset);
+
+		ConsumerRecords<String, String> records = null;
+		while(true) {
+			records = consumer.poll(100);
+			if(!records.isEmpty()) {
+				break;
+			}/*else {
+				return null;
+			}*/
+			//这里可以加一个records为空的情况
 		}
+		//System.out.println(records.count());
+		Iterator<ConsumerRecord<String, String>> iterable = records.iterator();
+		int index = 0;
+		String value = null;
+		while(index<1 && iterable.hasNext()) {
+			//System.out.println("王成============================"+iterable.next().toString());
+			value = iterable.next().value();
+			//System.out.println("王成 =========================== " + value);
+			index++;
+		}
+		return value;
 	}
 }

@@ -18,4 +18,6 @@ public interface SysTableruleService {
 
     //第三步查询表用的，我先把表放入了redis集合遍历判断的
     Object findByAllTableName(Long jobId,String tableName);
+
+    String selectTable(Long jobId, String destTable, String time,Integer errorflag);
 }

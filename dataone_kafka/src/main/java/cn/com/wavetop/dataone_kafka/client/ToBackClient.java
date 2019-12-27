@@ -92,4 +92,27 @@ public interface ToBackClient {
      */
     @GetMapping("/toback/kafkaFiled/{jobId}")
     public Object kafkaFiled(@PathVariable Long jobId);
+
+    /**
+     *插入错误数据信息
+     */
+    @PostMapping("/toback/insertErrorLog")
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
+                            @RequestParam String message);
+
+
+    /**
+     * 查询源端表名
+     * 将错误状态4填入到monitoring表中
+     * 将错误信息填入到userlog中
+     */
+    @GetMapping("/toback/selecttable")
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam String time,@RequestParam Integer errorflag);
+
+    /**
+     * 将系统错误信息插入到系统日志表
+     * @param
+     */
+    @PostMapping("/toback/insertsyslog")
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method,@RequestParam String time);
 }

@@ -2,14 +2,13 @@ package com.cn.wavetop.dataone.controller;
 
 import com.cn.wavetop.dataone.dao.*;
 import com.cn.wavetop.dataone.entity.*;
-import com.cn.wavetop.dataone.service.SysJobinfoService;
-import com.cn.wavetop.dataone.service.SysJobrelaService;
-import com.cn.wavetop.dataone.service.SysMonitoringService;
+import com.cn.wavetop.dataone.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -31,13 +30,18 @@ public class ToBackController {
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private ErrorLogRespository errorLogRespository;
-
+    @Autowired
+    private ErrorLogService errorLogService;
     @Autowired
     private KafkaDestFieldRepository kafkaDestFieldRepository;
     @Autowired
     private KafkaDestTableRepository kafkaDestTableRepository;
     @Autowired
     private SysRealTimeMonitoringRepository sysRealTimeMonitoringRepository;
+    @Autowired
+    private SysTableruleService sysTableruleService;
+    @Autowired
+    private SysErrorRepository sysErrorRepository;
 
     /**
      * 根据jobid查询数据信息
@@ -327,5 +331,53 @@ public class ToBackController {
             map.put(kafkaDestTable.getDestTable(), list);
         }
         return map;
+    }
+
+    /**
+     * 插入错误信息
+     */
+    @PostMapping("/insertErrorLog")
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
+                            @RequestParam String message){
+
+        errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message);
+    }
+
+    /**
+     * 查询源端表名
+     * 将错误状态4填入到monitoring表中
+     * 将错误信息填入到userlog中
+     * @param jobId
+     * @param destTable
+     * @param time
+     * @return
+     */
+    @GetMapping("/selecttable")
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam String time,@RequestParam Integer errorflag) {
+        return sysTableruleService.selectTable(jobId,destTable,time,errorflag);
+    }
+
+
+    /**
+     * 将系统错误信息插入到系统日志表
+     * @param syserror
+     */
+    @PostMapping("/insertsyslog")
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method,@RequestParam String time) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date format = null;
+        try {
+            //format = simpleDateFormat.parse(simpleDateFormat.format(parse));
+            format = simpleDateFormat.parse(time);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SysError sysError = new SysError();
+        String errortype = "ConsumerError";
+        sysError.setCreateDate(format);
+        sysError.setErrorType(errortype);
+        sysError.setMethod(method);
+        sysError.setErrorName(syserror);
+        sysErrorRepository.save(sysError);
     }
 }
