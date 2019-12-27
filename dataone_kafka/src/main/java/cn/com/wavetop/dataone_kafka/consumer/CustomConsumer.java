@@ -2,13 +2,11 @@ package cn.com.wavetop.dataone_kafka.consumer;
 
 import cn.com.wavetop.dataone_kafka.client.ToBackClient;
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
-import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -109,7 +107,7 @@ public class CustomConsumer extends Thread {
                             }
                         }
 
-                        if (/*index<1 && */iterator.hasNext() && payload.contains("\\{")) {
+                        if (iterator.hasNext() && payload.contains("\\{")) {
                             String value1 = iterator.next().value();
                             JSONObject jsonObject1 = JSONObject.parseObject(value1);
                             String payload1 = (String) jsonObject1.get("payload");
