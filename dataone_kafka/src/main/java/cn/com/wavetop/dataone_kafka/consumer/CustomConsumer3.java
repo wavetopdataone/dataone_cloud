@@ -22,7 +22,7 @@ public class CustomConsumer3 extends Thread {
     public void run() {
         {
             startTime = System.currentTimeMillis();
-            Date date = new Date(startTime);
+            //Date date = new Date(startTime);
             boolean flag = true; // 线程终止标识
             StringBuffer result = new StringBuffer();
             File file = new File("D:\\wangcheng\\dataone\\offset" + new SimpleDateFormat("yyyy-MM-dd").format(new Date())+".txt");

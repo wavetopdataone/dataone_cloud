@@ -367,7 +367,6 @@ public class ToBackController {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date format = null;
         try {
-            //format = simpleDateFormat.parse(simpleDateFormat.format(parse));
             format = simpleDateFormat.parse(time);
         } catch (Exception e) {
             e.printStackTrace();
