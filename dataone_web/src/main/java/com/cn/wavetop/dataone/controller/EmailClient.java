@@ -5,9 +5,7 @@ import com.cn.wavetop.dataone.dao.*;
 import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.EmailJobrelaVo;
 import com.cn.wavetop.dataone.entity.vo.EmailPropert;
-import com.cn.wavetop.dataone.service.SysJobrelaService;
 import com.cn.wavetop.dataone.util.EmailUtils;
-import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,11 +86,6 @@ public class EmailClient extends Thread {
                     ErrorSetup=errorQueueSettings.getPauseSetup()/100;
                     bg2 = new BigDecimal(ErrorSetup);
                     ErrorSetup=bg2.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    log.info("WarnSetup"+WarnSetup);
-                    log.info("result"+result);
-                    log.info("jobID"+emailJobrelaVo.getJobId()+emailJobrelaVo.getJobrelaName());
-                    log.info("ErrorSetup"+ErrorSetup);
-
                     if (emailJobrelaVo.getErrorQueueAlert() == 1 || emailJobrelaVo.getErrorQueuePause() == 1) {
                         if (WarnSetup <= result && emailJobrelaVo.getErrorQueueAlert() == 1) {
                             emailPropert = new EmailPropert();
