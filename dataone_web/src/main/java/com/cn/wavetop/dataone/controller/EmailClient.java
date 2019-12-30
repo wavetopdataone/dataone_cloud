@@ -27,7 +27,7 @@ public class EmailClient extends Thread {
     private SysUserJobrelaRepository sysUserJobrelaRepository = (SysUserJobrelaRepository) SpringContextUtil.getBean("sysUserJobrelaRepository");
     private ErrorLogRespository errorLogRespository = (ErrorLogRespository) SpringContextUtil.getBean("errorLogRespository");
     private SysUserRepository sysUserRepository = (SysUserRepository) SpringContextUtil.getBean("sysUserRepository");
-    private UserLogRepository userLogRepository=(UserLogRepository)SpringContextUtil.getBean("userLogRepository");
+    private UserLogRepository userLogRepository = (UserLogRepository) SpringContextUtil.getBean("userLogRepository");
     private boolean stopMe = true;
 
     @Override
@@ -43,7 +43,7 @@ public class EmailClient extends Thread {
         List<ErrorLog> errorLogs = new ArrayList<>();
 
         while (stopMe) {
-            Userlog build=null;
+            Userlog build = null;
             double readData = 0;
             double errorData = 0;
             double result = 0;
@@ -83,9 +83,9 @@ public class EmailClient extends Thread {
                     bg1 = new BigDecimal(result);
                     result = bg1.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
                     //暂停
-                    ErrorSetup=errorQueueSettings.getPauseSetup()/100;
+                    ErrorSetup = errorQueueSettings.getPauseSetup() / 100;
                     bg2 = new BigDecimal(ErrorSetup);
-                    ErrorSetup=bg2.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    ErrorSetup = bg2.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
                     if (emailJobrelaVo.getErrorQueueAlert() == 1 || emailJobrelaVo.getErrorQueuePause() == 1) {
                         if (WarnSetup <= result && emailJobrelaVo.getErrorQueueAlert() == 1) {
                             emailPropert = new EmailPropert();
@@ -94,8 +94,8 @@ public class EmailClient extends Thread {
                             emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,特此通知");
                             emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,特此通知");
                             emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
-                             build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
-                             userLogRepository.save(build);
+                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【" + emailJobrelaVo.getJobrelaName() + "】错误率已达到" + result * 100 + "%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
+                            userLogRepository.save(build);
                         }
                         if (ErrorSetup <= result && emailJobrelaVo.getErrorQueuePause() == 1) {
                             sysJobrela = repository.findById(emailJobrelaVo.getJobId());
@@ -109,25 +109,25 @@ public class EmailClient extends Thread {
                                 emailPropert.setMessageText("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
                                 emailPropert.setSag("您参与的任务" + emailJobrelaVo.getJobrelaName() + "的" + sysMonitoring.getSourceTable() + "表的错误率为" + result * 100 + "%,已经暂停此任务");
                                 emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, emailJobrelaVo.getSysUserList());
-                                build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
+                                build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【" + emailJobrelaVo.getJobrelaName() + "】错误率已达到" + result * 100 + "%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
                                 userLogRepository.save(build);
                             }
                         }
-                    }else{
+                    } else {
                         //没有勾选邮件提醒
 
                         //预警
-                        if(WarnSetup <= result&&emailJobrelaVo.getErrorQueueAlert() !=1){
-                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
+                        if (WarnSetup <= result && emailJobrelaVo.getErrorQueueAlert() != 1) {
+                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【" + emailJobrelaVo.getJobrelaName() + "】错误率已达到" + result * 100 + "%，为不影响任务正常运行，请立即查看错误信息！").jobId(emailJobrelaVo.getJobId()).build();
                             userLogRepository.save(build);
                         }
                         //暂停
-                        if(ErrorSetup <= result && emailJobrelaVo.getErrorQueuePause() != 1){
+                        if (ErrorSetup <= result && emailJobrelaVo.getErrorQueuePause() != 1) {
                             if (!"2".equals(sysJobrela.get().getJobStatus()) && !"21".equals(sysJobrela.get().getJobStatus()) && !"4".equals(sysJobrela.get().getJobStatus())) {
                                 sysJobrela.get().setJobStatus("21");
                                 repository.save(sysJobrela.get());
                             }
-                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【"+emailJobrelaVo.getJobrelaName()+"】错误率已达到"+result*100+"%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
+                            build = Userlog.builder().time(new Date()).jobName(emailJobrelaVo.getJobrelaName()).operate("发现任务异常，其中【" + emailJobrelaVo.getJobrelaName() + "】错误率已达到" + result * 100 + "%，系统自动暂停了该任务，请立即解决！").jobId(emailJobrelaVo.getJobId()).build();
                             userLogRepository.save(build);
                         }
                     }
@@ -138,7 +138,7 @@ public class EmailClient extends Thread {
                 sysMonitoringList.clear();
                 sysUserList.clear();
                 errorLogs.clear();
-                Thread.sleep(10  * 60 * 1000);
+                Thread.sleep(10 * 60 * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
