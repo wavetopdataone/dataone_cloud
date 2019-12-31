@@ -21,6 +21,19 @@ import java.util.*;
 
 public class test {
 
+
+    @Test
+    public void ssswq(){
+        String a="id,id,Number,1,2,1";
+        String []splits = a.replace("$", "@").split(",@,");
+        for(int i=0;i<splits.length;i++){
+            String[] c=splits[i].split(",");
+            System.out.println(splits);
+            System.out.println(c[0]);
+            System.out.println(c[1]); System.out.println(c[2]); System.out.println(c[3]);
+        }
+        System.out.println("结束；额");
+    }
     @Test
     public void shows() throws FileNotFoundException {
         Connection conn = LinuxLogin.login("192.168.1.156");

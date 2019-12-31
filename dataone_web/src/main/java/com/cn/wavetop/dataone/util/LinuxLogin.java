@@ -1,16 +1,16 @@
 package com.cn.wavetop.dataone.util;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import javax.servlet.ServletOutputStream;
-
-import org.springframework.stereotype.Component;
-
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.SFTPv3Client;
 import ch.ethz.ssh2.SFTPv3DirectoryEntry;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.ServletOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Vector;
 
 @Component
 public class LinuxLogin {
@@ -58,6 +58,11 @@ public class LinuxLogin {
 			sc.get(fileName, outputStream);
 	}
 
+	public static void copyFile(Connection conn, String fileName, PrintWriter out1) throws IOException {
+		SCPClientUtil sc = new SCPClientUtil(conn);
+		sc.get(fileName, out1);
+	}
+
 	/**
 	 * 在远程LINUX服务器上，在指定目录下，获取文件各个属性
 	 * @param[in] conn Conncetion对象
@@ -87,7 +92,11 @@ public class LinuxLogin {
 
 	
 	public static void main(String args[]){
+		URL resource = LinuxLogin.class.getClassLoader().getResource("dataoneinfo-2019-12-26.0.log");
+
+
 		Connection conn = login("192.168.1.156");
-		copyFile( conn, "/opt/kafka/connect-logs/kafka-connect.log.2019-12-01","D:");
+		copyFile( conn, "/opt/kafka/connect-logs/kafka-connect.log.2019-12-01","F:");
 	}
+
 }

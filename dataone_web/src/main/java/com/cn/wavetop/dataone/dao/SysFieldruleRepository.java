@@ -24,5 +24,5 @@ public interface SysFieldruleRepository extends JpaRepository<SysFieldrule,Long>
     SysFieldrule findByJobIdAndAddFlag(Long jobId,Integer addFlag);
 
 
-
+    int deleteByJobIdAndSourceNameAndDestNameAndDestFieldName(Long jobId,String sourceName,String destName,String destFieldName);
 }
