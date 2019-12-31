@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="wavetop-service-consumer" />
+        <module name="wavetop-service-provider" />
+        <module name="dataone_web" />
+        <module name="dataone_cloud" />
+        <module name="dataone_kafka" />
+        <module name="wavetop-eureka" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="dataone_cloud" target="1.5" />
+      <module name="dataone_kafka" target="1.8" />
+      <module name="dataone_web" target="1.8" />
+      <module name="wavetop-eureka" target="1.8" />
+      <module name="wavetop-service-consumer" target="1.8" />
+      <module name="wavetop-service-provider" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="dataone_kafka" options="-parameters" />
+      <module name="dataone_web" options="-parameters" />
+      <module name="wavetop-eureka" options="-parameters" />
+      <module name="wavetop-service-consumer" options="-parameters" />
+      <module name="wavetop-service-provider" options="-parameters" />
+    </option>
+  </component>
+</project>
