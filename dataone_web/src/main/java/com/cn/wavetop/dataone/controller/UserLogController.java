@@ -83,12 +83,15 @@ public class UserLogController {
                 } else {
                     response.setContentType("text/plain");
                     bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"));
-                    String str;//把一行的值赋值给str
+                    StringBuffer str=new StringBuffer("");//把一行的值赋值给str
                     Integer index = 0;
-                    while ((str = bufferedReader.readLine()) != null) {
-                        if (index > 10000) {
-                            break;
-                        }
+                    while (( bufferedReader.readLine()) != null) {
+//                        if (index > 10000) {
+//                            break;
+//                        }
+                        str=new StringBuffer("");
+                        str.append(bufferedReader.readLine());
+                        str.append("|");
                         out1.println(str);
                         index++;
                     }

@@ -30,6 +30,8 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
     private SysJobrelaRespository sysJobrelaRespository;
     @Autowired
     private SysJorelaUserextraRepository sysJorelaUserextraRepository;
+    @Autowired
+    private SysUserRepository sysUserRepository;
     @Override
     public Object addDesensitization(SysDesensitization sysDesensitization) {
         String[] destName = sysDesensitization.getDestField().split(",");
@@ -163,15 +165,20 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
             if (sysUserJobrelas != null && sysUserJobrelas.size() > 0) {
                 SysUserJobrela sysUserJobrela=null;
                 SysUserJobrela sysUserJobrela2=null;
-
+                Optional<SysUser> sysUser=null;
                 for(SysJobrelaRelated sysJobrelaRelated:list) {
                     //为任务选择参与人编辑者，不直接在参与人接口添加，而是在这里添加参与人，为了首页显示问题
                   List<SysJorelaUserextra> sysJorelaUserextras= sysJorelaUserextraRepository.findByJobId(sysJobrelaRelated.getSlaveJobId());
                 if(sysJorelaUserextras!=null&&sysJorelaUserextras.size()>0){
                     for(SysJorelaUserextra sysJorelaUserextra:sysJorelaUserextras){
+                        sysUser= sysUserRepository.findById(sysJorelaUserextra.getUserId());
                         sysUserJobrela = new SysUserJobrela();
                         sysUserJobrela.setUserId(sysJorelaUserextra.getUserId());
                         sysUserJobrela.setJobrelaId(sysJorelaUserextra.getJobId());
+                        if(sysUser.get()!=null) {
+                            sysUserJobrela.setRemark(sysUser.get().getLoginName());
+                        }
+                        sysUserJobrela.setPrems("3");
                         sysUserJobrelaRepository.save(sysUserJobrela);
                         sysJorelaUserextraRepository.delete(sysJorelaUserextra);
                     }
