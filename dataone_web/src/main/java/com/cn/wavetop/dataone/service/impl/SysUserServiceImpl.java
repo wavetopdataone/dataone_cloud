@@ -12,18 +12,10 @@ import com.cn.wavetop.dataone.util.PermissionUtils;
 import com.cn.wavetop.dataone.util.RedisUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.ModularRealmAuthorizer;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.apache.shiro.session.Session;
-import org.apache.shiro.session.mgt.eis.SessionDAO;
-import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.subject.support.DefaultSubjectContext;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +50,12 @@ public class SysUserServiceImpl implements SysUserService {
     private SysLoginlogRepository sysLoginlogRepository;
     @Autowired
     private SysJobrelaRespository sysJobrelaRespository;
+    @Autowired
+    private SysJorelaUserextraRepository sysJorelaUserextraRepository;
+    @Autowired
+    private SysUserDbinfoRepository sysUserDbinfoRepository;
+    @Autowired
+    private SysDbinfoRespository sysDbinfoRespository;
     @Autowired
     private EmailUtils emailUtils;
     @Autowired
@@ -464,6 +462,17 @@ public class SysUserServiceImpl implements SysUserService {
             if(list!=null&&list.size()>0) {
                 int result= sysUserRepository.deleteByLoginName(name);
                  sysUserRoleRepository.deleteByUserId(list.get(0).getId());
+                 sysJorelaUserextraRepository.deleteByUserId(list.get(0).getId());
+                 sysUserJobrelaRepository.deleteByUserId(list.get(0).getId());
+                 //删除用户数据源关联关系和删除用户建立的数据源
+             List<SysUserDbinfo> sysUserDbinfos=sysUserDbinfoRepository.findByUserId(list.get(0).getId());
+                sysUserDbinfoRepository.deleteByUserId(list.get(0).getId());
+             if(sysUserDbinfos!=null&&sysUserDbinfos.size()>0){
+                 for(SysUserDbinfo sysUserDbinfo:sysUserDbinfos) {
+                     sysDbinfoRespository.deleteById(sysUserDbinfo.getDbinfoId());
+                 }
+             }
+
                 if(result>0){
 
                 logUtil.saveUserlog(list.get(0), null, "com.cn.wavetop.dataone.service.impl.SysUserServiceImpl.delete", "删除用户");
@@ -648,6 +657,15 @@ public class SysUserServiceImpl implements SysUserService {
                 sysUserRoleRepository.deleteByUserId(userId);
                 sysUserJobrelaRepository.deleteByUserId(userId);
                 sysUserRepository.updataById(id, userId);
+                sysJorelaUserextraRepository.deleteByUserId(userId);
+                //删除原本编辑者的数据源信息
+                List<SysUserDbinfo> sysUserDbinfos=sysUserDbinfoRepository.findByUserId(userId);
+                sysUserDbinfoRepository.deleteByUserId(userId);
+                if(sysUserDbinfos!=null&&sysUserDbinfos.size()>0){
+                    for(SysUserDbinfo sysUserDbinfo:sysUserDbinfos) {
+                        sysDbinfoRespository.deleteById(userId);
+                    }
+                }
                 logUtil.saveUserlog(sysUser2.get(), null, "com.cn.wavetop.dataone.service.impl.SysUserServiceImpl.HandedTeam", "移交小组");
                 return ToDataMessage.builder().status("1").message("团队已移交").build();
             }else{

@@ -2,7 +2,6 @@ package com.cn.wavetop.dataone.controller;
 
 import com.cn.wavetop.dataone.entity.SysDbinfo;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
-import com.cn.wavetop.dataone.service.SysDbinfoService;
 import com.cn.wavetop.dataone.service.SysFieldruleService;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -41,8 +40,8 @@ public class SysFieldruleController {
 
     @ApiImplicitParam
     @PostMapping("/edit_fieldrule")
-    public Object edit_fieldrule(String list_data, String source_name, String dest_name, Long job_id) {
-        return service.editFieldrule(list_data, source_name, dest_name, job_id);
+    public Object edit_fieldrule(String list_data, String source_name, String dest_name, Long job_id,@RequestParam(required = false,defaultValue = "") String primaryKey,@RequestParam(required = false,defaultValue = "")String addFile) {
+        return service.editFieldrule(list_data, source_name, dest_name, job_id,primaryKey,addFile);
     }
 
     @ApiImplicitParam
@@ -68,5 +67,19 @@ public class SysFieldruleController {
     public Object VerifyDb(Long job_id,String source_name,String dest_name) {
         return service.VerifyDb(job_id,source_name,dest_name);
     }
+
+    @ApiOperation(value = "批量删除", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "批量删除")
+    @PostMapping("/deleteAllFiled")
+    public Object deleteAllFiled(String list_data, String source_name, String dest_name, Long job_id)
+    {
+        return service.deleteAll(list_data,source_name,dest_name,job_id);
+    }
+    @ApiOperation(value = "批量恢复和单条恢复", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "批量恢复和单条恢复")
+    @PostMapping("/recover")
+    public Object recover(String list_data, String source_name, String dest_name, Long job_id)
+    {
+        return service.recover(list_data,source_name,dest_name,job_id);
+    }
+
 
 }

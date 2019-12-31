@@ -1,22 +1,21 @@
 package com.cn.wavetop.dataone;
 
-import com.cn.wavetop.dataone.dao.SysUserRepository;
-import com.cn.wavetop.dataone.entity.SysFieldrule;
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.SCPClient;
+import com.alibaba.fastjson.JSON;
 import com.cn.wavetop.dataone.entity.SysJobrela;
-import com.cn.wavetop.dataone.entity.SysUser;
-import com.cn.wavetop.dataone.entity.SysUserJobrela;
-import com.cn.wavetop.dataone.util.DBConns;
 import com.cn.wavetop.dataone.util.DateUtil;
+import com.cn.wavetop.dataone.util.LinuxLogin;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.math.BigDecimal;
-import java.text.DateFormat;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -24,7 +23,39 @@ public class test {
 
 
     @Test
+    public void ssswq(){
+        String a="id,id,Number,1,2,1";
+        String []splits = a.replace("$", "@").split(",@,");
+        for(int i=0;i<splits.length;i++){
+            String[] c=splits[i].split(",");
+            System.out.println(splits);
+            System.out.println(c[0]);
+            System.out.println(c[1]); System.out.println(c[2]); System.out.println(c[3]);
+        }
+        System.out.println("结束；额");
+    }
+    @Test
+    public void shows() throws FileNotFoundException {
+        Connection conn = LinuxLogin.login("192.168.1.156");
+        FileOutputStream out = new FileOutputStream("H:\\aa.txt");
+        SCPClient sc = new SCPClient(conn);
+        try {
+            sc.get("/opt/kafka/connect-logs/kafka-connect.log", out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
     public void asq(){
+
+
+        Map<Object, Object> map = new HashMap<>();
+        map.put("status", "404");
+        map.put("message", "系统找不到指定文件！");
+        String vv = String.valueOf(JSON.toJSON(map));
+        System.out.println(vv);
         List<String> list=new ArrayList<>();
         List<String> list2=new ArrayList<>();
         list.add("sys_dept");

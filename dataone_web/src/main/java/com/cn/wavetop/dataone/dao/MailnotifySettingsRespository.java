@@ -23,6 +23,8 @@ public interface MailnotifySettingsRespository extends JpaRepository<MailnotifyS
     @Query("update MailnotifySettings u set u.jobError = :jobError, u.errorQueueAlert = :errorQueueAlert,u.errorQueuePause = :errorQueuePause,u.sourceChange = :sourceChange where u.jobId = :jobId")
     int updataByJobId(String jobError,long errorQueueAlert,long errorQueuePause,long sourceChange,long jobId);
 
+    @Modifying
+    @Query("delete from MailnotifySettings where jobId = :job_id")
     int deleteByJobId(long job_id);
 
 }

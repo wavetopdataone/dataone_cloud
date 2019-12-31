@@ -7,8 +7,8 @@ import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.producer.Producer;
 import com.cn.wavetop.dataone.service.ErrorLogService;
-import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.PermissionUtils;
+import com.cn.wavetop.dataone.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,19 +103,6 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 map.put("data",sysUserlogPage.getContent());
                 map.put("total",sysUserlogPage.getTotalElements());
                 map.put("ids",ids);
-                Userlog build2=null;
-                //todo 错误队列上限的判断，这样的话只能是请求那个任务那个任务才会添加提醒
-                //todo 要不要在这里加上所有的错误队列判断
-                if (sysUserlogPage.getTotalElements()>=100000) {
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已达上限，请处理后重启").jobId(jobId).build();
-                   Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
-                   sysJobrela.get().setJobStatus("21");//改为暂停
-                    sysJobrelaRespository.save(sysJobrela.get());
-                    userLogRepository.save(build2);
-                }else if(sysUserlogPage.getTotalElements()>=90000&&sysUserlogPage.getTotalElements()<100000){
-                     build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysUserlogPage.getContent().get(0).getJobName()).operate("错误队列"+sysUserlogPage.getContent().get(0).getJobName()+"已接近上限").jobId(jobId).build();
-                    userLogRepository.save(build2);
-                }
             } catch (Exception e) {
                 StackTraceElement stackTraceElement = e.getStackTrace()[0];
                 logger.error("*"+stackTraceElement.getLineNumber()+e);

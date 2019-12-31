@@ -3,8 +3,6 @@ package com.cn.wavetop.dataone.service;
 import com.cn.wavetop.dataone.entity.SysDbinfo;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
 
-import java.sql.SQLException;
-
 /**
  * @Author yongz
  * @Date 2019/10/11、15:27
@@ -16,7 +14,7 @@ public interface SysFieldruleService {
 
     Object addFieldrule(SysFieldrule sysFieldrule);
 
-    Object editFieldrule(String list_data, String source_name,String dest_name,Long job_id);
+    Object editFieldrule(String list_data, String source_name,String dest_name,Long job_id,String primaryKey,String addFile);
 
     Object deleteFieldrule(String source_name);
 
@@ -25,4 +23,9 @@ public interface SysFieldruleService {
     Object DestlinkTableDetails(SysDbinfo sysDbinfo, String tablename,Long job_id);
     //验证源端目标端是否存在表
     Object VerifyDb(Long job_id,String source_name,String dest_name);
+
+    //删除表字段和批量删除表字段
+    Object deleteAll(String list_data, String source_name, String dest_name, Long job_id);
+    //恢复表字段和批量恢复表字段
+    Object recover(String list_data, String source_name, String dest_name, Long job_id);
 }

@@ -30,5 +30,7 @@ public interface DataChangeSettingsRespository extends JpaRepository<DataChangeS
     @Query("update DataChangeSettings u set u.deleteSyncingSource = :deleteSyncingSource, u.deleteSync = :deleteSync,u.newSync = :newSync,u.newtableSource = :newtableSource where u.jobId = :jobId")
     void updateByJobId(long jobId, long deleteSyncingSource, long deleteSync, long newSync, long newtableSource);
 
+    @Modifying
+    @Query("delete from DataChangeSettings where jobId = :job_id")
     int deleteByJobId(long job_id);
 }

@@ -37,4 +37,7 @@ public interface SysUserJobrelaRepository extends JpaRepository<SysUserJobrela,L
 
     @Query("SELECT s from SysUserJobrela s where s.jobrelaId=:jobId and s.deptId is not null")
     List<SysUserJobrela> findUserIdByjobId(Long jobId);
+
+    @Query("SELECT s from SysUserJobrela s where s.jobrelaId=:jobId and s.deptId is null")
+    List<SysUserJobrela> findRoleUserIdByjobId(Long jobId);
 }
