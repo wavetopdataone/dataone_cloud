@@ -10,7 +10,7 @@ public class SysUserPersonalVo {
     private String email;
     private String password;
     private Integer countJob;
-
+    private String skillEmail;
 
 
     public SysUserPersonalVo(Long userId, String userName, String deptName, String email, String password) {
