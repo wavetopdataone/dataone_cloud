@@ -71,7 +71,7 @@ public class Action extends Thread {
 
 //                    restTemplate.putForObject("http://DATAONE-WEB/toback/deleteMonitoring/" + jodId, SysDbinfo.class);
                     toBackClient.resetMonitoring((long) jobId);  // 重置监听表数据
-
+                    // todo 重置错误队列数据
 
                     // 开启任务线程
                     try {

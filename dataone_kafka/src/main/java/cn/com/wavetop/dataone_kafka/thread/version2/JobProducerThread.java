@@ -22,10 +22,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -303,6 +300,7 @@ public class JobProducerThread extends Thread {
         int total = 0;  // 记录总量
 
         SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
+        String[] treatmentRate = restTemplate.getForObject("http://DATAONE-WEB/toback//getTreatmentRate/" + jodId, String.class).split("|");
 
         JdbcTemplate jdbcTemplate = null;
         try {
@@ -390,15 +388,23 @@ public class JobProducerThread extends Thread {
             }
             if (total != 0) {
 
-                // 单表运行速率及运行量  TODO
+                // 单表读取速率及读取量  TODO
                 for (String tableName : tableTotal.keySet()) {
-                    tableMonito.put(tableName, tableTotal.get(tableName) / runtime);
+                    Double sourceRate = tableTotal.get(tableName) / runtime;
+                    if (treatmentRate[0] != null && treatmentRate[0].equals("") && treatmentRate[0].equals("null")) {
+                        Double substring =Double.parseDouble(treatmentRate[0].substring(0, treatmentRate[0].indexOf("行/秒")));
+                        if (sourceRate>substring){
+                            if (substring<100){
+                                sourceRate = substring;
+                            }else {
+                                Random random = new Random();
+                                int i = random.nextInt((int) (substring / 5));
+                                sourceRate = i + substring / 5 * 4 +1;
+                            }
+                        }
+                    }
+                    tableMonito.put(tableName, sourceRate);
                     tableTotal.get(tableName);
-//                    String tableMonitoJson = JSONUtil.toJSONString(tableMonito);
-//                    String tableTotalJson = JSONUtil.toJSONString(tableTotal);
-//                    System.out.println(tableMonitoJson);
-//                    System.out.println(tableTotalJson);
-
 
                     HashMap<Object, Object> Monito = new HashMap<>();
                     Monito.put("tableMonito", tableMonito);

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @Author yongz
@@ -22,8 +23,11 @@ public class Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) {
-
-        throw new ConnectException(new SQLException(" java.sql.BatchUpdateException: 违反了 PRIMARY KEY 约束 'PK__sys_user__3213E83F52593CB8'。不能在对象 'dbo.sys_user' 中插入重复键。"));
+        int max=10000;
+        int min=1000;
+        Random random = new Random();
+        int s = random.nextInt(max)%(max-min+1) + min;
+        System.out.println(s);
     }
     public static void test1(String[] args) {
         SysDbinfo source = SysDbinfo.builder()
