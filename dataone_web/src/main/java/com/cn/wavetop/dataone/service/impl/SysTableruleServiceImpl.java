@@ -523,7 +523,6 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         userlog.setOperate(operate);
         //异常状态4,暂时只有死进程才会修改异常状态
         int status = 4;
-
         if (sysTableruleList != null && sysTableruleList.size() > 0){
             for (SysTablerule sysTablerule : sysTableruleList) {
                 sourceTable = sysTablerule.getSourceTable();
