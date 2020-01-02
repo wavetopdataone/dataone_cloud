@@ -31,8 +31,6 @@ public class ToBackController {
     private SysMonitoringRepository sysMonitoringRepository;
     @Autowired
     private ErrorLogRespository errorLogRespository;
-    @Autowired
-    private SysJobinfoRespository sysJobinfoRespository;
 
     @Autowired
     private KafkaDestFieldRepository kafkaDestFieldRepository;
@@ -164,6 +162,13 @@ public class ToBackController {
         }
     }
 
+    /**
+     * 分表更新读监听数据
+     *
+     * @param
+     * @athor yongz
+     * @para
+     */
     @ApiOperation(value = "new读取速率", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
     @PostMapping("/updateReadRate/{jobId}")
     public void monitoringTable(@PathVariable Long jobId, @RequestBody Map<String, Map> Monito) {
@@ -225,21 +230,6 @@ public class ToBackController {
 //            }
         }
 
-    }
-
-
-    /**
-     * 分表更新读监听数据
-     *
-     * @param
-     * @athor yongz
-     * @para
-     */
-    @ApiOperation(value = "new读取速率", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
-    @PostMapping("/getTreatmentRate/{jobId}")
-    public String getTreatmentRate(@PathVariable Long jobId) {
-        SysJobinfo sysJobinfo = sysJobinfoRespository.findByJobId(jobId);
-        return sysJobinfo.getMaxSourceReadTo()+"|"+sysJobinfo.getMaxDestWriteTo();
     }
 
 

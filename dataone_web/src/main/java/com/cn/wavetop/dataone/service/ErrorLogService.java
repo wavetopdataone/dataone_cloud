@@ -23,4 +23,5 @@ public interface ErrorLogService {
 
     Object resetErrorlog(Long jobId,String ids);
 
+    void insertError(Long jobId,String sourceTable, String destTable, String time,String errortype,String message);
 }

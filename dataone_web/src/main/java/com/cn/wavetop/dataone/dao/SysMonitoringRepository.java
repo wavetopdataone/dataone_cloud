@@ -43,4 +43,9 @@ public interface SysMonitoringRepository extends JpaRepository<SysMonitoring,Lon
 
     @Query(value="from SysMonitoring sd where sd.jobId=:job_id and sd.optTime >= :parse")
     List<SysMonitoring> findByIdAndDate(long job_id, Date parse);
+
+    @Transactional
+    @Modifying
+    @Query("update SysMonitoring sm set sm.jobStatus = :status where sm.jobId = :jobId and sm.sourceTable = :sourceTable")
+    void updateStatus(Long jobId, String sourceTable,int status);
 }
