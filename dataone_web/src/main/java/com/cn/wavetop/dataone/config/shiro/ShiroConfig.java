@@ -12,7 +12,6 @@ import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
@@ -47,6 +46,7 @@ public class ShiroConfig {
         LinkedHashMap<String,String> filterChainDefinitionMap=new LinkedHashMap<>();
         filterChainDefinitionMap.put("/swagger-ui.html", "anon");
         filterChainDefinitionMap.put("/swagger-resources/**", "anon");
+        filterChainDefinitionMap.put("/csrf", "anon");
         filterChainDefinitionMap.put("/v2/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
         filterChainDefinitionMap.put("/static/**", "anon");
@@ -55,6 +55,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/login/**", "anon");
         filterChainDefinitionMap.put("/sys_user/login**", "anon");
         filterChainDefinitionMap.put("/sys_user/login/", "anon");
+        filterChainDefinitionMap.put("/sys_jobrela/findById","anon");
+
         //导出
         filterChainDefinitionMap.put("/sys_loginlog/OutPutLoginExcel**", "anon");
         filterChainDefinitionMap.put("/sys_log/OutPutExcel**", "anon");

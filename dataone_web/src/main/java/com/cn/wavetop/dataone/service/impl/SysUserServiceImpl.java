@@ -971,12 +971,19 @@ public class SysUserServiceImpl implements SysUserService {
             }
             //todo  查询超管的东西  超管的id必须时1
             Optional<SysUser> sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
-            boolean flag = emailUtils.sendAuthCodeEmail(sysUserOptional.get(), email, code);
+            List<SysUser> sysUsers=new ArrayList<>();
+            sysUsers.add(sysUserOptional.get());
+            EmailPropert emailPropert=new EmailPropert();
+            emailPropert.setForm("上海浪擎科技技术有限公司");
+            emailPropert.setSubject("浪擎dataone验证码：");
+            emailPropert.setSag("尊敬的用户:你好!\n 浪擎dataOne验证码为:" + code + "\n" + "(有效期为一分钟)");
+            emailPropert.setMessageText("尊敬的用户:你好!\n 浪擎dataOne验证码为:" + code + "\n" + "(有效期为一分钟)");
+            boolean flag = emailUtils.sendAuthCodeEmail(sysUserOptional.get(), emailPropert, sysUsers);
             if (flag) {
                 opsForValue.set("jishuCodeNew" + email, code, 1, TimeUnit.MINUTES);
                 return ToDataMessage.builder().status("1").message("验证码已发送").build();
             } else {
-                return ToDataMessage.builder().status("0").message("发送失败").build();
+                return ToDataMessage.builder().status("0").message("发送失败,请填写正确的邮箱").build();
             }
         } else {
             return ToDataMessage.builder().status("0").message("权限不足").build();

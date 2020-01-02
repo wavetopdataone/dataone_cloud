@@ -27,5 +27,7 @@ public interface SysFieldruleService {
     //删除表字段和批量删除表字段
     Object deleteAll(String list_data, String source_name, String dest_name, Long job_id);
     //恢复表字段和批量恢复表字段
-    Object recover(String list_data, String source_name, String dest_name, Long job_id);
+    Object recover(String sourceField,String destField, String source_name, String dest_name, Long job_id);
+    //批量脱敏弹窗需要的数据
+    Object showFieldrule(SysDbinfo sysDbinfo, String tablename, Long job_id);
 }

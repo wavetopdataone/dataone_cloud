@@ -32,6 +32,7 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
     private SysJorelaUserextraRepository sysJorelaUserextraRepository;
     @Autowired
     private SysUserRepository sysUserRepository;
+    @Transactional
     @Override
     public Object addDesensitization(SysDesensitization sysDesensitization) {
         String[] destName = sysDesensitization.getDestField().split(",");
@@ -126,6 +127,7 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
         return map;
     }
 
+    @Transactional
     @Override
     public Object delDesensitization(SysDesensitization sysDesensitization) {
         String[]destName=sysDesensitization.getDestField().split(",");
@@ -196,4 +198,8 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
         }
         return ToDataMessage.builder().status("1").build();
     }
+
+
+
+
 }

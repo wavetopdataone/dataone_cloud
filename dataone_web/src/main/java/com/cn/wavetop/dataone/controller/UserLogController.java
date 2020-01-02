@@ -65,7 +65,6 @@ public class UserLogController {
         }
 //        ServletOutputStream out = null;
         if (type == 1) {
-
             FileInputStream in = null;
             File file = new File("dataoneerror-" + date + ".log");
             BufferedReader bufferedReader = null;

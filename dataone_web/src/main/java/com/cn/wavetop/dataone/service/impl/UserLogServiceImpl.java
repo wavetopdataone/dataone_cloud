@@ -2,19 +2,19 @@ package com.cn.wavetop.dataone.service.impl;
 
 import com.cn.wavetop.dataone.dao.SysUserRepository;
 import com.cn.wavetop.dataone.dao.UserLogRepository;
-import com.cn.wavetop.dataone.entity.SysDept;
-import com.cn.wavetop.dataone.entity.SysLog;
 import com.cn.wavetop.dataone.entity.SysUser;
 import com.cn.wavetop.dataone.entity.Userlog;
-import com.cn.wavetop.dataone.entity.vo.*;
+import com.cn.wavetop.dataone.entity.vo.EmailPropert;
+import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
+import com.cn.wavetop.dataone.entity.vo.UserlogDateVo;
+import com.cn.wavetop.dataone.entity.vo.UserlogVo;
 import com.cn.wavetop.dataone.service.UserLogService;
 import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.EmailUtils;
-import com.cn.wavetop.dataone.util.PermissionUtils;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,9 +26,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -40,11 +37,14 @@ public class UserLogServiceImpl implements UserLogService {
     private UserLogRepository userLogRepository;
     @Autowired
     private SysUserRepository sysUserRepository;
+    @Autowired
+    private Environment environment;
+
 
     @Override
     public Object selByJobId(long job_id, Integer current, Integer size) {
         Pageable page = PageRequest.of(current - 1, size, Sort.Direction.DESC, "time");
-        Map<Object,Object> map=new HashMap<>();
+        Map<Object, Object> map = new HashMap<>();
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
         SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd");// 设置日期格式
         Set<String> set = new HashSet<>();//保存去重复的日期
@@ -78,15 +78,15 @@ public class UserLogServiceImpl implements UserLogService {
             for (String date : setss) {
                 userlogDateVo = new UserlogDateVo();
                 userlogVos = new ArrayList<>();
-                    for (Userlog userlog : userlogList) {
-                        if (date.equals(dfs.format(userlog.getTime()))) {
-                            userlogVo = new UserlogVo();
-                            userlogVo.setUserlogId(userlog.getId());
-                            userlogVo.setTime(df.format(userlog.getTime()));
-                            userlogVo.setOperate(userlog.getOperate());
-                            userlogVos.add(userlogVo);
-                        }
+                for (Userlog userlog : userlogList) {
+                    if (date.equals(dfs.format(userlog.getTime()))) {
+                        userlogVo = new UserlogVo();
+                        userlogVo.setUserlogId(userlog.getId());
+                        userlogVo.setTime(df.format(userlog.getTime()));
+                        userlogVo.setOperate(userlog.getOperate());
+                        userlogVos.add(userlogVo);
                     }
+                }
                 userlogDateVo.setUserlogVos(userlogVos);
                 userlogDateVo.setDate(date);
                 userlogDateVoList.add(userlogDateVo);
@@ -94,20 +94,21 @@ public class UserLogServiceImpl implements UserLogService {
         } else {
             userlogDateVoList = new ArrayList<>();
         }
-        map.put("status","1");
-        map.put("data",userlogDateVoList);
-        map.put("totalCount",userLogRepositoryAll.getTotalElements());
+        map.put("status", "1");
+        map.put("data", userlogDateVoList);
+        map.put("totalCount", userLogRepositoryAll.getTotalElements());
         return map;
     }
 
     @Override
     public Object selByJobIdAndDate(long job_id, String date, Integer current, Integer size) {
-        Map<Object,Object> map=new HashMap<>();
+        Map<Object, Object> map = new HashMap<>();
         Pageable page = PageRequest.of(current - 1, size, Sort.Direction.DESC, "time");
         SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");// 设置日期格式
         UserlogVo userlogVo = null;//操作和时间
         UserlogDateVo userlogDateVo = null;//同一日期下的操作和时间
-        List<UserlogVo> userlogVos = new ArrayList<>();;//所有操作和时间
+        List<UserlogVo> userlogVos = new ArrayList<>();
+        ;//所有操作和时间
         List<UserlogDateVo> userlogDateVoList = new ArrayList<>();//所有同一日期下的所有操作和时间
         List<Userlog> userlogList1 = null;//根据日期和任务查询任务流程结果集
         userlogDateVo = new UserlogDateVo();
@@ -140,14 +141,14 @@ public class UserLogServiceImpl implements UserLogService {
         userlogDateVo.setUserlogVos(userlogVos);
         userlogDateVo.setDate(date);
         userlogDateVoList.add(userlogDateVo);
-        map.put("status","1");
-        map.put("data",userlogDateVoList);
-        map.put("totalCount",userLogRepositoryAll.getTotalElements());
+        map.put("status", "1");
+        map.put("data", userlogDateVoList);
+        map.put("totalCount", userLogRepositoryAll.getTotalElements());
         return map;
 
     }
 
-    public Object supportEmail(Long userlogId){
+    public Object supportEmail(Long userlogId) {
         EmailUtils emailUtils=new EmailUtils();
         Optional<Userlog> userlog= userLogRepository.findById(userlogId);
         Optional<SysUser> sysUser=sysUserRepository.findById(1L);
@@ -158,7 +159,7 @@ public class UserLogServiceImpl implements UserLogService {
         emailPropert.setMessageText("4");
         List<SysUser> email=new ArrayList<>();
         SysUser sysUser1=new SysUser();
-        sysUser1.setEmail("1696694856@qq.com");
+        sysUser1.setEmail(sysUser.get().getSkillEmail());
         email.add(sysUser1);
         boolean flag=emailUtils.sendAuthCodeEmail(sysUser.get(),emailPropert,email);
         if(flag){
