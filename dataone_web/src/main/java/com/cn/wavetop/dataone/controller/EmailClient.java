@@ -70,6 +70,9 @@ public class EmailClient extends Thread {
                 errorQueueSettings = errorQueueSettingsRespository.findByJobId(emailJobrelaVo.getJobId());
                 if (errorQueueSettings != null) {
                     for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                        if(sysMonitoring.getReadData()==null){
+                            sysMonitoring.setReadData(0L);
+                        }
                         if (errorQueueSettings.getPreSteup() > sysMonitoring.getReadData()) {
                             //按表查询出错误队列的错误数量
                             errorLogs = errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(), sysMonitoring.getSourceTable());
