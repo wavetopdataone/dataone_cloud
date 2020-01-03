@@ -1,7 +1,9 @@
 package com.cn.wavetop.dataone.service.impl;
 
+import com.cn.wavetop.dataone.dao.SysJobrelaRespository;
 import com.cn.wavetop.dataone.dao.SysUserRepository;
 import com.cn.wavetop.dataone.dao.UserLogRepository;
+import com.cn.wavetop.dataone.entity.SysJobrela;
 import com.cn.wavetop.dataone.entity.SysUser;
 import com.cn.wavetop.dataone.entity.Userlog;
 import com.cn.wavetop.dataone.entity.vo.EmailPropert;
@@ -11,6 +13,7 @@ import com.cn.wavetop.dataone.entity.vo.UserlogVo;
 import com.cn.wavetop.dataone.service.UserLogService;
 import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.EmailUtils;
+import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ public class UserLogServiceImpl implements UserLogService {
     private SysUserRepository sysUserRepository;
     @Autowired
     private Environment environment;
+    @Autowired
+    private SysJobrelaRespository sysJobrelaRepository;
 
 
     @Override
@@ -151,12 +156,13 @@ public class UserLogServiceImpl implements UserLogService {
     public Object supportEmail(Long userlogId) {
         EmailUtils emailUtils=new EmailUtils();
         Optional<Userlog> userlog= userLogRepository.findById(userlogId);
+       SysJobrela sysJobrela= sysJobrelaRepository.findById(userlog.get().getJobId().longValue());
         Optional<SysUser> sysUser=sysUserRepository.findById(1L);
         EmailPropert emailPropert=new EmailPropert();
-        emailPropert.setForm("1");
-        emailPropert.setSubject("2");
-        emailPropert.setSag("3");
-        emailPropert.setMessageText("4");
+        emailPropert.setForm("上海浪擎科技技术有限公司");
+        emailPropert.setSubject("Dataone【技术支持】模块化任务异常反馈：");
+        emailPropert.setSag(sysJobrela.getJobName()+"任务于"+userlog.get().getTime()+"发生任务异常,操作员"+ PermissionUtils.getSysUser().getEmail()+"申请技术支持");
+        emailPropert.setMessageText(sysJobrela.getJobName()+"任务于"+userlog.get().getTime()+"发生任务异常,操作员"+ PermissionUtils.getSysUser().getEmail()+"申请技术支持");
         List<SysUser> email=new ArrayList<>();
         SysUser sysUser1=new SysUser();
         sysUser1.setEmail(sysUser.get().getSkillEmail());

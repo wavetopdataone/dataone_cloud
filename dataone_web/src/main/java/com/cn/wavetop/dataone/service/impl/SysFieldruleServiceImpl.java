@@ -159,6 +159,8 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         boolean flag = false;//判断字段是否发生改变
         List<SysDesensitization> sysDesensitizationss = null;//脱敏的表名是否改变
         List<SysFieldrule> sysFieldruleList = null;//配置表的表名是否改变
+        List<SysJobrela> sysJobrelaList=null;
+
         if (list_data != null && source_name != null && dest_name != null && !"undefined".equals(list_data) && !"undefined".equals(dest_name)) {
             split = list_data.replace("$", "@").split(",@,");
             SysTablerule byJobIdAndSourceTable = new SysTablerule();
@@ -166,7 +168,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             SysDbinfo sysDbinfo = new SysDbinfo();//源端
             SysDbinfo sysDbinfo2 = new SysDbinfo();//目标端
             //查詢关联的数据库连接表jobrela
-            List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
+             sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
             //查询到数据库连接
             if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
                 sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
@@ -179,28 +181,28 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             int a = sysTableruleRespository.deleteByJobIdAndSourceTable(job_id, source_name);
 
 
-//            //如果保存过后脱敏规则再修改表名字 也要修改脱敏表的目的段
-//            sysDesensitizationss = sysDesensitizationRepository.findByJobIdAndSourceTable(job_id, source_name);
-//            if (sysDesensitizationss != null && sysDesensitizationss.size() > 0) {
-//                //只有目的段表名和添加脱敏表名不一致的情况下
-//                if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
-//                    for (SysDesensitization sysDesensitization : sysDesensitizationss) {
-//                        sysDesensitization.setDestTable(dest_name);
-//                        sysDesensitizationRepository.save(sysDesensitization);
-//                    }
-//                }
-//            }
-//            //如果保存后删除规则在修改表名字，也要修改配置表的目的段表名
-//            sysFieldruleList=sysFieldruleRepository.findByJobIdAndSourceNameAndVarFlag(job_id,source_name,1L);
-//            if(sysFieldruleList!=null&&sysFieldruleList.size()>0){
-//                //只有目的段表名和添加过滤字段表名不一致的情况下
-//                if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
-//                    for(SysFieldrule sysFieldrule:sysFieldruleList){
-//                        sysFieldrule.setDestName(dest_name);
-//                        sysFieldruleRepository.save(sysFieldrule);
-//                    }
-//                }
-//            }
+            //如果保存过后脱敏规则再修改表名字 也要修改脱敏表的目的段
+            sysDesensitizationss = sysDesensitizationRepository.findByJobIdAndSourceTable(job_id, source_name);
+            if (sysDesensitizationss != null && sysDesensitizationss.size() > 0) {
+                //只有目的段表名和添加脱敏表名不一致的情况下
+                if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
+                    for (SysDesensitization sysDesensitization : sysDesensitizationss) {
+                        sysDesensitization.setDestTable(dest_name);
+                        sysDesensitizationRepository.save(sysDesensitization);
+                    }
+                }
+            }
+            //如果保存后删除规则在修改表名字，也要修改配置表的目的段表名
+            sysFieldruleList=sysFieldruleRepository.findByJobIdAndSourceNameAndVarFlag(job_id,source_name,1L);
+            if(sysFieldruleList!=null&&sysFieldruleList.size()>0){
+                //只有目的段表名和添加过滤字段表名不一致的情况下
+                if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
+                    for(SysFieldrule sysFieldrule:sysFieldruleList){
+                        sysFieldrule.setDestName(dest_name);
+                        sysFieldruleRepository.save(sysFieldrule);
+                    }
+                }
+            }
             //查询该任务有没有关联的子任务
             if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                 for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
@@ -208,27 +210,27 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     sysTableruleRespository.deleteByJobIdAndSourceTable(sysJobrelaRelated.getSlaveJobId(), source_name);
                     sysFieldruleRepository.deleteByJobIdAndSourceName(sysJobrelaRelated.getSlaveJobId(), source_name);
                     sysFilterTableRepository.deleteByJobIdAndFilterTable(sysJobrelaRelated.getSlaveJobId(), source_name);
-//                    //子任务脱敏修改表名
-//                    sysDesensitizationss = sysDesensitizationRepository.findByJobIdAndSourceTable(sysJobrelaRelated.getSlaveJobId(), source_name);
-//                    if (sysDesensitizationss != null && sysDesensitizationss.size() > 0) {
-//                        if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
-//                            for (SysDesensitization sysDesensitization : sysDesensitizationss) {
-//                                sysDesensitization.setDestTable(dest_name);
-//                                sysDesensitizationRepository.save(sysDesensitization);
-//                            }
-//                        }
-//                    }
-//                    //子任务如果保存后删除规则在修改表名字，也要修改配置表的目的段表名
-//                    sysFieldruleList=sysFieldruleRepository.findByJobIdAndSourceNameAndVarFlag(sysJobrelaRelated.getSlaveJobId(),source_name,1L);
-//                    if(sysFieldruleList!=null&&sysFieldruleList.size()>0){
-//                        //只有目的段表名和添加过滤字段表名不一致的情况下
-//                        if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
-//                            for(SysFieldrule sysFieldrule:sysFieldruleList){
-//                                sysFieldrule.setDestName(dest_name);
-//                                sysFieldruleRepository.save(sysFieldrule);
-//                            }
-//                        }
-//                    }
+                    //子任务脱敏修改表名
+                    sysDesensitizationss = sysDesensitizationRepository.findByJobIdAndSourceTable(sysJobrelaRelated.getSlaveJobId(), source_name);
+                    if (sysDesensitizationss != null && sysDesensitizationss.size() > 0) {
+                        if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
+                            for (SysDesensitization sysDesensitization : sysDesensitizationss) {
+                                sysDesensitization.setDestTable(dest_name);
+                                sysDesensitizationRepository.save(sysDesensitization);
+                            }
+                        }
+                    }
+                    //子任务如果保存后删除规则在修改表名字，也要修改配置表的目的段表名
+                    sysFieldruleList=sysFieldruleRepository.findByJobIdAndSourceNameAndVarFlag(sysJobrelaRelated.getSlaveJobId(),source_name,1L);
+                    if(sysFieldruleList!=null&&sysFieldruleList.size()>0){
+                        //只有目的段表名和添加过滤字段表名不一致的情况下
+                        if (!sysDesensitizationss.get(0).getDestTable().equals(dest_name)) {
+                            for(SysFieldrule sysFieldrule:sysFieldruleList){
+                                sysFieldrule.setDestName(dest_name);
+                                sysFieldruleRepository.save(sysFieldrule);
+                            }
+                        }
+                    }
                 }
             }
             //若源端表和目标端不一致则添加表规则
@@ -356,11 +358,19 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     //若有子任务也保存规则
                     if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                         for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
+                            //查询子任务的目标端是什么类型
+                             sysJobrelaList = sysJobrelaRepository.findById(sysJobrelaRelated.getSlaveJobId().longValue());
+                             sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());
+                             sysFiledTypeList = sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()), String.valueOf(sysDbinfo2.getType()), ziduan[6].toUpperCase());
                             SysFieldrule builds = new SysFieldrule();
                             builds.setFieldName(ziduan[0]);
                             builds.setDestFieldName(ziduan[1]);
                             builds.setJobId(sysJobrelaRelated.getSlaveJobId());
-                            builds.setType(ziduan[2]);
+                            if(sysFiledTypeList!=null&&sysFiledTypeList.size()>0) {
+                                builds.setType(sysFiledTypeList.get(0).getDestFiledType());
+                            }else{
+                                builds.setType(ziduan[2]);
+                            }
                             builds.setScale(ziduan[3]);
                             builds.setNotNull(Long.valueOf(ziduan[4]));
                             builds.setAccuracy(ziduan[5]);
@@ -400,45 +410,45 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     }
                 }
             }
-            if (sysDbinfo.getType() == 2) {
-                sql = "select Column_Name as ColumnName,data_type as TypeName, (case when data_type = 'float' or data_type = 'int' or data_type = 'datetime' or data_type = 'bigint' or data_type = 'double' or data_type = 'decimal' then NUMERIC_PRECISION else CHARACTER_MAXIMUM_LENGTH end ) as length, NUMERIC_SCALE as Scale,(case when IS_NULLABLE = 'YES' then 0 else 1 end) as CanNull  from information_schema.columns where table_schema ='" + sysDbinfo.getDbname() + "' and table_name='" + source_name + "'";
-            } else if (sysDbinfo.getType() == 1) {
-                sql = "SELECT COLUMN_NAME, DATA_TYPE, NVL(DATA_LENGTH,0), NVL(DATA_PRECISION,0), NVL(DATA_SCALE,0), NULLABLE, COLUMN_ID ,DATA_TYPE_OWNER FROM DBA_TAB_COLUMNS WHERE TABLE_NAME='" + source_name
-                        + "' AND OWNER='" + sysDbinfo.getSchema() + "'";
-            }
-            //不同步的字段
-            list = DBConns.getResult(sysDbinfo, sql, list_data);
-            SysFilterTable sysFilterTable = null;
-            sysFilterTableRepository.deleteByJobIdAndFilterTable(job_id, source_name);
-            List<SysDesensitization> sysDesensitizations = null;//查询不同步字段是否有脱敏规则
-            for (SysFieldrule sysFieldrule : list) {
-                //todo 不同步的字段之前添加过脱敏规则要删除
-                sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTableAndSourceField(job_id, source_name, sysFieldrule.getFieldName());
-                if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
-                    sysDesensitizationRepository.delete(sysDesensitizations.get(0));
-                }
-                sysFilterTable = new SysFilterTable();
-                sysFilterTable.setFilterTable(source_name);
-                sysFilterTable.setJobId(job_id);
-                sysFilterTable.setFilterField(sysFieldrule.getFieldName());
-                sysFilterTableRepository.save(sysFilterTable);
-                if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
-                    SysFilterTable sysFilterTable2 = null;
-                    for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                        //todo 子任务不同步的字段之前添加过脱敏规则要删除
-                        sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTableAndSourceField(sysJobrelaRelated.getSlaveJobId(), source_name, sysFieldrule.getFieldName());
-                        if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
-                            sysDesensitizationRepository.delete(sysDesensitizations.get(0));
-                        }
-
-                        sysFilterTable2 = new SysFilterTable();
-                        sysFilterTable2.setFilterTable(source_name);
-                        sysFilterTable2.setJobId(sysJobrelaRelated.getSlaveJobId());
-                        sysFilterTable2.setFilterField(sysFieldrule.getFieldName());
-                        sysFilterTableRepository.save(sysFilterTable2);
-                    }
-                }
-            }
+//            if (sysDbinfo.getType() == 2) {
+//                sql = "select Column_Name as ColumnName,data_type as TypeName, (case when data_type = 'float' or data_type = 'int' or data_type = 'datetime' or data_type = 'bigint' or data_type = 'double' or data_type = 'decimal' then NUMERIC_PRECISION else CHARACTER_MAXIMUM_LENGTH end ) as length, NUMERIC_SCALE as Scale,(case when IS_NULLABLE = 'YES' then 0 else 1 end) as CanNull  from information_schema.columns where table_schema ='" + sysDbinfo.getDbname() + "' and table_name='" + source_name + "'";
+//            } else if (sysDbinfo.getType() == 1) {
+//                sql = "SELECT COLUMN_NAME, DATA_TYPE, NVL(DATA_LENGTH,0), NVL(DATA_PRECISION,0), NVL(DATA_SCALE,0), NULLABLE, COLUMN_ID ,DATA_TYPE_OWNER FROM DBA_TAB_COLUMNS WHERE TABLE_NAME='" + source_name
+//                        + "' AND OWNER='" + sysDbinfo.getSchema() + "'";
+//            }
+//            //不同步的字段
+//            list = DBConns.getResult(sysDbinfo, sql, list_data);
+//            SysFilterTable sysFilterTable = null;
+//            sysFilterTableRepository.deleteByJobIdAndFilterTable(job_id, source_name);
+//            List<SysDesensitization> sysDesensitizations = null;//查询不同步字段是否有脱敏规则
+//            for (SysFieldrule sysFieldrule : list) {
+//                //todo 不同步的字段之前添加过脱敏规则要删除
+//                sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTableAndSourceField(job_id, source_name, sysFieldrule.getFieldName());
+//                if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
+//                    sysDesensitizationRepository.delete(sysDesensitizations.get(0));
+//                }
+//                sysFilterTable = new SysFilterTable();
+//                sysFilterTable.setFilterTable(source_name);
+//                sysFilterTable.setJobId(job_id);
+//                sysFilterTable.setFilterField(sysFieldrule.getFieldName());
+//                sysFilterTableRepository.save(sysFilterTable);
+//                if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
+//                    SysFilterTable sysFilterTable2 = null;
+//                    for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
+//                        //todo 子任务不同步的字段之前添加过脱敏规则要删除
+//                        sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTableAndSourceField(sysJobrelaRelated.getSlaveJobId(), source_name, sysFieldrule.getFieldName());
+//                        if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
+//                            sysDesensitizationRepository.delete(sysDesensitizations.get(0));
+//                        }
+//
+//                        sysFilterTable2 = new SysFilterTable();
+//                        sysFilterTable2.setFilterTable(source_name);
+//                        sysFilterTable2.setJobId(sysJobrelaRelated.getSlaveJobId());
+//                        sysFilterTable2.setFilterField(sysFieldrule.getFieldName());
+//                        sysFilterTableRepository.save(sysFilterTable2);
+//                    }
+//                }
+//            }
 
             //修改任务的状态为未激活
             long job_id1 = job_id;
@@ -599,6 +609,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             }
             List<SysJobrela> sysJobrelaList = sysJobrelaRepository.findById(job_id.longValue());
             //查询目的数据库连接
+
             SysDbinfo sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());
             List<SysFiledType> sysFiledTypeList = null;
             //拿到源端的字段集合

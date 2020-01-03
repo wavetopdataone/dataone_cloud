@@ -1,6 +1,5 @@
 package com.cn.wavetop.dataone.service.impl;
 
-import com.cn.wavetop.dataone.config.shiro.MyShiroRelam;
 import com.cn.wavetop.dataone.dao.*;
 import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.CountAndTime;
@@ -9,12 +8,9 @@ import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysMonitoringService;
 import com.cn.wavetop.dataone.util.DBConns;
 import com.cn.wavetop.dataone.util.DateUtil;
-import org.checkerframework.checker.units.qual.A;
-import org.hibernate.dialect.Sybase11Dialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -24,7 +20,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -434,6 +429,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                         if (sysMonitoringList1.get(0).getJobStatus() != 4) {
                             if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() < sysMonitoringList1.get(0).getReadData() && !"2".equals(sysJobrela.getJobStatus()) && !"21".equals(sysJobrela.getJobStatus())) {
                                 sysMonitoringList1.get(0).setJobStatus(1);//运行中
+                            }else if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() == sysMonitoringList1.get(0).getReadData()&&sysMonitoringList1.get(0).getReadData()==0) {
+                                sysMonitoringList1.get(0).setJobStatus(5);//未开始
                             } else if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() == sysMonitoringList1.get(0).getReadData()) {
                                 sysMonitoringList1.get(0).setJobStatus(3);//已完成
                             } else if ("2".equals(sysJobrela.getJobStatus()) || "21".equals(sysJobrela.getJobStatus())) {
@@ -673,8 +670,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         map3.put("data", reads);
         map4.put("data", errors);
         list.add(map1);
-        list.add(map2);
         list.add(map3);
+        list.add(map2);
         list.add(map4);
         return list;
     }

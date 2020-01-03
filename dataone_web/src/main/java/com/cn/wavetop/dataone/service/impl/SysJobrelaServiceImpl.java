@@ -1318,7 +1318,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 userlogRespository.save(build1);
                 map.put("status", "1");
                 map.put("data", sysJobrela2);
-                map.put("message","复制成功");
+                map.put("message","复制成功,请到首页查看"+sysJobrela.get().getJobName() + "_copy" + (list.size() + 1)+"任务");
             } catch (Exception e) {
                 StackTraceElement stackTraceElement = e.getStackTrace()[0];
 
