@@ -429,7 +429,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                         if (sysMonitoringList1.get(0).getJobStatus() != 4) {
                             if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() < sysMonitoringList1.get(0).getReadData() && !"2".equals(sysJobrela.getJobStatus()) && !"21".equals(sysJobrela.getJobStatus())) {
                                 sysMonitoringList1.get(0).setJobStatus(1);//运行中
-                            }else if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() == sysMonitoringList1.get(0).getReadData()&&sysMonitoringList1.get(0).getReadData()==0) {
+                            }else if (sysMonitoringList1.get(0).getSqlCount()!=0&&sysMonitoringList1.get(0).getReadData()==0) {
                                 sysMonitoringList1.get(0).setJobStatus(5);//未开始
                             } else if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() == sysMonitoringList1.get(0).getReadData()) {
                                 sysMonitoringList1.get(0).setJobStatus(3);//已完成
