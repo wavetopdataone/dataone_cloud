@@ -468,8 +468,14 @@ public class SysUserServiceImpl implements SysUserService {
                     List<SysUserDbinfo> sysUserDbinfos = sysUserDbinfoRepository.findByUserId(list.get(0).getId());
                     sysUserDbinfoRepository.deleteByUserId(list.get(0).getId());
                     if (sysUserDbinfos != null && sysUserDbinfos.size() > 0) {
+                        SysDbinfo sysDbinfo=null;
                         for (SysUserDbinfo sysUserDbinfo : sysUserDbinfos) {
+                            sysDbinfo=sysDbinfoRespository.findById(sysUserDbinfo.getDbinfoId().longValue());
+                            if(sysDbinfo!=null) {
+                                stringRedisTemplate.delete(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName());
+                            }
                             sysDbinfoRespository.deleteById(sysUserDbinfo.getDbinfoId());
+
                         }
                     }
 
@@ -663,7 +669,12 @@ public class SysUserServiceImpl implements SysUserService {
                 List<SysUserDbinfo> sysUserDbinfos = sysUserDbinfoRepository.findByUserId(userId);
                 sysUserDbinfoRepository.deleteByUserId(userId);
                 if (sysUserDbinfos != null && sysUserDbinfos.size() > 0) {
+                    SysDbinfo sysDbinfo=null;
                     for (SysUserDbinfo sysUserDbinfo : sysUserDbinfos) {
+                        sysDbinfo=sysDbinfoRespository.findById(sysUserDbinfo.getDbinfoId().longValue());
+                        if(sysDbinfo!=null) {
+                            stringRedisTemplate.delete(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName());
+                        }
                         sysDbinfoRespository.deleteById(userId);
                     }
                 }
