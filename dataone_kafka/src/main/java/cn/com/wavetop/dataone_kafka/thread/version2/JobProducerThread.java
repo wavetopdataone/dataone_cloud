@@ -11,6 +11,7 @@ import cn.com.wavetop.dataone_kafka.producer.Producer;
 import cn.com.wavetop.dataone_kafka.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -509,18 +510,22 @@ public class JobProducerThread extends Thread {
                         e.printStackTrace();
                     }
 
-                    List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
+                    List<String> destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
 
                     String DROPTABLE;
-                    for (Object destTable : destTables) {
-                        if (destTable != null && !"".equals(destTable)) {
-                            String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
-//                            System.out.println(count);
-                            if (count != null && !"0".equals(count)) {
-                                DROPTABLE = "DROP TABLE  " + destTable;
-//                                System.out.println(DROPTABLE);
-                                jdbcTemplate.execute(DROPTABLE);
+                    for (String destTable : destTables) {
+                        try {
+                            if (destTable != null && !"".equals(destTable)&& !destTable.contains("null")) {
+                                String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
+    //                            System.out.println(count);
+                                if (count != null && !"0".equals(count)) {
+                                    DROPTABLE = "DROP TABLE  " + destTable;
+    //                                System.out.println(DROPTABLE);
+                                    jdbcTemplate.execute(DROPTABLE);
+                                }
                             }
+                        } catch (DataAccessException e) {
+                            e.printStackTrace();
                         }
                     }
                     source = null;

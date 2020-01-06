@@ -17,6 +17,7 @@ public class CustomConsumer3 extends Thread {
 
     private long startTime; //记录程序开始时间
     private long offset = 0; // 记录文件读取的行数
+    private final String url = "";
 
     @Override
     public void run() {
@@ -25,7 +26,7 @@ public class CustomConsumer3 extends Thread {
             //Date date = new Date(startTime);
             boolean flag = true; // 线程终止标识
             StringBuffer result = new StringBuffer();
-            File file = new File("D:\\wangcheng\\dataone\\offset" + new SimpleDateFormat("yyyy-MM-dd").format(new Date())+".txt");
+            File file = new File("D:\\wangcheng\\dataone\\offset" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".txt");
             try {
                 InputStreamReader reader = new InputStreamReader(new FileInputStream(new File("D:\\wangcheng\\dataone\\kafka-connect.log")), "utf-8");
                 BufferedReader br = new BufferedReader(reader);
@@ -34,7 +35,7 @@ public class CustomConsumer3 extends Thread {
                     long last_offset = Long.parseLong(FileUtils.readTxtFile(file));
                     offset = last_offset;
                     System.out.println(last_offset);
-                    for (long i= 0; i<last_offset;i++){
+                    for (long i = 0; i < last_offset; i++) {
                         br.readLine();
                     }
                 }
@@ -104,8 +105,8 @@ public class CustomConsumer3 extends Thread {
                                     e.printStackTrace();
                                 }
                             }
-                           //String payload1 = null;
-                            if (payload.contains("{") && (payload = br.readLine())!=null) {
+                            //String payload1 = null;
+                            if (payload.contains("{") && (payload = br.readLine()) != null) {
                                 boolean exception = payload.contains("Exception");
                                 if (exception) {
                                     String[] split3 = payload.split(":");
@@ -116,8 +117,8 @@ public class CustomConsumer3 extends Thread {
                                             Integer errorflag = 1;
                                             String errortype = split3[0];
                                             String sourceTable = toBackClient.selectTable(jobId, destTable, time, errorflag);
-                                            //message = CustomNewConsumer.topicPartion(topic, partition, offset);
-                                            message = "saf";
+                                            message = CustomNewConsumer.topicPartion(topic, partition, offset);
+                                            //message = "saf";
                                             System.out.println("sourceTable = " + sourceTable);
                                             //远程调用插入错误日志信息
                                             if (message != null) {
@@ -230,9 +231,9 @@ public class CustomConsumer3 extends Thread {
                     {
                         // 记录offset到本地
                         offset++;
-                        FileUtils.writeTxtFile(String.valueOf(offset),file);
+                        FileUtils.writeTxtFile(String.valueOf(offset), file);
                     }
-                    if (System.currentTimeMillis() - startTime >= 1000*60*60*24) {
+                    if (System.currentTimeMillis() - startTime >= 1000 * 60 * 60 * 24) {
                         // 超过24小时终止当前线程
                         flag = false;
                         //关流

@@ -3,6 +3,7 @@ package cn.com.wavetop.dataone_kafka.connect;
 import cn.com.wavetop.dataone_kafka.connect.model.Schema;
 import cn.com.wavetop.dataone_kafka.utils.JSONUtil;
 import cn.com.wavetop.dataone_kafka.utils.PrassingUtil;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.kafka.common.protocol.types.Field;
 
@@ -26,6 +27,9 @@ public class TestModel {
         schemas.put(schema.getName(), schema);
         String data = toJsonString2("IF NOT EXISTS (SELECT * FROM TEST1.dbo.sys_menu WHERE id='1')INSERT INTO TEST1.dbo.sys_menu(id,icon,menu_id,menu_name,menu_type,order_num,parent_id,parent_name,perms,target,url,visible,create_time,create_user,update_time,update_user) VALUES ('1',NULL,NULL,'??',NULL,NULL,NULL,NULL,'supper?ss',NULL,NULL,NULL,NULL,NULL,NULL,NULL) ELSE UPDATE TEST1.dbo.sys_menu SET icon=NULL,menu_id=NULL,menu_name='??',menu_type=NULL,order_num=NULL,parent_id=NULL,parent_name=NULL,perms='supper?ss',target=NULL,url=NULL,visible=NULL,create_time=NULL,create_user=NULL,update_time=NULL,update_user=NULL WHERE id='1'", schemas, 2);
         System.out.println(data);
+
+//        System.out.println(getTimestamp("2019-10-09 00:00:00","yyyy"));
+
     }
 
     /**
@@ -43,14 +47,14 @@ public class TestModel {
      * @desc 字符串转时间戳
      * @example timestamp=1558322327000
      */
-    public static long getTimestamp(String time, String type) {
+    public static Long getTimestamp(String time, String type) {
         try {
             return new SimpleDateFormat(type).parse(time).getTime();
         } catch (ParseException e) {
             e.printStackTrace();
-            System.out.println("报错了！");
+            System.out.println("报错了！"+time+type);
         }
-        return 0;
+        return null;
     }
 
     /**
@@ -98,7 +102,7 @@ public class TestModel {
                 filedType = "int16";
             } else if (filedType.equalsIgnoreCase("INT")) {
                 filedType = "int32";
-            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("bigint") || filedType.contains("NUMBER") || filedType.contains("DECIMAL") || filedType.contains("decimal")) {
+            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("bigint") || filedType.contains("int") || filedType.contains("INT") || filedType.contains("NUMBER") || filedType.contains("DECIMAL") || filedType.contains("decimal")) {
                 filedType = "int64";
             } else if (filedType.equalsIgnoreCase("FLOAT")) {
                 filedType = "float32";
@@ -137,7 +141,9 @@ public class TestModel {
 
     public static String toJsonString2(String insertSql, HashMap<String, Schema> schemas, int dbType) throws JSQLParserException {
 
-
+        if (insertSql.contains("IF NOT EXISTS") && insertSql.contains("ELSE")){
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"),insertSql.indexOf("ELSE UPDATE"));
+        }
 //        System.out.println(insertSql);
 
 

@@ -15,7 +15,7 @@ public interface ToBackClient {
      * @return
      */
     @PutMapping("/toback/resetMonitoring/{jobId}")
-    public void resetMonitoring( @PathVariable Long jobId) ;
+    public boolean resetMonitoring( @PathVariable Long jobId) ;
 
     /**
      * 根据jobid查询数据信息

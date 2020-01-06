@@ -66,6 +66,7 @@ public class ShiroConfig {
 //        filterChainDefinitionMap.put("/sys_user/login_out/", "anon");
         //后台kafka调用的接口
         filterChainDefinitionMap.put("/toback/**", "anon");
+        filterChainDefinitionMap.put("/sys_jobrela/findById","anon");
         //前端js，css，图片
         filterChainDefinitionMap.put("/icons/**", "anon");
         filterChainDefinitionMap.put("/asset-manifest.json/**", "anon");

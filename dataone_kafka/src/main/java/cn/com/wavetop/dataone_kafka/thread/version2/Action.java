@@ -31,7 +31,7 @@ public class Action extends Thread {
 
     // dataone后台安装的监听目录
 //    private final String actionDir = "/opt/dataone/sqltemp/ACTION/";
-    private final String actionDir = "D:/yongz/dataone/sqltemp/ACTION/";
+    private final String actionDir = "E:/yongz/dataone/sqltemp/ACTION/";
     private boolean stopMe = true;
 
     // 存放job任务
@@ -70,36 +70,38 @@ public class Action extends Thread {
                     log.info(s.split("_")[1] + "-jobId：" + jobId);
 
 //                    restTemplate.putForObject("http://DATAONE-WEB/toback/deleteMonitoring/" + jodId, SysDbinfo.class);
-                    toBackClient.resetMonitoring((long) jobId);  // 重置监听表数据
+                    boolean b = toBackClient.resetMonitoring((long) jobId);// 重置监听表数据
                     // todo 重置错误队列数据
 
-                    // 开启任务线程
-                    try {
-                        br = new BufferedReader(new FileReader(actionDir + s));
-                        String str;
-                        while ((str = br.readLine()) != null) {//逐行读取
-                            if (str.contains("sql_file_path")) {
-                                sqlPath = str.split("=")[1];// 获取sql的路径
+                    if (b) {
+                        // 开启任务线程
+                        try {
+                            br = new BufferedReader(new FileReader(actionDir + s));
+                            String str;
+                            while ((str = br.readLine()) != null) {//逐行读取
+                                if (str.contains("sql_file_path")) {
+                                    sqlPath = str.split("=")[1];// 获取sql的路径
+                                }
                             }
+                            br.close();//别忘记，切记
+                            JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
+                            if (jobProducerThread == null) {
+                                Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
+                                Action.jobProducerThread.get("producer_job_" + jobId).start();
+
+
+                            } else {
+                                jobProducerThread.stopMe();
+                                Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
+                                Action.jobProducerThread.get("producer_job_" + jobId).start();
+                            }
+                            jobProducerThread = null;
+                            new File(actionDir + s).delete();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println(e.getMessage());
                         }
-                        br.close();//别忘记，切记
-                        JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
-                        if (jobProducerThread == null) {
-                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
-                            Action.jobProducerThread.get("producer_job_" + jobId).start();
-
-
-                        } else {
-                            jobProducerThread.stopMe();
-                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
-                            Action.jobProducerThread.get("producer_job_" + jobId).start();
-                        }
-                        jobProducerThread = null;
-                        new File(actionDir + s).delete();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println(e.getMessage());
                     }
 
 
@@ -118,7 +120,7 @@ public class Action extends Thread {
                     // todo 暂停kafka connector sink
                     List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
                     for (Object destTable : destTables) {
-                        HttpClientKafkaUtil.getConnectPause("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                        HttpClientKafkaUtil.getConnectPause("192.168.1.156", 8083, "connect-sink-" + jobId + "-" + destTable);
                     }
 
                 } else if (s.split("_")[1].equals("resume")) {
@@ -147,11 +149,10 @@ public class Action extends Thread {
                 }
 
 
-
                 // todo 重启kafka connector sink
                 List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
                 for (Object destTable : destTables) {
-                    HttpClientKafkaUtil.getConnectResume("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                    HttpClientKafkaUtil.getConnectResume("192.168.1.156", 8083, "connect-sink-" + jobId + "-" + destTable);
                 }
             }
             try {

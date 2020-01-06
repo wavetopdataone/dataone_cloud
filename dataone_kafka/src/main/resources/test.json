@@ -5,89 +5,61 @@
       {
         "field": "id",
         "optional": true,
-        "type": "int64"
+        "type": "int(11)"
       },
       {
-        "field": "data_scope",
+        "field": "fname",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "del_flag",
+        "field": "lname",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "flag",
-        "optional": true,
-        "type": "int8"
-      },
-      {
-        "field": "role_id",
-        "optional": true,
-        "type": "int64"
-      },
-      {
-        "field": "role_key",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "role_name",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "role_sort",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "status",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "create_time",
+        "field": "birth",
         "name": "org.apache.kafka.connect.data.Timestamp",
         "optional": true,
         "type": "int64",
         "version": 1
       },
       {
-        "field": "create_user",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "update_time",
+        "field": "hired",
         "name": "org.apache.kafka.connect.data.Timestamp",
         "optional": true,
         "type": "int64",
         "version": 1
       },
       {
-        "field": "update_user",
+        "field": "separated",
+        "name": "org.apache.kafka.connect.data.Timestamp",
         "optional": true,
-        "type": "string"
+        "type": "int64",
+        "version": 1
+      },
+      {
+        "field": "job_code",
+        "optional": true,
+        "type": "int(11)"
+      },
+      {
+        "field": "store_id",
+        "optional": true,
+        "type": "int(11)"
       }
     ],
     "optional": false,
-    "name": "sys_role"
+    "name": "employees"
   },
   "payload": {
-    "role_sort": null,
-    "del_flag": null,
-    "flag": 1,
-    "create_time": 1575959645000,
-    "role_name": "???",
-    "update_time": null,
-    "update_user": null,
-    "role_id": null,
-    "role_key": null,
-    "id": 1,
-    "create_user": null,
-    "data_scope": null,
-    "status": null
+    "store_id": 30048,
+    "fname": "chen30048",
+    "lname": "haixiang30048",
+    "birth": 1570634117000,
+    "separated": 1570550400000,
+    "hired": 1570550400000,
+    "id": 30048,
+    "job_code": 1
   }
 }

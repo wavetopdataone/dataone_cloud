@@ -60,13 +60,15 @@ public class ComputeWriteRate extends Thread {
             if (writeAmount != 0) {
                 restTemplate.getForObject("http://DATAONE-WEB/toback/updateWriteRate/" + jobid + "?destTable=" + destTable + "&realWriteAmount=" + realWriteAmount + "&writeAmount=" + writeAmount + "&writeRate=" + writeRate, Object.class);
             }
-            System.out.println(writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount);
+            System.out.println(destTable+"--------"+writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount);
+
+
 
             if (sync_range == 1){
                 if (realWriteAmount == 0){
                     index++;
                 }
-                if (index == 10){
+                if (index == 1000){
                     flag = false;
                 }
             }
