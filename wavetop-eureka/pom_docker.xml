@@ -31,7 +31,7 @@
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>1.0.0</version>
-                <!--docker镜像相关的配置信息-->
+                <!--docker镜像相关的 配置 信息-->
                 <configuration>
                     <!--镜像名，这里用工程名-->
                     <imageName>${project.artifactId}-${project.version}</imageName>
@@ -41,9 +41,7 @@
                     <imageTags>
                         <imageTag>${project.version}</imageTag>
                     </imageTags>
-                    <registryUrl>192.168.1.143:5000</registryUrl>
-                    <pushImage>true</pushImage>
-                    <imageName>192.168.1.143:5000/${project.artifactId}:${project.version}</imageName>
+                    <imageName>${project.artifactId}:${project.version}</imageName>
                     <!--构建镜像的配置信息-->
                     <resources>
                         <resource>
