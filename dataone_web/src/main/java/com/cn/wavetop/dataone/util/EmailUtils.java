@@ -38,34 +38,37 @@ public class EmailUtils {
         return sb.toString().substring(4, 8);  //截取字符串第4到8
     }
 
-    public boolean sendAuthCodeEmail(SysUser sysUser, EmailPropert emailPropert,List<SysUser> email) {
-        String hostName=sysUser.getEmailType();
-        String username=sysUser.getEmail();
-        String password=sysUser.getEmailPassword();
+    public boolean sendAuthCodeEmail(SysUser sysUser, EmailPropert emailPropert, List<SysUser> email) {
+        String hostName = sysUser.getEmailType();
+        String username = sysUser.getEmail();
+        String password = sysUser.getEmailPassword();
         try {
             SimpleEmail mail = new SimpleEmail();
             mail.setHostName(hostName);//发送邮件的服务器
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, emailPropert.getForm());  //发送邮件的邮箱和发件人
-            mail.addHeader("X-Mailer","Microsoft Outlook Express 6.00.2900.2869");
+            mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
             mail.setSSLOnConnect(true); //使用安全链接
-            if(email!=null&&email.size()>0){
-                for(int i=0;i<email.size();i++){
-                    if(i==0) {
+            //mail.setTLS(true);
+//             mail.setSSL(true);
+
+//             mail.setSslSmtpPort("465");
+            if (email != null && email.size() > 0) {
+                for (int i = 0; i < email.size(); i++) {
+                    if (i == 0) {
                         mail.addTo(email.get(i).getEmail());
-                    }
-                    else{
+                    } else {
                         mail.addCc(email.get(i).getEmail());
                     }
                 }
             }
             mail.setSubject(emailPropert.getSubject());//设置邮件的主题
 
-            StringBuffer messageText=new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
+            StringBuffer messageText = new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
 
             messageText.append(emailPropert.getMessageText());
             mail.setMsg(emailPropert.getSag());//设置邮件的内容
-            mail.setContent(messageText.toString(),"text/html;charset=UTF-8");
+            mail.setContent(messageText.toString(), "text/html;charset=UTF-8");
             mail.send();//发送
             return true;
         } catch (EmailException e) {
@@ -74,28 +77,29 @@ public class EmailUtils {
         }
 
     }
-    public boolean sendAuthCodeEmail(SysUser sysUser,String email, String authCode) {
-        String hostName=sysUser.getEmailType();
-        String username=sysUser.getEmail();
-        String password=sysUser.getEmailPassword();
+
+    public boolean sendAuthCodeEmail(SysUser sysUser, String email, String authCode) {
+        String hostName = sysUser.getEmailType();
+        String username = sysUser.getEmail();
+        String password = sysUser.getEmailPassword();
         try {
             SimpleEmail mail = new SimpleEmail();
 
             mail.setHostName(hostName);//发送邮件的服务器
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, "上海浪擎科技技术有限公司");  //发送邮件的邮箱和发件人
-            mail.addHeader("X-Mailer","Microsoft Outlook Express 6.00.2900.2869");
+            mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
             mail.setSSLOnConnect(true); //使用安全链接
 
             mail.addTo(email);//接收的邮箱
             mail.setSubject("浪擎dataOne登陆验证码");//设置邮件的主题
 
-            StringBuffer messageText=new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
+            StringBuffer messageText = new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
             messageText.append("<span>尊敬的用户:你好!</span></br>");
-            messageText.append("<span>浪擎dataOne登陆验证码为:"+authCode+"</span></br>");
+            messageText.append("<span>浪擎dataOne登陆验证码为:" + authCode + "</span></br>");
             messageText.append("<span>出于安全原因，该验证码将于1分钟后失效。请勿将验证码透露给他人。</span></br>");
             mail.setMsg("尊敬的用户:你好!\n 浪擎dataOne登陆验证码为:" + authCode + "\n" + "(有效期为一分钟)");//设置邮件的内容
-            mail.setContent(messageText.toString(),"text/html;charset=UTF-8");
+            mail.setContent(messageText.toString(), "text/html;charset=UTF-8");
             mail.send();//发送
             return true;
         } catch (EmailException e) {
@@ -106,22 +110,21 @@ public class EmailUtils {
     }
 
     public boolean sendBagEmail(SysUser sysUser, EmailPropert emailPropert, List<EmailDescriptionVo> emailDescription, List<SysUser> email) {
-        String hostName=sysUser.getEmailType();
-        String username=sysUser.getEmail();
-        String password=sysUser.getEmailPassword();
+        String hostName = sysUser.getEmailType();
+        String username = sysUser.getEmail();
+        String password = sysUser.getEmailPassword();
         try {
             MultiPartEmail mail = new MultiPartEmail();
             mail.setHostName(hostName);//发送邮件的服务器
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, emailPropert.getForm());  //发送邮件的邮箱和发件人
-            mail.addHeader("X-Mailer","Microsoft Outlook Express 6.00.2900.2869");
+            mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
             mail.setSSLOnConnect(true); //使用安全链接
-            if(email!=null&&email.size()>0){
-                for(int i=0;i<email.size();i++){
-                    if(i==0) {
+            if (email != null && email.size() > 0) {
+                for (int i = 0; i < email.size(); i++) {
+                    if (i == 0) {
                         mail.addTo(email.get(i).getEmail());
-                    }
-                    else{
+                    } else {
                         mail.addCc(email.get(i).getEmail());
                     }
                 }
@@ -129,9 +132,9 @@ public class EmailUtils {
             mail.setSubject(emailPropert.getSubject());//设置邮件的主题
             mail.setMsg(emailPropert.getSag());//设置邮件的内容
             //附件
-            EmailAttachment attachment=null;
-            if(emailDescription!=null&&emailDescription.size()>0){
-                for(EmailDescriptionVo emailDescriptionVo:emailDescription){
+            EmailAttachment attachment = null;
+            if (emailDescription != null && emailDescription.size() > 0) {
+                for (EmailDescriptionVo emailDescriptionVo : emailDescription) {
                     attachment = new EmailAttachment();
                     attachment.setPath(emailDescriptionVo.getPath());
                     attachment.setDisposition(EmailAttachment.ATTACHMENT);
@@ -150,8 +153,6 @@ public class EmailUtils {
     }
 
 
-
-
     public static void main(String[] args) {
         try {
             EmailAttachment attachment = new EmailAttachment();
@@ -164,20 +165,20 @@ public class EmailUtils {
             mail.setHostName("smtp.qq.com");//发送邮件的服务器
             mail.setAuthentication("1696694856@qq.com", "lgzdtbbyuebvceaj");//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom("1696694856@qq.com", "上海浪擎科技技术有限公司");  //发送邮件的邮箱和发件人
-            mail.addHeader("X-Mailer","Microsoft Outlook Express 6.00.2900.2869");
+            mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
             mail.setSSLOnConnect(true); //使用安全链接
 
             mail.addTo("sfhzyxzh@163.com");//接收的邮箱
             mail.setSubject("浪擎dataOne登陆验证码");//设置邮件的主题
 
-            StringBuffer messageText=new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
+            StringBuffer messageText = new StringBuffer();//内容以html格式发送,防止被当成垃圾邮件
             messageText.append("<span>尊敬的用户:你好!</span></br>");
             messageText.append("<span>浪擎dataOne登陆验证码为:a</span></br>");
             messageText.append("<span>出于安全原因，该验证码将于1分钟后失效。请勿将验证码透露给他人。</span></br>");
             mail.setMsg("尊敬的用户:你好!\n 浪擎dataOne登陆验证码为:a(出于安全原因，该验证码将于1分钟后失效。请勿将验证码透露给他人。)");//设置邮件的内容
 //            mail.setContent(messageText.toString(),"text/html;charset=UTF-8");
             mail.attach(attachment);
-                mail.send();//发送
+            mail.send();//发送
         } catch (EmailException e) {
             e.printStackTrace();
         }

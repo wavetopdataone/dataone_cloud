@@ -30,4 +30,6 @@ public interface SysFieldruleService {
     Object recover(String sourceField,String destField, String source_name, String dest_name, Long job_id);
     //批量脱敏弹窗需要的数据
     Object showFieldrule(SysDbinfo sysDbinfo, String tablename, Long job_id);
+    //新增字段
+    Object addField(Long jobId,String sourceTable,String destTable);
 }

@@ -810,7 +810,7 @@ public class SysUserServiceImpl implements SysUserService {
         if (opsForValue.get("codenew" + email) == null) {
             return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
         }
-        if (authCode.equals(opsForValue.get("codeold" + email))) {
+        if (authCode.toUpperCase().equals(opsForValue.get("codeold" + email).toUpperCase())) {
             stringRedisTemplate.expire("codeold" + email, 5, TimeUnit.SECONDS);
             return ToDataMessage.builder().status("1").message("验证码正确").build();
         } else {
@@ -983,7 +983,9 @@ public class SysUserServiceImpl implements SysUserService {
             //todo  查询超管的东西  超管的id必须时1
             Optional<SysUser> sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             List<SysUser> sysUsers=new ArrayList<>();
-            sysUsers.add(sysUserOptional.get());
+            SysUser sysUser=new SysUser();
+            sysUser.setEmail(email);
+            sysUsers.add(sysUser);
             EmailPropert emailPropert=new EmailPropert();
             emailPropert.setForm("上海浪擎科技技术有限公司");
             emailPropert.setSubject("浪擎dataone验证码：");
@@ -1012,8 +1014,8 @@ public class SysUserServiceImpl implements SysUserService {
         if (opsForValue.get("jishuCodeNew" + email) == null) {
             return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
         }
-        if (authCode.equals(opsForValue.get("jishuCodeNew" + email))) {
-            stringRedisTemplate.expire("codeold" + email, 5, TimeUnit.SECONDS);
+        if (authCode.toUpperCase().equals(opsForValue.get("jishuCodeNew" + email).toUpperCase())) {
+            stringRedisTemplate.expire("jishuCodeNew" + email, 5, TimeUnit.SECONDS);
             Optional<SysUser> sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             sysUserOptional.get().setSkillEmail(email);
             sysUserRepository.save(sysUserOptional.get());

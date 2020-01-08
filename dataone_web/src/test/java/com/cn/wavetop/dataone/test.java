@@ -21,7 +21,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class test {
-
+@Test
+public  void ssa(){
+    String a="swy4";
+    System.out.println(a.toUpperCase());
+}
 
     @Test
     public void ssswq(){

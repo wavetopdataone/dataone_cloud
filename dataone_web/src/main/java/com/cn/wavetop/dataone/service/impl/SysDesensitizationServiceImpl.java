@@ -51,9 +51,9 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
 
                     list.get(0).setDestField(destName[i]);
                     list.get(0).setDesensitizationWay(sysDesensitization.getDesensitizationWay());
-                   if("2".equals(sysDesensitization.getDesensitizationWay())) {
+//                   if("2".equals(sysDesensitization.getDesensitizationWay())) {
                        list.get(0).setRemark(sysDesensitization.getRemark());
-                   }
+//                   }
                     sysDesensitizationRepository.save(list.get(0));
                     //删除脱敏规则
     //                sysDesensitizationRepository.deleteByJobrelaId(sysDesensitization.getJobId(), sysDesensitization.getDestTable(), sysDesensitization.getDestField());
@@ -76,9 +76,9 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
                             s.setDestTable(sysDesensitization.getDestTable());
                             s.setDesensitizationWay(sysDesensitization.getDesensitizationWay());
                             s.setJobId(sysJobrelaRelated.getSlaveJobId());
-                            if("2".equals(sysDesensitization.getDesensitizationWay())) {
+//                            if("2".equals(sysDesensitization.getDesensitizationWay())) {
                                 s.setRemark(sysDesensitization.getRemark());
-                            }
+//                            }
                             sysDesensitizationRepository.save(s);
 
                         }

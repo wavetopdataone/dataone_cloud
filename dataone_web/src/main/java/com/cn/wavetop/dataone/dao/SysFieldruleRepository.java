@@ -12,6 +12,9 @@ import java.util.List;
 public interface SysFieldruleRepository extends JpaRepository<SysFieldrule,Long> {
      List<SysFieldrule> findByJobId(long job_id);
     List<SysFieldrule> findByJobIdAndSourceName(long job_id,String sourceName);
+    List<SysFieldrule> findByJobIdAndSourceNameAndAddFlag(Long jobId,String sourceName,Integer addFlag);
+    @Query("select s from SysFieldrule s where s.jobId=:job_id and s.sourceName=:sourceName and (s.addFlag is null or s.addFlag<>:addFlag)")
+    List<SysFieldrule> findByJobIdAndSourceName(long job_id,String sourceName,Integer addFlag);
     List<SysFieldrule> findByJobIdAndSourceNameAndVarFlag(long job_id,String sourceName,Long varFlag);
     @Modifying
     @Query("delete from SysFieldrule where jobId = :job_id")
@@ -21,8 +24,8 @@ public interface SysFieldruleRepository extends JpaRepository<SysFieldrule,Long>
     @Query("delete from SysFieldrule where jobId = :job_id and sourceName=:source_name and varFlag=2")
     int deleteByJobIdAndSourceName(long job_id,String source_name);
 
-    SysFieldrule findByJobIdAndAddFlag(Long jobId,Integer addFlag);
+    List<SysFieldrule> findByJobIdAndAddFlag(Long jobId,Integer addFlag);
 
 
-    int deleteByJobIdAndSourceNameAndDestNameAndDestFieldName(Long jobId,String sourceName,String destName,String destFieldName);
+    int deleteByJobIdAndSourceNameAndDestNameAndFieldName(Long jobId,String sourceName,String destName,String FieldName);
 }

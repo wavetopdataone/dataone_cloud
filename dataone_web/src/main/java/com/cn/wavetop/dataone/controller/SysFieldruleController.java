@@ -64,8 +64,8 @@ public class SysFieldruleController {
     @ApiOperation(value = "验证源端目的端是否存在表", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "验证源端目的端是否存在表")
     @ApiImplicitParam
     @PostMapping("/VerifyDb")
-    public Object VerifyDb(Long job_id,String source_name,String dest_name) {
-        return service.VerifyDb(job_id,source_name,dest_name);
+    public Object VerifyDb(Long jobId,String source_name,String dest_name) {
+        return service.VerifyDb(jobId,source_name,dest_name);
     }
 
     @ApiOperation(value = "删除", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "删除")
@@ -87,5 +87,10 @@ public class SysFieldruleController {
         return service.showFieldrule(sysDbinfo,tablename,job_id);
     }
 
-
+    @ApiOperation(value = "新增字段", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "新增字段")
+    @PostMapping("/addField")
+    public Object addField(Long job_id,String source_name,String dest_name)
+    {
+        return service.addField(job_id,source_name,dest_name);
+    }
 }
