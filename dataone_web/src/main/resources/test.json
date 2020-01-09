@@ -1,1 +1,9 @@
-{"message": "系统找不到指定文件！", "status": "404"}
+{
+  "tableTotal": {
+    "file1": 1,
+    "file_148": 1
+  },
+  "tableMonito": {
+    "file1": 1000.0
+  }
+}

@@ -184,7 +184,7 @@ public class JobProducerThread extends Thread {
             String befor = offsetContent[0].substring(0, offsetContent[0].lastIndexOf("_") + 1);
             int i = Integer.parseInt(offsetContent[0].substring(offsetContent[0].lastIndexOf("_") + 1, offsetContent[0].indexOf(".sql"))) + 1;
             String fileName_ = befor + i + ".sql";
-            System.out.println(fileName_);
+//            System.out.println(fileName_);
             if (new File(fileName_).exists()) {
                 try {
                     FileUtils.writeTxtFile(readFile(fileName_, 0), file);
@@ -324,7 +324,7 @@ public class JobProducerThread extends Thread {
             }
 
             long startTime = System.currentTimeMillis();   //获取开始读取时间
-            int startIndex = index;
+//            int startIndex = index;
             while ((str = br.readLine()) != null) {//逐行读取
                 flag = true;
 
@@ -333,7 +333,7 @@ public class JobProducerThread extends Thread {
                 } else {
 
                     if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
-
+                        index = index+3;
                         str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
                         jdbcTemplate.execute(str); // 创建表
@@ -351,6 +351,7 @@ public class JobProducerThread extends Thread {
 
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
+                        index = index+3;
                         total++;
                         str = sqlServerInsert(str);
                         String data = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
@@ -365,7 +366,7 @@ public class JobProducerThread extends Thread {
                         }
 
                         producer.sendMsg("task-" + jodId + "-" + insert_table, data);
-
+                        System.out.println(tableTotal);
                         Integer tableIndex = tableTotal.get(insert_table);
 //                        System.out.println(insert_table);
                         if (tableIndex == null) {
@@ -374,6 +375,7 @@ public class JobProducerThread extends Thread {
                         tableIndex++;
 
                         tableTotal.put(insert_table, tableIndex);
+                        System.out.println(tableTotal);
 
 
                     }
@@ -388,7 +390,7 @@ public class JobProducerThread extends Thread {
                 runtime = 0.001;
             }
             if (total != 0) {
-
+                HashMap<Object, Object> Monito = new HashMap<>();
                 // 单表读取速率及读取量  TODO
                 for (String tableName : tableTotal.keySet()) {
                     Double sourceRate = tableTotal.get(tableName) / runtime;
@@ -407,22 +409,20 @@ public class JobProducerThread extends Thread {
                     tableMonito.put(tableName, sourceRate);
                     tableTotal.get(tableName);
 
-                    HashMap<Object, Object> Monito = new HashMap<>();
                     Monito.put("tableMonito", tableMonito);
                     Monito.put("tableTotal", tableTotal);
 //                    System.out.println(Monito);
-
-                    //创建请求头
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
-                    HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
-//                    System.out.println(JSONUtil.toJSONString(Monito));
-                    restTemplate.postForEntity(url, entity, String.class);
-
-                    Monito.clear();
-                    Monito = null;
                 }
+                //创建请求头
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
+                HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
+//                    System.out.println(JSONUtil.toJSONString(Monito));
+                restTemplate.postForEntity(url, entity, String.class);
+
+                Monito.clear();
+                Monito = null;
             }
 
 

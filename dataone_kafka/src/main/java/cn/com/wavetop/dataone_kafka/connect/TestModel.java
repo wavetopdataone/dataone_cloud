@@ -20,14 +20,16 @@ import java.util.regex.Pattern;
 public class TestModel {
 
     public static void main(String[] args) throws JSQLParserException {
-        Schema schema = mysqlToSchema("IF NOT EXISTS (SELECT TAB.NAME FROM TEST1.SYS.TABLES AS TAB LEFT JOIN TEST1.SYS.SCHEMAS AS SC ON TAB.SCHEMA_ID = SC.SCHEMA_ID WHERE TAB.NAME='sys_menu' AND SC.NAME='dbo') CREATE TABLE TEST1.dbo.sys_menu (id bigint ,icon NVARCHAR(255) NULL,menu_id bigint NULL,menu_name NVARCHAR(255) NULL,menu_type NVARCHAR(255) NULL,order_num NVARCHAR(255) NULL,parent_id bigint NULL,parent_name NVARCHAR(255) NULL,perms NVARCHAR(255) NULL,target NVARCHAR(255) NULL,url NVARCHAR(255) NULL,visible NVARCHAR(255) NULL,create_time datetime NULL,create_user NVARCHAR(255) NULL,update_time datetime NULL,update_user NVARCHAR(255) NULL,PRIMARY KEY (id ))", 2);
-//        getStringTime(1575455606000L);
-        System.out.println(schema);
-        HashMap<String, Schema> schemas = new HashMap<>();
-        schemas.put(schema.getName(), schema);
-        String data = toJsonString2("IF NOT EXISTS (SELECT * FROM TEST1.dbo.sys_menu WHERE id='1')INSERT INTO TEST1.dbo.sys_menu(id,icon,menu_id,menu_name,menu_type,order_num,parent_id,parent_name,perms,target,url,visible,create_time,create_user,update_time,update_user) VALUES ('1',NULL,NULL,'??',NULL,NULL,NULL,NULL,'supper?ss',NULL,NULL,NULL,NULL,NULL,NULL,NULL) ELSE UPDATE TEST1.dbo.sys_menu SET icon=NULL,menu_id=NULL,menu_name='??',menu_type=NULL,order_num=NULL,parent_id=NULL,parent_name=NULL,perms='supper?ss',target=NULL,url=NULL,visible=NULL,create_time=NULL,create_user=NULL,update_time=NULL,update_user=NULL WHERE id='1'", schemas, 2);
-        System.out.println(data);
+//        Schema schema = mysqlToSchema("IF NOT EXISTS (SELECT TAB.NAME FROM TEST1.SYS.TABLES AS TAB LEFT JOIN TEST1.SYS.SCHEMAS AS SC ON TAB.SCHEMA_ID = SC.SCHEMA_ID WHERE TAB.NAME='sys_menu' AND SC.NAME='dbo') CREATE TABLE TEST1.dbo.sys_menu (id bigint ,icon NVARCHAR(255) NULL,menu_id bigint NULL,menu_name NVARCHAR(255) NULL,menu_type NVARCHAR(255) NULL,order_num NVARCHAR(255) NULL,parent_id bigint NULL,parent_name NVARCHAR(255) NULL,perms NVARCHAR(255) NULL,target NVARCHAR(255) NULL,url NVARCHAR(255) NULL,visible NVARCHAR(255) NULL,create_time datetime NULL,create_user NVARCHAR(255) NULL,update_time datetime NULL,update_user NVARCHAR(255) NULL,PRIMARY KEY (id ))", 2);
+////        getStringTime(1575455606000L);
+//        System.out.println(schema);
+//        HashMap<String, Schema> schemas = new HashMap<>();
+//        schemas.put(schema.getName(), schema);
+//        String data = toJsonString2("IF NOT EXISTS (SELECT * FROM TEST1.dbo.sys_menu WHERE id='1')INSERT INTO TEST1.dbo.sys_menu(id,icon,menu_id,menu_name,menu_type,order_num,parent_id,parent_name,perms,target,url,visible,create_time,create_user,update_time,update_user) VALUES ('1',NULL,NULL,'??',NULL,NULL,NULL,NULL,'supper?ss',NULL,NULL,NULL,NULL,NULL,NULL,NULL) ELSE UPDATE TEST1.dbo.sys_menu SET icon=NULL,menu_id=NULL,menu_name='??',menu_type=NULL,order_num=NULL,parent_id=NULL,parent_name=NULL,perms='supper?ss',target=NULL,url=NULL,visible=NULL,create_time=NULL,create_user=NULL,update_time=NULL,update_user=NULL WHERE id='1'", schemas, 2);
+//        System.out.println(data);
 
+        System.out.println(getTimestamp("20:00:00", "HH:mm:ss"));
+        System.out.println(getStringTime(getTimestamp("20:00:00", "HH:mm:ss"), "HH:mm:ss"));
 //        System.out.println(getTimestamp("2019-10-09 00:00:00","yyyy"));
 
     }
@@ -52,7 +54,7 @@ public class TestModel {
             return new SimpleDateFormat(type).parse(time).getTime();
         } catch (ParseException e) {
             e.printStackTrace();
-            System.out.println("报错了！"+time+type);
+            System.out.println("报错了！" + time + type);
         }
         return null;
     }
@@ -141,8 +143,8 @@ public class TestModel {
 
     public static String toJsonString2(String insertSql, HashMap<String, Schema> schemas, int dbType) throws JSQLParserException {
 
-        if (insertSql.contains("IF NOT EXISTS") && insertSql.contains("ELSE")){
-            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"),insertSql.indexOf("ELSE UPDATE"));
+        if (insertSql.contains("IF NOT EXISTS") && insertSql.contains("ELSE")) {
+            insertSql = insertSql.substring(insertSql.indexOf("INSERT INTO"), insertSql.indexOf("ELSE UPDATE"));
         }
 //        System.out.println(insertSql);
 
@@ -182,20 +184,20 @@ public class TestModel {
             if (dbType == 1) {
                 column = column.toUpperCase();
             }
+            // 解析ORACLE数据库的TO_DATE函数中的值
             if ((value.contains("DATE") || value.contains("data")) && value.contains("(")) {
                 String[] split = value.substring(value.indexOf("("), value.lastIndexOf(")")).split(",");
                 split[0] = split[0].substring(2, split[0].length() - 1); // 获取时间
-//                System.out.println(split[0]);
-                if (split[0].length() <= 4) {
-//                    System.out.println(getTimestamp(split[0], "yyyy"));
+                if (split[0].length() == 4) {
                     map.put(column, getTimestamp(split[0], "yyyy"));
-                } else if (split[0].length() <= 10) {
-//                    System.out.println(getTimestamp(split[0], "yyyy-MM-dd"));
+                } else if (split[0].length() == 8) {
+                    map.put(column, getTimestamp(split[0], "HH:mm:ss"));
+                } else if (split[0].length() == 10) {
                     map.put(column, getTimestamp(split[0], "yyyy-MM-dd"));
-
-                } else if (split[0].length() <= 19) {
-//                    System.out.println(getTimestamp(split[0], "yyyy-MM-dd HH:mm:ss"));
+                } else if (split[0].length() == 19) {
                     map.put(column, getTimestamp(split[0], "yyyy-MM-dd HH:mm:ss"));
+                } else if (split[0].length() == 23) {
+                    map.put(column, getTimestamp(split[0], "yyyy-MM-dd HH:mm:ss.SSS"));
                 }
 
             } else {
@@ -218,13 +220,16 @@ public class TestModel {
                             map.put(column, null);
                         } else {
                             if ("org.apache.kafka.connect.data.Timestamp".equals(name)) {
-                                if (value.length() <= 4) {
+                                if (value.length() == 4) {
                                     map.put(column, getTimestamp(value, "yyyy"));
-                                } else if (value.length() <= 10) {
+                                } else if (value.length() == 8) {
+                                    map.put(column, getTimestamp(value, "HH:mm:ss"));
+                                } else if (value.length() == 10) {
                                     map.put(column, getTimestamp(value, "yyyy-MM-dd"));
-
-                                } else if (value.length() <= 19) {
+                                } else if (value.length() == 19) {
                                     map.put(column, getTimestamp(value, "yyyy-MM-dd HH:mm:ss"));
+                                } else if (value.length() == 23) {
+                                    map.put(column, getTimestamp(value, "yyyy-MM-dd HH:mm:ss.SSS"));
                                 }
                             } else {
 
@@ -307,9 +312,9 @@ public class TestModel {
         String s = JSONUtil.toJSONString(map2);
 //        System.out.println(s);
         map.clear();
-        map=null;
+        map = null;
         map2.clear();
-        map2=null;
+        map2 = null;
         return s;
     }
 

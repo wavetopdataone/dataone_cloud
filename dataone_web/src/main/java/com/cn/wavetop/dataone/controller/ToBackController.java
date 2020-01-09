@@ -134,20 +134,20 @@ public class ToBackController {
      * @param
      * @para
      */
-    @ApiOperation(value = "读取速率", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
-    @GetMapping("/updateReadRate/{readRate}")
-    public void monitoringTable(@PathVariable Long readRate, Long jobId) {
-        //todo 后面要分表
-
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
-        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
-            for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                sysMonitoring.setReadRate(readRate);
-                sysMonitoringRepository.save(sysMonitoring);
-            }
-        }
-
-    }
+//    @ApiOperation(value = "读取速率", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
+//    @GetMapping("/updateReadRate/{readRate}")
+//    public void monitoringTable(@PathVariable Long readRate, Long jobId) {
+//        //todo 后面要分表
+//
+//        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
+//        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
+//            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+//                sysMonitoring.setReadRate(readRate);
+//                sysMonitoringRepository.save(sysMonitoring);
+//            }
+//        }
+//
+//    }
 
     /**
      * 重置读写速率
@@ -199,13 +199,7 @@ public class ToBackController {
                         Double readRate = Double.parseDouble(tableMonito.get(table).toString());
 //                        System.out.println(tableTotal.get(table));
                         long readData = Long.parseLong(tableTotal.get(table).toString());
-                        sysMonitoring.setOptTime(new Date());
-                        sysMonitoring.setReadRate(new Double(readRate).longValue());
-//                        System.out.println(destTable+"之前读取量："+sysMonitoring.getReadData());
-                        sysMonitoring.setReadData(sysMonitoring.getReadData() + readData);
-//                        System.out.println(destTable+"当前读取量："+sysMonitoring.getReadData());
-//                        sysMonitoringRepository.save(sysMonitoring);
-                        sysMonitoringRepository.updateReadMonitoring2(sysMonitoring.getId(),sysMonitoring.getReadData(),sysMonitoring.getOptTime(),sysMonitoring.getReadRate(), sysMonitoring.getDestTable());
+                        sysMonitoringRepository.updateReadMonitoring2(sysMonitoring.getId(),sysMonitoring.getReadData() + readData,new Date(),new Double(readRate).longValue(), sysMonitoring.getDestTable());
                         // 更新实时表
                         SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(table).readRate(readRate).readAmount((int) readData).build();
                         sysRealTimeMonitoringRepository.save(sysRealTimeMonitoring);

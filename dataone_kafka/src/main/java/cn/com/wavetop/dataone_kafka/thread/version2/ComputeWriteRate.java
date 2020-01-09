@@ -27,11 +27,7 @@ public class ComputeWriteRate extends Thread {
 
     @Override
     public void run() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         sync_range = 1;
         int index = 0;
         fristCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
@@ -60,7 +56,7 @@ public class ComputeWriteRate extends Thread {
             if (writeAmount != 0) {
                 restTemplate.getForObject("http://DATAONE-WEB/toback/updateWriteRate/" + jobid + "?destTable=" + destTable + "&realWriteAmount=" + realWriteAmount + "&writeAmount=" + writeAmount + "&writeRate=" + writeRate, Object.class);
             }
-            System.out.println(destTable+"--------"+writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount);
+//            System.out.println(destTable+"--------"+writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount+"------------"+fristCount);
 
 
 
@@ -73,9 +69,8 @@ public class ComputeWriteRate extends Thread {
                 }
             }
 
-
             try {
-                Thread.sleep(5000);
+                Thread.sleep(8000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

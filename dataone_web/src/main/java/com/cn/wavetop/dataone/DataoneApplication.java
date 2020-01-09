@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringCloudApplication
 @EnableDiscoveryClient
 @SpringBootApplication
-public class DataoneApplication {
+public class  DataoneApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(DataoneApplication.class, args);
@@ -22,12 +22,5 @@ public class DataoneApplication {
 //        new MonitoringClient().start();
     }
 
-
-
-//    @Bean
-//    public SysJobrelaService sysJobrelaService(){
-//        return  this.sysJobrelaService;
-//    };
-    
 
 }
