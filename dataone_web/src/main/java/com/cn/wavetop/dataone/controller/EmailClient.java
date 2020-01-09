@@ -73,7 +73,7 @@ public class EmailClient extends Thread {
                         if(sysMonitoring.getReadData()==null){
                             sysMonitoring.setReadData(0L);
                         }
-                        if (errorQueueSettings.getPreSteup() > sysMonitoring.getReadData()) {
+                        if (errorQueueSettings.getPreSteup() < sysMonitoring.getReadData()) {
                             //按表查询出错误队列的错误数量
                             errorLogs = errorLogRespository.findByJobIdAndSourceName(emailJobrelaVo.getJobId(), sysMonitoring.getSourceTable());
                             if (sysMonitoring.getReadData() != null && errorLogs != null) {
