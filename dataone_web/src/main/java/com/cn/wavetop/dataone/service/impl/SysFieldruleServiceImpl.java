@@ -257,58 +257,59 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             sysFieldruleRepository.deleteByJobIdAndSourceName(job_id, source_name);
 //            //todo 修改了新增的的日期字段
             if (!"".equals(addFile) && addFile != null && !"undefined".equals(addFile)) {
-                List<SysFieldrule> addFileUpate = sysFieldruleRepository.findByJobIdAndSourceNameAndAddFlag(job_id, source_name, 1);
-                if (addFileUpate != null && addFileUpate.size() > 0) {
-                    addFileUpate.get(0).setDestFieldName(addFile);
+//                List<SysFieldrule> addFileUpate = sysFieldruleRepository.findByJobIdAndSourceNameAndAddFlag(job_id, source_name, 1);
+//                if (addFileUpate != null && addFileUpate.size() > 0) {
+//                    addFileUpate.get(0).setDestFieldName(addFile);
+//                }
+//                if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
+//                    for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
+//                        addFileUpate = sysFieldruleRepository.findByJobIdAndSourceNameAndAddFlag(sysJobrelaRelated.getSlaveJobId(), source_name, 1);
+//                        if (addFileUpate != null && addFileUpate.size() > 0) {
+//                            addFileUpate.get(0).setDestFieldName(addFile);
+//                        }
+//                    }
+//                }
+
+                SysFieldrule build1 = new SysFieldrule();
+                build1.setDestFieldName(addFile);
+                build1.setJobId(job_id);
+                build1.setType("DATE");
+                build1.setNotNull(0L);
+                build1.setAccuracy(String.valueOf(0));
+                build1.setScale(String.valueOf(0L));
+                build1.setSourceName(source_name);
+                build1.setDestName(dest_name);
+                build1.setVarFlag(Long.valueOf(2));
+                build1.setAddFlag(1);
+                if (primaryKey.equals(addFile)) {
+                    build1.setPrimaryKey(1L);
+                } else {
+                    build1.setPrimaryKey(0L);
                 }
+                sysFieldrules.add(repository.save(build1));
                 if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
                     for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-                        addFileUpate = sysFieldruleRepository.findByJobIdAndSourceNameAndAddFlag(sysJobrelaRelated.getSlaveJobId(), source_name, 1);
-                        if (addFileUpate != null && addFileUpate.size() > 0) {
-                            addFileUpate.get(0).setDestFieldName(addFile);
+                        SysFieldrule build2 = new SysFieldrule();
+                        build2.setDestFieldName(addFile);
+                        build2.setJobId(sysJobrelaRelated.getSlaveJobId());
+                        build2.setType("DATE");
+                        build1.setNotNull(0L);
+                        build1.setAccuracy(String.valueOf(0));
+                        build1.setScale(String.valueOf(0L));
+                        build2.setSourceName(source_name);
+                        build2.setDestName(dest_name);
+                        build2.setVarFlag(Long.valueOf(2));
+                        build2.setAddFlag(1);
+                        if (primaryKey.equals(addFile)) {
+                            build2.setPrimaryKey(1L);
+                        } else {
+                            build2.setPrimaryKey(0L);
                         }
+                        sysFieldrules.add(repository.save(build2));
                     }
                 }
             }
-//
-//                SysFieldrule build1 = new SysFieldrule();
-//                build1.setDestFieldName(addFile);
-//                build1.setJobId(job_id);
-//                build1.setType("Date");
-//                build1.setNotNull(0L);
-//                build1.setAccuracy(String.valueOf(0));
-//                build1.setScale(String.valueOf(0L));
-//                build1.setSourceName(source_name);
-//                build1.setDestName(dest_name);
-//                build1.setVarFlag(Long.valueOf(2));
-//                build1.setAddFlag(1);
-//                if (primaryKey.equals(addFile)) {
-//                    build1.setPrimaryKey(1L);
-//                } else {
-//                    build1.setPrimaryKey(0L);
-//                }
-//                sysFieldrules.add(repository.save(build1));
-//                if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
-//                    for (SysJobrelaRelated sysJobrelaRelated : sysJobrelaRelateds) {
-//                        SysFieldrule build2 = new SysFieldrule();
-//                        build2.setDestFieldName(addFile);
-//                        build2.setJobId(sysJobrelaRelated.getSlaveJobId());
-//                        build2.setType("Date");
-//                        build1.setNotNull(0L);
-//                        build1.setAccuracy(String.valueOf(0));
-//                        build1.setScale(String.valueOf(0L));
-//                        build2.setSourceName(source_name);
-//                        build2.setDestName(dest_name);
-//                        build2.setVarFlag(Long.valueOf(2));
-//                        build2.setAddFlag(1);
-//                        if (primaryKey.equals(addFile)) {
-//                            build2.setPrimaryKey(1L);
-//                        } else {
-//                            build2.setPrimaryKey(0L);
-//                        }
-//                        sysFieldrules.add(repository.save(build2));
-//                    }
-//                }
+
 
             List<SysDesensitization> desensitizationList = null;//同步的字段脱敏修改
             String[] ziduan = null;
@@ -382,7 +383,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                             if (sysFiledTypeList != null && sysFiledTypeList.size() > 0) {
                                 builds.setType(sysFiledTypeList.get(0).getDestFiledType());
                             } else {
-                                builds.setType(ziduan[2]);
+                                builds.setType(ziduan[6]);
                             }
                             builds.setScale(ziduan[3]);
                             builds.setNotNull(Long.valueOf(ziduan[4]));

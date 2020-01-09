@@ -141,8 +141,8 @@ public class SysUserServiceImpl implements SysUserService {
             //计数第5次时，设置用户被锁定5分钟
             if (Integer.parseInt(opsForValue.get(SHIRO_LOGIN_COUNT + name)) == 5) {
                 opsForValue.set(SHIRO_IS_LOCK + name, "LOCK");
-                stringRedisTemplate.expire(SHIRO_IS_LOCK + name, 1, TimeUnit.MINUTES);
-                stringRedisTemplate.expire(SHIRO_LOGIN_COUNT + name, 1, TimeUnit.MINUTES);
+                stringRedisTemplate.expire(SHIRO_IS_LOCK + name, 5, TimeUnit.MINUTES);
+                stringRedisTemplate.expire(SHIRO_LOGIN_COUNT + name, 5, TimeUnit.MINUTES);
             }
         }
         try {
@@ -1004,6 +1004,7 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     public Object SkillCodeEquals(String email, String authCode) {
+
         ValueOperations<String, String> opsForValue = null;
         try {
             opsForValue = stringRedisTemplate.opsForValue();
@@ -1011,10 +1012,11 @@ public class SysUserServiceImpl implements SysUserService {
             logger.error("*redis服务未连接");
             e.printStackTrace();
         }
+        System.out.println(authCode+"-------------验证码+---"+opsForValue.get("jishuCodeNew" + email));
         if (opsForValue.get("jishuCodeNew" + email) == null) {
             return ToDataMessage.builder().status("0").message("验证码无效或已过期，请重新发送验证码。").build();
         }
-        if (authCode.toUpperCase().equals(opsForValue.get("jishuCodeNew" + email).toUpperCase())) {
+        if (authCode.trim().toUpperCase().equals(opsForValue.get("jishuCodeNew" + email).trim().toUpperCase())) {
             stringRedisTemplate.expire("jishuCodeNew" + email, 5, TimeUnit.SECONDS);
             Optional<SysUser> sysUserOptional = sysUserRepository.findById(Long.valueOf(1));
             sysUserOptional.get().setSkillEmail(email);
