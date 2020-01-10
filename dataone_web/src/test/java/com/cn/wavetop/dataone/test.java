@@ -23,9 +23,24 @@ import java.util.*;
 public class test {
 @Test
 public  void ssa(){
-    String a="swy4";
+    String a="NUBERE";
     System.out.println(a.toUpperCase());
 }
+@Test
+public void showww(){
+String a="'IMAGE','TEXT','UNIQUEIDENTIFIER','DATE','TIME','DATETIME2','DATETIMEOFFSET','TINYINT','SMALLINT','INT','SMALLDATETIME','MONEY','DATETIME','FLOAT','SQL_VARIANT','NTEXT','BIT','DECIMAL','NUMERIC','SMALLMONEY','BIGINT','HIERARCHYID','GEOMETRY','GEOGRAPHY','VARBINARY','VARCHAR','BINARY','CHAR','TIMESTAMP','NVARCHAR','NCHAR','XML','SYSNAME'";
+    String []b=a.split(",");
+    StringBuffer stringBuffer=new StringBuffer("[");
+    for(int i=0;i<b.length;i++){
+
+        stringBuffer.append(b[i].toLowerCase());
+        stringBuffer.append(",");
+    }
+    stringBuffer.append("]");
+    System.out.println(stringBuffer);
+
+}
+
 
     @Test
     public void ssswq(){

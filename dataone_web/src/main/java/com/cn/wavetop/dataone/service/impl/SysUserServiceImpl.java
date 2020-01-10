@@ -251,6 +251,7 @@ public class SysUserServiceImpl implements SysUserService {
                     deptName = sysDepts.get().getDeptName();
                     sysLog.setDeptName(deptName);
                 }
+
             }
             //获取角色信息
             List<SysRole> sysRoles = sysUserRepository.findUserById(PermissionUtils.getSysUser().getId());
@@ -259,6 +260,7 @@ public class SysUserServiceImpl implements SysUserService {
                 roleName = sysRoles.get(0).getRoleName();
                 sysLog.setRoleName(roleName);
             }
+            sysLog.setUsername(PermissionUtils.getSysUser().getLoginName());
         }
 
         sysLog.setIp(subject.getSession().getHost());
@@ -267,7 +269,6 @@ public class SysUserServiceImpl implements SysUserService {
         String params = JSON.toJSONString(args);
         sysLog.setParams(params);
         sysLog.setOperation("登出");
-        sysLog.setUsername(PermissionUtils.getSysUser().getLoginName());
         sysLoginlogRepository.save(sysLog);
         subject.logout();
         return ToDataMessage.builder().status("1").message("退出成功").build();
@@ -827,6 +828,7 @@ public class SysUserServiceImpl implements SysUserService {
         if (PermissionUtils.isPermitted("1")) {
             sysUser.get().setEmailPassword(emailPassword);
         }
+
         String emailType = "smtp." + email.split("@")[1];
         sysUser.get().setEmail(email);
         sysUser.get().setEmailType(emailType);

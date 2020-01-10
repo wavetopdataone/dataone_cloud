@@ -172,6 +172,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             //查询到数据库连接
             if (sysJobrelaList != null && sysJobrelaList.size() > 0) {
                 sysDbinfo = sysDbinfoRespository.findById(sysJobrelaList.get(0).getSourceId().longValue());
+                sysDbinfo2 = sysDbinfoRespository.findById(sysJobrelaList.get(0).getDestId().longValue());
             } else {
                 return ToDataMessage.builder().status("0").message("该任务没有连接").build();
             }
@@ -342,13 +343,14 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
 
                 //todo  字段类型在数据库查不到，就默认和源端一致
                 //若字段改变则存入字段规则表
-                sysFiledTypeList = sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()), String.valueOf(sysDbinfo2.getType()), ziduan[6]);
+                sysFiledTypeList = sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()), String.valueOf(sysDbinfo2.getType()), ziduan[6].toUpperCase());
                 if (sysFiledTypeList == null || sysFiledTypeList.size() <= 0) {
                     sysFiledType = new SysFiledType();
                     sysFiledType.setDestFiledType(ziduan[6]);
                     sysFiledTypeList.add(sysFiledType);
                 }
-                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[4].equals(ziduan[8]) || !ziduan[5].equals(ziduan[9]) || !sysFiledTypeList.get(0).getDestFiledType().equals(ziduan[6]) || (!"".equals(primaryKey) && primaryKey != null && !"undefined".equals(primaryKey) && primaryKey.equals(ziduan[1]))) {
+                System.out.println(sysFiledTypeList.get(0).getDestFiledType()+"字段类型");
+                if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[4].equals(ziduan[8]) || !ziduan[5].equals(ziduan[9]) || !sysFiledTypeList.get(0).getDestFiledType().toUpperCase().equals(ziduan[2].toUpperCase()) || (!"".equals(primaryKey) && primaryKey != null && !"undefined".equals(primaryKey) && primaryKey.equals(ziduan[1]))) {
 //                if (!ziduan[0].equals(ziduan[1])) {
                     SysFieldrule build = new SysFieldrule();
                     build.setFieldName(ziduan[0]);
@@ -381,9 +383,17 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                             builds.setDestFieldName(ziduan[1]);
                             builds.setJobId(sysJobrelaRelated.getSlaveJobId());
                             if (sysFiledTypeList != null && sysFiledTypeList.size() > 0) {
-                                builds.setType(sysFiledTypeList.get(0).getDestFiledType());
+                                if(sysDbinfo2.getType()==2||sysDbinfo2.getType()==3){
+                                    builds.setType(sysFiledTypeList.get(0).getDestFiledType().toLowerCase());
+                                }else {
+                                    builds.setType(sysFiledTypeList.get(0).getDestFiledType());
+                                }
                             } else {
-                                builds.setType(ziduan[6]);
+                                if(sysDbinfo2.getType()==2||sysDbinfo2.getType()==3) {
+                                    builds.setType(ziduan[6].toLowerCase());
+                                }else{
+                                    builds.setType(ziduan[6]);
+                                }
                             }
                             builds.setScale(ziduan[3]);
                             builds.setNotNull(Long.valueOf(ziduan[4]));
@@ -653,7 +663,19 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                         //去找到映射的字段类型
                         sysFiledTypeList = sysFiledTypeRepository.findBySourceTypeAndDestTypeAndSourceFiledType(String.valueOf(sysDbinfo.getType()), String.valueOf(sysDbinfo2.getType()), data.get(i).getType().toUpperCase());
                         if (sysFiledTypeList != null && sysFiledTypeList.size() > 0) {
-                            data.get(i).setType(sysFiledTypeList.get(0).getDestFiledType());
+                            //todo 如果是mysql 和sqlserver 换成小写
+                            if(sysDbinfo2.getType()==2||sysDbinfo2.getType()==3){
+                                data.get(i).setType(sysFiledTypeList.get(0).getDestFiledType().toLowerCase());
+                            }else {
+                                data.get(i).setType(sysFiledTypeList.get(0).getDestFiledType());
+                            }
+                        }else{
+                            //todo 如果是mysql 和sqlserver 换成小写
+                            if(sysDbinfo2.getType()==2||sysDbinfo2.getType()==3){
+                                data.get(i).setType(data.get(i).getType().toLowerCase());
+                            }else {
+                                data.get(i).setType(data.get(i).getType());
+                            }
                         }
                     }
                 }

@@ -174,5 +174,17 @@ public class UserLogServiceImpl implements UserLogService {
             return ToDataMessage.builder().status("0").message("发送失败").build();
         }
     }
+    public Object Selemail(){
+        HashMap<Object,Object> map=new HashMap<>();
+        Optional<SysUser> sysUser=sysUserRepository.findById(1L);
+        if(sysUser.get().getSkillEmail()!=null){
+            map.put("status","1");
+            map.put("data",sysUser.get().getSkillEmail());
+        }else{
+            map.put("status","1");
+            map.put("data","1696694856@qq.com");
+        }
+        return map;
+    }
 
 }
