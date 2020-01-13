@@ -3,63 +3,61 @@
     "type": "struct",
     "fields": [
       {
-        "field": "id",
+        "field": "ID",
         "optional": true,
-        "type": "int(11)"
+        "type": "int64"
       },
       {
-        "field": "fname",
+        "field": "FNAME",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "lname",
+        "field": "LNAME",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "birth",
+        "field": "BIRTH",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "HIRED",
         "name": "org.apache.kafka.connect.data.Timestamp",
         "optional": true,
         "type": "int64",
         "version": 1
       },
       {
-        "field": "hired",
+        "field": "SEPARATED",
         "name": "org.apache.kafka.connect.data.Timestamp",
         "optional": true,
         "type": "int64",
         "version": 1
       },
       {
-        "field": "separated",
-        "name": "org.apache.kafka.connect.data.Timestamp",
+        "field": "JOB_CODE",
         "optional": true,
-        "type": "int64",
-        "version": 1
+        "type": "int64"
       },
       {
-        "field": "job_code",
+        "field": "STORE_ID",
         "optional": true,
-        "type": "int(11)"
-      },
-      {
-        "field": "store_id",
-        "optional": true,
-        "type": "int(11)"
+        "type": "int64"
       }
     ],
     "optional": false,
-    "name": "employees"
+    "name": "EMPLOYEES"
   },
   "payload": {
-    "store_id": 30048,
-    "fname": "chen30048",
-    "lname": "haixiang30048",
-    "birth": 1570634117000,
-    "separated": 1570550400000,
-    "hired": 1570550400000,
-    "id": 30048,
-    "job_code": 1
+    "SEPARATED": 1570550400000,
+    "JOB_CODE": 1,
+    "LNAME": "haixiang30037",
+    "HIRED": 1570550400000,
+    "STORE_ID": 30037,
+    "ID": 30037,
+    "BIRTH": "2019-10-09 23:15:17",
+    "FNAME": "chen30037"
   }
 }

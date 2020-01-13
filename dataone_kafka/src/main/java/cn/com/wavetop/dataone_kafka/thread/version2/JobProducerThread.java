@@ -337,9 +337,14 @@ public class JobProducerThread extends Thread {
 
                     if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
                         index = index+3;
-                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
+//                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
-                        jdbcTemplate.execute(str); // 创建表
+                        if (source.getType() == 1){
+                            jdbcTemplate.execute(str.toUpperCase()); // 创建表
+                        }else {
+                            jdbcTemplate.execute(str); // 创建表
+                        }
+                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
                         // 出现create就创建connect sink等待消费，还要获取schema  todo
                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
                         schemas.put(schema.getName(), schema);
@@ -376,9 +381,6 @@ public class JobProducerThread extends Thread {
                         tableIndex++;
 
                         tableTotal.put(insert_table, tableIndex);
-//                        System.out.println(tableTotal);
-
-
                     }
                 }
 

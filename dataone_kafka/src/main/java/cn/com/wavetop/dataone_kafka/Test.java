@@ -23,24 +23,22 @@ public class Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) {
-        int max=10000;
-        int min=1000;
-        Random random = new Random();
-        int s = random.nextInt(max)%(max-min+1) + min;
-        System.out.println(s);
+        test1(null);
     }
     public static void test1(String[] args) {
         SysDbinfo source = SysDbinfo.builder()
                 .host("192.168.103.238")
-                .dbname("test2")
-                .user("test2")
-                .password("test2")
+                .dbname("orcl")
+                .user("test")
+                .password("test")
                 .port(1521L)
                 .type(1L)
                 .schema("TEST")
                 .build();
-        String test = new ConfigOracleSink(1, "TEST", source).toJsonConfig();
-        System.out.println(test);
+        JdbcTemplate jdbcTemplate = SpringJDBCUtils.register(source);
+        jdbcTemplate.execute("DECLARE V_SQL LONG;BEGIN V_SQL:='CREATE TABLE \"TEST\".\"FILE_148324234\" (\"ID\" NUMBER(19),\"NAME\" VARCHAR2(255) )';EXECUTE IMMEDIATE V_SQL;EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END; ");
+//        String test = new ConfigOracleSink(1, "TEST", source).toJsonConfig();
+//        System.out.println(test);
     }
 
 //    public static void main(String[] args) throws IOException {

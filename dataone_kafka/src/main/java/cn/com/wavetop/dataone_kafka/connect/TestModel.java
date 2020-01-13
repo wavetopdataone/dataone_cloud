@@ -25,11 +25,11 @@ public class TestModel {
 //        System.out.println(schema);
 //        HashMap<String, Schema> schemas = new HashMap<>();
 //        schemas.put(schema.getName(), schema);
-//        String data = toJsonString2("IF NOT EXISTS (SELECT * FROM TEST1.dbo.sys_menu WHERE id='1')INSERT INTO TEST1.dbo.sys_menu(id,icon,menu_id,menu_name,menu_type,order_num,parent_id,parent_name,perms,target,url,visible,create_time,create_user,update_time,update_user) VALUES ('1',NULL,NULL,'??',NULL,NULL,NULL,NULL,'supper?ss',NULL,NULL,NULL,NULL,NULL,NULL,NULL) ELSE UPDATE TEST1.dbo.sys_menu SET icon=NULL,menu_id=NULL,menu_name='??',menu_type=NULL,order_num=NULL,parent_id=NULL,parent_name=NULL,perms='supper?ss',target=NULL,url=NULL,visible=NULL,create_time=NULL,create_user=NULL,update_time=NULL,update_user=NULL WHERE id='1'", schemas, 2);
+//        String data = toJsonString2("INSERT INTO \"test\".\"file1\"(\"date\",\"time\") VALUES (TO_DATE('2019-12-04 00:00:00','YYYY-MM-DD HH24:MI:SS'),'00:00:00')", schemas, 2);
 //        System.out.println(data);
 
-        System.out.println(getTimestamp("20:00:00", "HH:mm:ss"));
-        System.out.println(getStringTime(getTimestamp("20:00:00", "HH:mm:ss"), "HH:mm:ss"));
+        System.out.println(getTimestamp("2020-01-14", "yyyy-MM-dd"));
+        System.out.println(getStringTime(1578931200000L, "yyyy-MM-dd HH:mm:ss"));
 //        System.out.println(getTimestamp("2019-10-09 00:00:00","yyyy"));
 
     }

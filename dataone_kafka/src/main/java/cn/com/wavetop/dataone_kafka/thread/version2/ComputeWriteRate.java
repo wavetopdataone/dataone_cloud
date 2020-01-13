@@ -1,6 +1,7 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,7 +31,11 @@ public class ComputeWriteRate extends Thread {
 
         sync_range = 1;
         int index = 0;
-        fristCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
+        try {
+            fristCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
+        } catch (DataAccessException e) {
+            fristCount = 0l;
+        }
         if (fristCount == null){
             fristCount = 0l;
         }
