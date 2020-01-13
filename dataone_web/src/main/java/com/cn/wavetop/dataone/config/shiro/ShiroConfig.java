@@ -80,6 +80,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/static/**.jpg", "anon");
         filterChainDefinitionMap.put("/api/**", "anon");
         filterChainDefinitionMap.put("/favicon.**", "anon");
+        filterChainDefinitionMap.put("**.png", "anon");
+        filterChainDefinitionMap.put("**.jpg", "anon");
+
 //        前端react的路由
         filterChainDefinitionMap.put("/busList**", "anon");
         filterChainDefinitionMap.put("/busList/**", "anon");
@@ -106,7 +109,7 @@ public class ShiroConfig {
 //        filterChainDefinitionMap.put("/sys_monitoring/**", "anon");
 
 
-        filterChainDefinitionMap.put("/**", "authc");
+//        filterChainDefinitionMap.put("/**", "authc");
 
 
 //      filterChainDefinitionMap.put("/**", "authc,kickout");

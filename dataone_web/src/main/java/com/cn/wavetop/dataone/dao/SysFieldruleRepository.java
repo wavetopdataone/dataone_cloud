@@ -13,6 +13,8 @@ public interface SysFieldruleRepository extends JpaRepository<SysFieldrule,Long>
      List<SysFieldrule> findByJobId(long job_id);
     List<SysFieldrule> findByJobIdAndSourceName(long job_id,String sourceName);
     List<SysFieldrule> findByJobIdAndSourceNameAndAddFlag(Long jobId,String sourceName,Integer addFlag);
+    List<SysFieldrule> findByJobIdAndDestNameAndAddFlag(Long jobId,String destName,Integer addFlag);
+
     @Query("select s from SysFieldrule s where s.jobId=:job_id and s.sourceName=:sourceName and (s.addFlag is null or s.addFlag<>:addFlag)")
     List<SysFieldrule> findByJobIdAndSourceName(long job_id,String sourceName,Integer addFlag);
     List<SysFieldrule> findByJobIdAndSourceNameAndVarFlag(long job_id,String sourceName,Long varFlag);
