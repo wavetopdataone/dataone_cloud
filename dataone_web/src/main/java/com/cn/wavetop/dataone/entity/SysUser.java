@@ -82,4 +82,6 @@ public class SysUser
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")private Date updateTime;
 
+    private String skillEmail;//超管绑定技术支持的邮箱（只有超管有）
+
 }

@@ -17,7 +17,7 @@ public class  DataoneApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(DataoneApplication.class, args);
         new SpringContextUtil().setApplicationContext(context);
-
+//        new DataBaseUtil().start();
         new EmailClient().start();
 //        new MonitoringClient().start();
     }

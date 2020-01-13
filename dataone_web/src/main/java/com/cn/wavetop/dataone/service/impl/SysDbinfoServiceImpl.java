@@ -14,13 +14,13 @@ import com.cn.wavetop.dataone.util.PermissionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,8 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
     private SysJobrelaRespository sysJobrelarepository;
     @Autowired
     private SysUserDbinfoRepository sysUserDbinfoRepository;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Object getDbinfoAll() {
@@ -146,7 +148,9 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
         if(PermissionUtils.isPermitted("2")) {
         //查询任务是否正在使用数据源
      List<SysJobrela> list=sysJobrelarepository.findDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());
+            ValueOperations<String, String> opsForValue = null;
             try {
+                opsForValue=stringRedisTemplate.opsForValue();
                 boolean flag = sysJobrelarepository.existsByDestNameOrSourceName(sysDbinfo.getName(), sysDbinfo.getName());
                 if(list==null||list.size()<=0){
 //                if (!flag) {
@@ -174,6 +178,12 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
 //                            SysDbinfo old = repository.findByName(sysDbinfo.getName());
                             //根据id查询数据源
                             Optional<SysDbinfo> old = repository.findById(sysDbinfo.getId());
+                            //todo  修改数据源也要修改存入redis的同步表
+                            if(opsForValue.get(old.get().getHost() + old.get().getDbname() + old.get().getName())!=null) {
+                                opsForValue.set(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName(), opsForValue.get(old.get().getHost() + old.get().getDbname() + old.get().getName()));
+                                stringRedisTemplate.delete(old.get().getHost() + old.get().getDbname() + old.get().getName());
+                            }
+
                             old.get().setName(sysDbinfo.getName());
                             old.get().setDbname(sysDbinfo.getDbname());
                             old.get().setHost(sysDbinfo.getHost());
@@ -228,7 +238,12 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
 //        if (!flag) {
             if(PermissionUtils.isPermitted("2")) {
                 boolean flag2 = repository.existsById(id);
+                SysDbinfo sysDbinfo=null;
                 if (flag2) {
+                    sysDbinfo=repository.findById(id);
+                    if(sysDbinfo!=null) {
+                        stringRedisTemplate.delete(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName());
+                    }
                     repository.deleteById(id);
                     sysUserDbinfoRepository.deleteByDbinfoId(id);//删除用户与数据源的关联关系
                     map.put("status", 1);

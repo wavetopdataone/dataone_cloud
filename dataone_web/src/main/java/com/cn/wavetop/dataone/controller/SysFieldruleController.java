@@ -64,22 +64,33 @@ public class SysFieldruleController {
     @ApiOperation(value = "验证源端目的端是否存在表", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "验证源端目的端是否存在表")
     @ApiImplicitParam
     @PostMapping("/VerifyDb")
-    public Object VerifyDb(Long job_id,String source_name,String dest_name) {
-        return service.VerifyDb(job_id,source_name,dest_name);
+    public Object VerifyDb(Long jobId,String source_name,String dest_name) {
+        return service.VerifyDb(jobId,source_name,dest_name);
     }
 
-    @ApiOperation(value = "批量删除", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "批量删除")
+    @ApiOperation(value = "删除", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "删除")
     @PostMapping("/deleteAllFiled")
     public Object deleteAllFiled(String list_data, String source_name, String dest_name, Long job_id)
     {
         return service.deleteAll(list_data,source_name,dest_name,job_id);
     }
-    @ApiOperation(value = "批量恢复和单条恢复", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "批量恢复和单条恢复")
+    @ApiOperation(value = "恢复", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "恢复")
     @PostMapping("/recover")
-    public Object recover(String list_data, String source_name, String dest_name, Long job_id)
+    public Object recover(String sourceField,String destField, String source_name, String dest_name, Long job_id)
     {
-        return service.recover(list_data,source_name,dest_name,job_id);
+        return service.recover(sourceField,destField,source_name,dest_name,job_id);
+    }
+    @ApiOperation(value = "批量脱敏弹窗需要的数据", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "批量脱敏弹窗需要的数据")
+    @PostMapping("/showFieldrule")
+    public  Object showFieldrule(@RequestBody(required = false) SysDbinfo sysDbinfo, String tablename, Long job_id)
+    {
+        return service.showFieldrule(sysDbinfo,tablename,job_id);
     }
 
-
+    @ApiOperation(value = "新增字段", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "新增字段")
+    @PostMapping("/addField")
+    public Object addField(Long job_id,String source_name,String dest_name)
+    {
+        return service.addField(job_id,source_name,dest_name);
+    }
 }
