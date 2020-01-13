@@ -59,11 +59,14 @@ public class JobProducerThread extends Thread {
     // 记录读取的数据
     private long readData;  // 实时更新的
     private long lastReadData = 0;// 上次的记录
-
-    public JobProducerThread(long jodId, String sqlPath, long readData) {
+    public HashMap getSchemas(){
+        return schemas;
+    }
+    public JobProducerThread(long jodId, String sqlPath, long readData,HashMap schemas) {
         this.jodId = jodId;
         this.sqlPath = sqlPath;
         this.readData = readData;
+        this.schemas = schemas;
     }
 
     public JobProducerThread(long jodId, String sqlPath, long readData, ToBackClient toBackClient) {
@@ -366,16 +369,14 @@ public class JobProducerThread extends Thread {
                         }
 
                         producer.sendMsg("task-" + jodId + "-" + insert_table, data);
-                        System.out.println(tableTotal);
                         Integer tableIndex = tableTotal.get(insert_table);
-//                        System.out.println(insert_table);
                         if (tableIndex == null) {
                             tableIndex = 0;
                         }
                         tableIndex++;
 
                         tableTotal.put(insert_table, tableIndex);
-                        System.out.println(tableTotal);
+//                        System.out.println(tableTotal);
 
 
                     }

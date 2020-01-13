@@ -155,8 +155,8 @@ public class ToBackController {
      * @param jobId
      * @Author yongz
      */
-    @PutMapping("/resetMonitoring/{jobId}")
-    public boolean resetMonitoring(@PathVariable Long jobId) {
+    @PostMapping("/resetMonitoring/{jobId}")
+    public void resetMonitoring(@PathVariable Long jobId) {
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
         for (SysMonitoring sysMonitoring : sysMonitoringList) {
             sysMonitoring.setReadData(0l);
@@ -166,7 +166,6 @@ public class ToBackController {
             sysMonitoring.setErrorData(0l);
             sysMonitoringRepository.save(sysMonitoring);
         }
-        return true;
     }
 
     /**
