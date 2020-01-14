@@ -36,4 +36,9 @@ public interface SysUserService  {
     Object updSuperEmail(Long userId,String password,String newEmail,String emailPassword);
     //修改用户邮箱
     Object updUserEmail(Long userId, String password, String newEmail);
+
+    //超管修改技术支持的邮箱需要发送的验证码
+    Object sendCode(String email);
+    //超管验证验证码然后修改成功
+    Object SkillCodeEquals(String email,String authCode);
 }

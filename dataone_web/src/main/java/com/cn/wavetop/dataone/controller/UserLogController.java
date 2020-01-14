@@ -44,6 +44,12 @@ public class UserLogController {
     public Object selByJobIdAndDate(Long job_id, String date, Integer current, Integer size) {
         return userLogService.selByJobIdAndDate(job_id, date, current, size);
     }
+    @ApiOperation(value = "查询技术支持邮箱", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "查询技术支持邮箱")
+    @PostMapping("/SelEmail")
+    public Object Selemail() {
+        return userLogService.Selemail();
+    }
+
 
     @ApiOperation(value = "技术支持发送邮件", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "技术详情发送邮件")
     @PostMapping("/emailSupport")
@@ -65,7 +71,6 @@ public class UserLogController {
         }
 //        ServletOutputStream out = null;
         if (type == 1) {
-
             FileInputStream in = null;
             File file = new File("dataoneerror-" + date + ".log");
             BufferedReader bufferedReader = null;

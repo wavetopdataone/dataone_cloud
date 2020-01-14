@@ -3,6 +3,7 @@ package com.cn.wavetop.dataone;
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import com.alibaba.fastjson.JSON;
+import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysJobrela;
 import com.cn.wavetop.dataone.util.DateUtil;
 import com.cn.wavetop.dataone.util.LinuxLogin;
@@ -20,19 +21,94 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class test {
+@Test
+public  void ssa(){
+    String a="NUBERE";
+    System.out.println(a.toUpperCase());
+}
+@Test
+public void showww(){
+String a="'IMAGE','TEXT','UNIQUEIDENTIFIER','DATE','TIME','DATETIME2','DATETIMEOFFSET','TINYINT','SMALLINT','INT','SMALLDATETIME','MONEY','DATETIME','FLOAT','SQL_VARIANT','NTEXT','BIT','DECIMAL','NUMERIC','SMALLMONEY','BIGINT','HIERARCHYID','GEOMETRY','GEOGRAPHY','VARBINARY','VARCHAR','BINARY','CHAR','TIMESTAMP','NVARCHAR','NCHAR','XML','SYSNAME'";
+    String []b=a.split(",");
+    StringBuffer stringBuffer=new StringBuffer("[");
+    for(int i=0;i<b.length;i++){
+
+        stringBuffer.append(b[i].toLowerCase());
+        stringBuffer.append(",");
+    }
+    stringBuffer.append("]");
+    System.out.println(stringBuffer);
+
+}
 
 
     @Test
     public void ssswq(){
-        String a="id,id,Number,1,2,1";
-        String []splits = a.replace("$", "@").split(",@,");
-        for(int i=0;i<splits.length;i++){
-            String[] c=splits[i].split(",");
-            System.out.println(splits);
-            System.out.println(c[0]);
-            System.out.println(c[1]); System.out.println(c[2]); System.out.println(c[3]);
+        ArrayList<SysFieldrule> data = new ArrayList<>();
+        List<SysFieldrule> sysFieldruleList =  new ArrayList<>();
+        SysFieldrule sysFieldrule=new SysFieldrule();
+        sysFieldrule.setFieldName("test1");
+        data.add(sysFieldrule);
+        SysFieldrule sysFieldrule1=new SysFieldrule();
+        sysFieldrule1.setFieldName("test2");
+        data.add(sysFieldrule1);
+        SysFieldrule sysFieldrule2=new SysFieldrule();
+        sysFieldrule2.setFieldName("test3");
+        data.add(sysFieldrule2);
+        SysFieldrule sysFieldrule3=new SysFieldrule();
+        sysFieldrule3.setFieldName("test4");
+        data.add(sysFieldrule3);
+        SysFieldrule sysFieldrule4=new SysFieldrule();
+        sysFieldrule4.setFieldName("test5");
+        data.add(sysFieldrule4);
+
+
+
+        SysFieldrule sysFieldrule5=new SysFieldrule();
+        sysFieldrule5.setFieldName("test5");
+        sysFieldrule5.setVarFlag(2L);
+        sysFieldrule5.setDestFieldName("666");
+
+        sysFieldruleList.add(sysFieldrule5);
+        SysFieldrule sysFieldrule6=new SysFieldrule();
+        sysFieldrule6.setFieldName("test1");
+        sysFieldrule6.setVarFlag(1L);
+        sysFieldrule6.setDestFieldName("222");
+
+        sysFieldruleList.add(sysFieldrule6);
+        SysFieldrule sysFieldrule7=new SysFieldrule();
+        sysFieldrule7.setFieldName("test22");
+        sysFieldrule7.setDestFieldName("111");
+        sysFieldrule7.setVarFlag(2L);
+        sysFieldruleList.add(sysFieldrule7);
+        SysFieldrule sysFieldrule8=new SysFieldrule();
+        sysFieldrule8.setFieldName("test3");
+        sysFieldrule8.setDestFieldName("333");
+
+        sysFieldrule8.setVarFlag(1L);
+        sysFieldruleList.add(sysFieldrule8);
+
+        for (int i = 0; i < data.size(); i++) {
+            for(int j=0;j<sysFieldruleList.size();j++){
+                if(sysFieldruleList.get(j).getVarFlag()==1){
+                    if(data.get(i).getFieldName().equals(sysFieldruleList.get(j).getFieldName())){
+                        data.remove(i);
+                        if(i==0){
+                            i=0;
+                        }else {
+                            i--;
+                        }
+                    }
+                }else if(sysFieldruleList.get(j).getVarFlag()==2){
+                    if(data.get(i).getFieldName().equals(sysFieldruleList.get(j).getFieldName())){
+                        data.get(i).setDestFieldName(sysFieldruleList.get(j).getDestFieldName());
+                    }
+                }
+            }
         }
-        System.out.println("结束；额");
+        for(SysFieldrule s:data){
+            System.out.println(s+"*------1");
+        }
     }
     @Test
     public void shows() throws FileNotFoundException {
@@ -144,30 +220,25 @@ public void s(){
     sysUserJobrela.setJobName("test1");
         SysJobrela sysUserJobrela1=new SysJobrela();
         sysUserJobrela1.setId(Long.valueOf(96));
-        sysUserJobrela1.setJobName("test2");
+        sysUserJobrela1.setJobName("test12");
     list.add(sysUserJobrela);
     list.add(sysUserJobrela1);
-    List<SysJobrela> list1=new ArrayList<>();
     SysJobrela sysUserJobrela2=new SysJobrela();
         sysUserJobrela2.setId(Long.valueOf(95));
         sysUserJobrela2.setJobName("test1");
-    list1.add(sysUserJobrela2);
-        for (SysJobrela str:list) {
-            if(list.contains(str)){
-                list.remove(str);
-            }
-        }
-        for (SysJobrela str:list1) {
-            str.setJobStatus("1");
-            list.add(str);
-        }
-//    for(SysJobrela set:list1){
-//        list.add(set);
-//    }
-//        Set set = new HashSet();
-//        List<SysJobrela> listNew=new ArrayList<>();
-//        set.addAll(list);
-//        listNew.addAll(set);
+        SysJobrela sysUserJobrela3=new SysJobrela();
+        sysUserJobrela3.setId(Long.valueOf(95));
+        sysUserJobrela3.setJobName("test1");
+    list.add(sysUserJobrela2);
+        list.add(sysUserJobrela3);
+      for(int i=0;i<list.size();i++){
+          if(list.get(i).getJobName().equals("test1")){
+              list.remove(i);
+              i--;
+//              System.out.println(list.get(i)+"-------1");
+          }
+//          System.out.println(list.get(i)+"--------2");
+      }
     for (SysJobrela s:list){
         System.out.println(s+"----");
     }
@@ -291,5 +362,8 @@ public void s(){
 //        for (String b : list) {
 //            System.out.println(b);
 //        }
+    @Test
+    public void safd(){
 
+    }
 }

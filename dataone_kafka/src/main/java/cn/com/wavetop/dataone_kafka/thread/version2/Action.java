@@ -9,6 +9,8 @@ import cn.com.wavetop.dataone_kafka.utils.TestGetFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
@@ -25,22 +27,17 @@ import java.util.Map;
  */
 public class Action extends Thread {
 
-
+    private static Environment environment = SpringContextUtil.getBean(Environment.class);
+    ;
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
-
     // dataone后台安装的监听目录
-//    private final String actionDir = "/opt/dataone/sqltemp/ACTION/";
-    private final String actionDir = "D:/yongz/dataone/sqltemp/ACTION/";
+    private final String actionDir = environment.getProperty("dataone.sqltemp.path");
     private boolean stopMe = true;
-
     // 存放job任务
     private static Map<String, JobProducerThread> jobProducerThread = new HashMap<String, JobProducerThread>();
-
     // 存放消费者的线程
 //    private static Map<String, JobConsumerThread> jobconsumers = new HashMap<>();
-
-
     //注入http客户端
     private static ToBackClient toBackClient = SpringContextUtil.getBean(ToBackClient.class);
     //注入http客户端
@@ -49,7 +46,6 @@ public class Action extends Thread {
     public void stopMe() {
         stopMe = false;
     }
-
 
     @Override
     public void run() {
@@ -66,11 +62,24 @@ public class Action extends Thread {
 
                 int jobId = Integer.valueOf(s.split("_")[2]);  // 获取jobId
                 String sqlPath = ""; //  sql的路径
+                System.err.println("zhengyong dashuaibi" + jobId);
                 if (s.split("_")[1].equals("start")) {
                     log.info(s.split("_")[1] + "-jobId：" + jobId);
-
+                    System.err.println("zhengyong dashuaibi" + jobId);
 //                    restTemplate.putForObject("http://DATAONE-WEB/toback/deleteMonitoring/" + jodId, SysDbinfo.class);
-                    toBackClient.resetMonitoring((long) jobId);  // 重置监听表数据
+                    System.err.println("zhengyong dashuaibi" + jobId);
+                    System.out.println(toBackClient);
+                    try {
+                        toBackClient.resetMonitoring((long) jobId);// 重置监听表数据
+                    } catch (Exception e) {
+                        System.err.println(e);
+                        System.err.println(e);
+                        System.err.println(e);
+                        System.err.println(e);
+                        System.err.println(e);
+                        System.err.println(e);
+                    }
+                    restTemplate.postForObject("http://DATAONE-WEB/toback/resetMonitoring/" + jobId, null, Object.class);
                     // todo 重置错误队列数据
 
                     // 开启任务线程
@@ -85,13 +94,13 @@ public class Action extends Thread {
                         br.close();//别忘记，切记
                         JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
                         if (jobProducerThread == null) {
-                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
+                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0,new HashMap()));
                             Action.jobProducerThread.get("producer_job_" + jobId).start();
 
 
                         } else {
                             jobProducerThread.stopMe();
-                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0));
+                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0,jobProducerThread.getSchemas()));
                             Action.jobProducerThread.get("producer_job_" + jobId).start();
                         }
                         jobProducerThread = null;
@@ -118,7 +127,7 @@ public class Action extends Thread {
                     // todo 暂停kafka connector sink
                     List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
                     for (Object destTable : destTables) {
-                        HttpClientKafkaUtil.getConnectPause("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                        HttpClientKafkaUtil.getConnectPause("192.168.1.156", 8083, "connect-sink-" + jobId + "-" + destTable);
                     }
 
                 } else if (s.split("_")[1].equals("resume")) {
@@ -134,7 +143,7 @@ public class Action extends Thread {
 //                            System.out.println("确实是重启任务线程，jobId：" + jobId);
                             long readData = jobProducerThread.getReadData();
                             System.out.println("sqlPath:" + sqlPath + "---readData:" + readData);
-                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, readData));
+                            Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, readData,jobProducerThread.getSchemas()));
 
                             jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
                             jobProducerThread.startMe(jobId);
@@ -147,11 +156,10 @@ public class Action extends Thread {
                 }
 
 
-
                 // todo 重启kafka connector sink
                 List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jobId, List.class);
                 for (Object destTable : destTables) {
-                    HttpClientKafkaUtil.getConnectResume("192.168.1.156",8083,"connect-sink-"+jobId + "-" + destTable);
+                    HttpClientKafkaUtil.getConnectResume("192.168.1.156", 8083, "connect-sink-" + jobId + "-" + destTable);
                 }
             }
             try {

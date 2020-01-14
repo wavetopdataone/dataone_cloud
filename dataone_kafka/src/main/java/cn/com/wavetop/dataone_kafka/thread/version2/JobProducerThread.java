@@ -11,6 +11,7 @@ import cn.com.wavetop.dataone_kafka.producer.Producer;
 import cn.com.wavetop.dataone_kafka.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -58,11 +59,14 @@ public class JobProducerThread extends Thread {
     // 记录读取的数据
     private long readData;  // 实时更新的
     private long lastReadData = 0;// 上次的记录
-
-    public JobProducerThread(long jodId, String sqlPath, long readData) {
+    public HashMap getSchemas(){
+        return schemas;
+    }
+    public JobProducerThread(long jodId, String sqlPath, long readData,HashMap schemas) {
         this.jodId = jodId;
         this.sqlPath = sqlPath;
         this.readData = readData;
+        this.schemas = schemas;
     }
 
     public JobProducerThread(long jodId, String sqlPath, long readData, ToBackClient toBackClient) {
@@ -183,7 +187,7 @@ public class JobProducerThread extends Thread {
             String befor = offsetContent[0].substring(0, offsetContent[0].lastIndexOf("_") + 1);
             int i = Integer.parseInt(offsetContent[0].substring(offsetContent[0].lastIndexOf("_") + 1, offsetContent[0].indexOf(".sql"))) + 1;
             String fileName_ = befor + i + ".sql";
-            System.out.println(fileName_);
+//            System.out.println(fileName_);
             if (new File(fileName_).exists()) {
                 try {
                     FileUtils.writeTxtFile(readFile(fileName_, 0), file);
@@ -323,7 +327,7 @@ public class JobProducerThread extends Thread {
             }
 
             long startTime = System.currentTimeMillis();   //获取开始读取时间
-            int startIndex = index;
+//            int startIndex = index;
             while ((str = br.readLine()) != null) {//逐行读取
                 flag = true;
 
@@ -332,10 +336,15 @@ public class JobProducerThread extends Thread {
                 } else {
 
                     if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
+                        index = index+3;
+//                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
+                        if (source.getType() == 1){
+                            jdbcTemplate.execute(str.toUpperCase()); // 创建表
+                        }else {
+                            jdbcTemplate.execute(str); // 创建表
+                        }
                         str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
-
-                        jdbcTemplate.execute(str); // 创建表
                         // 出现create就创建connect sink等待消费，还要获取schema  todo
                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
                         schemas.put(schema.getName(), schema);
@@ -350,6 +359,7 @@ public class JobProducerThread extends Thread {
 
                     }
                     if (str.contains("INSERT") || str.contains("insert")) {
+                        index = index+3;
                         total++;
                         str = sqlServerInsert(str);
                         String data = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
@@ -364,17 +374,13 @@ public class JobProducerThread extends Thread {
                         }
 
                         producer.sendMsg("task-" + jodId + "-" + insert_table, data);
-
                         Integer tableIndex = tableTotal.get(insert_table);
-//                        System.out.println(insert_table);
                         if (tableIndex == null) {
                             tableIndex = 0;
                         }
                         tableIndex++;
 
                         tableTotal.put(insert_table, tableIndex);
-
-
                     }
                 }
 
@@ -387,7 +393,7 @@ public class JobProducerThread extends Thread {
                 runtime = 0.001;
             }
             if (total != 0) {
-
+                HashMap<Object, Object> Monito = new HashMap<>();
                 // 单表读取速率及读取量  TODO
                 for (String tableName : tableTotal.keySet()) {
                     Double sourceRate = tableTotal.get(tableName) / runtime;
@@ -406,22 +412,20 @@ public class JobProducerThread extends Thread {
                     tableMonito.put(tableName, sourceRate);
                     tableTotal.get(tableName);
 
-                    HashMap<Object, Object> Monito = new HashMap<>();
                     Monito.put("tableMonito", tableMonito);
                     Monito.put("tableTotal", tableTotal);
 //                    System.out.println(Monito);
-
-                    //创建请求头
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
-                    HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
-//                    System.out.println(JSONUtil.toJSONString(Monito));
-                    restTemplate.postForEntity(url, entity, String.class);
-
-                    Monito.clear();
-                    Monito = null;
                 }
+                //创建请求头
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
+                HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
+//                    System.out.println(JSONUtil.toJSONString(Monito));
+                restTemplate.postForEntity(url, entity, String.class);
+
+                Monito.clear();
+                Monito = null;
             }
 
 
@@ -509,18 +513,22 @@ public class JobProducerThread extends Thread {
                         e.printStackTrace();
                     }
 
-                    List destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
+                    List<String> destTables = restTemplate.getForObject("http://DATAONE-WEB/toback/find_destTable/" + jodId, List.class);
 
                     String DROPTABLE;
-                    for (Object destTable : destTables) {
-                        if (destTable != null && !"".equals(destTable)) {
-                            String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
-//                            System.out.println(count);
-                            if (count != null && !"0".equals(count)) {
-                                DROPTABLE = "DROP TABLE  " + destTable;
-//                                System.out.println(DROPTABLE);
-                                jdbcTemplate.execute(DROPTABLE);
+                    for (String destTable : destTables) {
+                        try {
+                            if (destTable != null && !"".equals(destTable)&& !destTable.contains("null")) {
+                                String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
+    //                            System.out.println(count);
+                                if (count != null && !"0".equals(count)) {
+                                    DROPTABLE = "DROP TABLE  " + destTable;
+    //                                System.out.println(DROPTABLE);
+                                    jdbcTemplate.execute(DROPTABLE);
+                                }
                             }
+                        } catch (DataAccessException e) {
+                            e.printStackTrace();
                         }
                     }
                     source = null;

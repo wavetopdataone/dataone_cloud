@@ -14,7 +14,7 @@ public interface ToBackClient {
      * @param jobId
      * @return
      */
-    @PutMapping("/toback/resetMonitoring/{jobId}")
+    @PostMapping("/toback/resetMonitoring/{jobId}")
     public void resetMonitoring( @PathVariable Long jobId) ;
 
     /**

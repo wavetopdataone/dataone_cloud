@@ -1,6 +1,7 @@
 package cn.com.wavetop.dataone_kafka.thread.version2;
 
 import cn.com.wavetop.dataone_kafka.config.SpringContextUtil;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,14 +28,14 @@ public class ComputeWriteRate extends Thread {
 
     @Override
     public void run() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         sync_range = 1;
         int index = 0;
-        fristCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
+        try {
+            fristCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
+        } catch (DataAccessException e) {
+            fristCount = 0l;
+        }
         if (fristCount == null){
             fristCount = 0l;
         }
@@ -60,20 +61,21 @@ public class ComputeWriteRate extends Thread {
             if (writeAmount != 0) {
                 restTemplate.getForObject("http://DATAONE-WEB/toback/updateWriteRate/" + jobid + "?destTable=" + destTable + "&realWriteAmount=" + realWriteAmount + "&writeAmount=" + writeAmount + "&writeRate=" + writeRate, Object.class);
             }
-            System.out.println(writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount);
+//            System.out.println(destTable+"--------"+writeRate+"--------------"+writeAmount+"---------------"+realWriteAmount+"------------"+fristCount);
+
+
 
             if (sync_range == 1){
                 if (realWriteAmount == 0){
                     index++;
                 }
-                if (index == 10){
+                if (index == 1000){
                     flag = false;
                 }
             }
 
-
             try {
-                Thread.sleep(5000);
+                Thread.sleep(8000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

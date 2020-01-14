@@ -8,4 +8,6 @@ public class EmailPropert {
     private String subject;
     private String messageText;
     private String sag;
+
+
 }

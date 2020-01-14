@@ -2,17 +2,14 @@ package com.cn.wavetop.dataone.controller;
 
 
 import com.cn.wavetop.dataone.entity.SysUser;
-import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysUserService;
-import com.cn.wavetop.dataone.util.PermissionUtils;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.authz.annotation.RequiresGuest;
-import org.apache.shiro.web.session.HttpServletSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServlet;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/sys_user")
@@ -173,5 +170,16 @@ public class SysUserController {
     @PostMapping("/updUserEmail")
     public  Object updUserEmail(Long userId, String password, String newEmail){
         return sysUserService.updUserEmail(userId,password,newEmail);
+    }
+
+    @ApiOperation(value = "修改技术支持的邮箱需要发送的验证码",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "修改技术支持的邮箱需要发送的验证码")
+    @PostMapping("/sendCode")
+    public Object sendCode(String email){
+        return sysUserService.sendCode(email);
+    }
+    @ApiOperation(value = "验证修改技术支持邮箱验证码是否正确",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "验证修改技术支持邮箱验证码是否正确")
+    @PostMapping("/skillCodeEquals")
+    public Object SkillCodeEquals(String email,String authCode){
+        return sysUserService.SkillCodeEquals( email, authCode);
     }
 }
