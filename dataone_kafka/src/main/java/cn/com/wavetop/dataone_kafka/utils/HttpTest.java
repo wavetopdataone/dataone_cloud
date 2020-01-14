@@ -40,7 +40,7 @@ public class HttpTest {
                 response = client.execute(httpGet);
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
-                System.out.println(result);
+
             } finally {
                 if (response != null) {
                     response.close();
@@ -75,7 +75,7 @@ public class HttpTest {
                 response = client.execute(httpPost);
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
-                System.out.println(result);
+
             } finally {
                 if (response != null) {
                     response.close();

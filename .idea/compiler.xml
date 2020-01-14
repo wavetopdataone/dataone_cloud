@@ -15,6 +15,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="dataone" target="1.8" />
+      <module name="dataone-web" target="1.8" />
       <module name="dataone_cloud" target="1.5" />
       <module name="dataone_kafka" target="1.8" />
       <module name="dataone_web" target="1.8" />
@@ -25,6 +27,8 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="dataone" options="-parameters" />
+      <module name="dataone-web" options="-parameters" />
       <module name="dataone_kafka" options="-parameters" />
       <module name="dataone_web" options="-parameters" />
       <module name="wavetop-eureka" options="-parameters" />

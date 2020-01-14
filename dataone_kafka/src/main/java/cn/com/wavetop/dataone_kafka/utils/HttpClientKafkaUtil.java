@@ -2,6 +2,7 @@ package cn.com.wavetop.dataone_kafka.utils;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -294,6 +295,8 @@ public class HttpClientKafkaUtil {
         // 执行请求
         try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
             return EntityUtils.toString(response.getEntity(), "utf-8");
+        }catch (ClientProtocolException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

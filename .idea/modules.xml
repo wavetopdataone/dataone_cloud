@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/dataone_cloud.iml" filepath="$PROJECT_DIR$/.idea/dataone_cloud.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dataone_cloud.iml" filepath="$PROJECT_DIR$/dataone_cloud.iml" />
       <module fileurl="file://$PROJECT_DIR$/dataone_kafka/dataone_kafka.iml" filepath="$PROJECT_DIR$/dataone_kafka/dataone_kafka.iml" />
       <module fileurl="file://$PROJECT_DIR$/dataone_web/dataone_web.iml" filepath="$PROJECT_DIR$/dataone_web/dataone_web.iml" />
       <module fileurl="file://$PROJECT_DIR$/wavetop-eureka/wavetop-eureka.iml" filepath="$PROJECT_DIR$/wavetop-eureka/wavetop-eureka.iml" />

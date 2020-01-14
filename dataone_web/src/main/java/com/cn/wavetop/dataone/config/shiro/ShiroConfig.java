@@ -79,6 +79,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/api/**", "anon");
         filterChainDefinitionMap.put("/favicon.**", "anon");
 //        前端react的路由
+        filterChainDefinitionMap.put("**.js", "anon");
+        filterChainDefinitionMap.put("//at.alicdn.com/t/font_1537367_enrqpjp2dab.js", "anon");
+
         filterChainDefinitionMap.put("/busList**", "anon");
         filterChainDefinitionMap.put("/busList/**", "anon");
         filterChainDefinitionMap.put("/sys_user/login/", "anon");
