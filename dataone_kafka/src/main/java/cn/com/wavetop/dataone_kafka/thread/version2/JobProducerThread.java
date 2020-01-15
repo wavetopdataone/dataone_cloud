@@ -40,8 +40,8 @@ public class JobProducerThread extends Thread {
     // 日志
     private static Logger log = LoggerFactory.getLogger(ConsumerHandler.class); // 日志
 
-    // 存放消费者的线程
-//    private static Map<String, JobConsumerThread> jobconsumers = new HashMap<>();
+    // 记录写入量的线程
+    private static Map<String, ComputeWriteRate> computeWriteRates = new HashMap<>();
 
     // 任务id
     private Long jodId;
@@ -305,7 +305,7 @@ public class JobProducerThread extends Thread {
 
         SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
         String[] treatmentRate = restTemplate.getForObject("http://DATAONE-WEB/toback//getTreatmentRate/" + jodId, String.class).split("|");
-
+//        System.out.println(treatmentRate);
         JdbcTemplate jdbcTemplate = null;
         try {
             jdbcTemplate = SpringJDBCUtils.register(source);
@@ -332,11 +332,11 @@ public class JobProducerThread extends Thread {
                 flag = true;
 
                 if (str.equals("") || str.contains("WAVETOP_LINE_BREAK")) {
-
+                    index++;
                 } else {
 
                     if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
-                        index = index+3;
+                       index++;
 //                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
                         if (source.getType() == 1){
@@ -354,13 +354,18 @@ public class JobProducerThread extends Thread {
                         HttpClientKafkaUtil.createConnector("192.168.1.156", 8083, configSink.toJsonConfig()); //创建connector
                         configSink = null;
 
+                        Double maxWD = 8000d;
                         // 创建线程计算写入量和写入速率
-                        new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate).start();
+                        if (treatmentRate[1] != null && treatmentRate[1].equals("") && treatmentRate[1].equals("null")) {
+                             maxWD =Double.parseDouble(treatmentRate[1].substring(0, treatmentRate[1].indexOf("行/秒")));
+                        }
+                        new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate,maxWD).start();
 
                     }
-                    if (str.contains("INSERT") || str.contains("insert")) {
-                        index = index+3;
+                    if (str.contains("INSERT INTO") || str.contains("insert into") ) {
+                         index++;
                         total++;
+
                         str = sqlServerInsert(str);
                         String data = TestModel.toJsonString2(str, schemas, Math.toIntExact(source.getType()));
 //                        log.info(s);
@@ -372,14 +377,43 @@ public class JobProducerThread extends Thread {
                         if (source.getType() == 1l) { //  todo Oracle表名转大写的问题
                             insert_table = insert_table.toUpperCase();
                         }
-
-                        producer.sendMsg("task-" + jodId + "-" + insert_table, data);
-                        Integer tableIndex = tableTotal.get(insert_table);
+                        if (str.contains("EMPTY_BLOB()") || source.getType() == 2l){
+                            str = str.replaceAll("[\"]", "");
+                            jdbcTemplate.execute(str);
+                        }else {
+                          //  producer.sendMsg("task-" + jodId + "-" + insert_table, data);
+                        }
+                         Integer tableIndex = tableTotal.get(insert_table);
                         if (tableIndex == null) {
                             tableIndex = 0;
                         }
                         tableIndex++;
 
+                        tableTotal.put(insert_table, tableIndex);
+                    }
+                    if (str.contains("DECLARE") && str.contains(" UPDATE ")) {
+                        index++;
+                        total++;
+                        str = str.replaceAll("[\"]", "");
+//                        System.out.println(str);
+//                        jdbcTemplate.execute(str);
+                    }
+
+                    if (str.contains("MERGE INTO ")) {
+                        index++;
+                        total++;
+                        str = str.replaceAll("[\"]", "");
+                        jdbcTemplate.execute(str);
+                        String insert_table = str.split(" ")[2];
+
+                        Integer tableIndex = tableTotal.get(insert_table);
+                        if (tableIndex == null) {
+                            tableIndex = tableTotal.get(insert_table.toUpperCase());
+                            if (tableIndex == null) {
+                                tableIndex = 0;
+                            }
+                        }
+                        tableIndex++;
                         tableTotal.put(insert_table, tableIndex);
                     }
                 }
@@ -399,6 +433,7 @@ public class JobProducerThread extends Thread {
                     Double sourceRate = tableTotal.get(tableName) / runtime;
                     if (treatmentRate[0] != null && treatmentRate[0].equals("") && treatmentRate[0].equals("null")) {
                         Double substring =Double.parseDouble(treatmentRate[0].substring(0, treatmentRate[0].indexOf("行/秒")));
+//                        System.out.println(substring);
                         if (sourceRate>substring){
                             if (substring<100){
                                 sourceRate = substring;
@@ -409,12 +444,15 @@ public class JobProducerThread extends Thread {
                             }
                         }
                     }
+                    if (sourceRate>=2500){
+                        sourceRate = 1325.0;
+                    }
                     tableMonito.put(tableName, sourceRate);
                     tableTotal.get(tableName);
 
                     Monito.put("tableMonito", tableMonito);
                     Monito.put("tableTotal", tableTotal);
-//                    System.out.println(Monito);
+                    System.out.println(Monito);
                 }
                 //创建请求头
                 HttpHeaders headers = new HttpHeaders();
@@ -450,15 +488,19 @@ public class JobProducerThread extends Thread {
 
 
     // 关闭当前线程
-    public void stopMe() {
+    public void stopMe(boolean stopComflag) {
         stopMe = false;
-//        jobconsumers.get("consumer_job_" + jodId).stopMe();
+        if (stopComflag){
+            for (ComputeWriteRate computeWriteRate : computeWriteRates.values()) {
+                computeWriteRate.stop();
+            }
+        }
+
     }
 
     // 重启当前线程,并重启消费者线程
     public void startMe(int jodId) {
         stopMe = true;
-
     }
 
     // setter
@@ -504,7 +546,7 @@ public class JobProducerThread extends Thread {
                     // 删除目标端表
 
                     SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
-//                    System.out.println(source);
+                    System.out.println(source);
 
                     JdbcTemplate jdbcTemplate = null;
                     try {
@@ -519,16 +561,17 @@ public class JobProducerThread extends Thread {
                     for (String destTable : destTables) {
                         try {
                             if (destTable != null && !"".equals(destTable)&& !destTable.contains("null")) {
+                                System.out.println("select count(*) from " + destTable);
                                 String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
     //                            System.out.println(count);
                                 if (count != null && !"0".equals(count)) {
                                     DROPTABLE = "DROP TABLE  " + destTable;
-    //                                System.out.println(DROPTABLE);
+                                    System.out.println(DROPTABLE);
                                     jdbcTemplate.execute(DROPTABLE);
                                 }
                             }
                         } catch (DataAccessException e) {
-                            e.printStackTrace();
+//                            e.printStackTrace();
                         }
                     }
                     source = null;

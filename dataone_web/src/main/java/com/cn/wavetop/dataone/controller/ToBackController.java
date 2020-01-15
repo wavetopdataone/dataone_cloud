@@ -182,7 +182,8 @@ public class ToBackController {
         //todo 后面要分表
         Map<String, Object> tableMonito = Monito.get("tableMonito");
         Map<String, Object> tableTotal = Monito.get("tableTotal");
-
+        System.out.println(Monito);
+        System.out.println(tableTotal);
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
 
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {

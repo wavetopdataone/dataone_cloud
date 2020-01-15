@@ -29,14 +29,16 @@ public class Test {
         SysDbinfo source = SysDbinfo.builder()
                 .host("192.168.103.238")
                 .dbname("orcl")
-                .user("test")
-                .password("test")
+                .user("test1")
+                .password("test1")
                 .port(1521L)
                 .type(1L)
-                .schema("TEST")
+                .schema("TEST1")
                 .build();
+//        SysDbinfo(id=175, host=192.168.103.238, user=test1, password=test1, name=192.168.103.238TEST1, dbname=ORCL, schema=TEST1, port=1521, sourDest=null, type=1)
+//        select count(*) from TEST1.1234
         JdbcTemplate jdbcTemplate = SpringJDBCUtils.register(source);
-        jdbcTemplate.execute("DECLARE V_SQL LONG;BEGIN V_SQL:='CREATE TABLE \"TEST\".\"FILE_148324234\" (\"ID\" NUMBER(19),\"NAME\" VARCHAR2(255) )';EXECUTE IMMEDIATE V_SQL;EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END; ");
+        jdbcTemplate.execute("select count(*) from FILE3");
 //        String test = new ConfigOracleSink(1, "TEST", source).toJsonConfig();
 //        System.out.println(test);
     }

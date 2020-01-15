@@ -62,7 +62,7 @@ public class FileUtils {
             String s = null;
             while ((s = br.readLine()) != null) {
                 result.append(s);
-                System.out.println(s);
+//                System.out.println(s);
             }
             br.close();
             reader.close();
