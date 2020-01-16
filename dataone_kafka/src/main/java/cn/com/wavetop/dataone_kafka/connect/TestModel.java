@@ -104,7 +104,7 @@ public class TestModel {
                 filedType = "int16";
             } else if (filedType.equalsIgnoreCase("INT")) {
                 filedType = "int32";
-            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("bigint") || filedType.contains("int") || filedType.contains("INT") || filedType.contains("NUMBER") || filedType.contains("DECIMAL") || filedType.contains("decimal")) {
+            } else if (filedType.equalsIgnoreCase("BIGINT") || filedType.contains("bigint") || filedType.contains("int") || filedType.contains("INT") || filedType.contains("NUMBER") || filedType.contains("DECIMAL") || filedType.contains("decimal")|| filedType.contains("NUMERIC")) {
                 filedType = "int64";
             } else if (filedType.equalsIgnoreCase("FLOAT")) {
                 filedType = "float32";
@@ -112,7 +112,7 @@ public class TestModel {
                 filedType = "float64";
             } else if (filedType.contains("VARCHAR") || filedType.contains("varchar")) {
                 filedType = "string";
-            } else if (filedType.contains("VARBINARY")) {
+            } else if (filedType.contains("VARBINARY")||filedType.contains("text")||filedType.contains("TEXT")||filedType.contains("varbinary")||filedType.contains("BLOB")||filedType.contains("blob")||filedType.contains("BYTE")) {
                 filedType = "bytes";
             } else if (filedType.contains("DATE") || filedType.contains("date") || filedType.contains("TIME") || filedType.contains("time")) {
                 filedType = "int64";
@@ -153,11 +153,13 @@ public class TestModel {
         List<String> insert_columns = null;
         List<String> insert_values = null;
         try {
+//            System.out.println(insertSql);
             insert_columns = PrassingUtil.get_insert_column(insertSql);
             insert_values = PrassingUtil.get_insert_values(insertSql);
 
         } catch (
-                JSQLParserException e) {
+                Exception e) {
+//            System.err.println(insertSql);
             e.printStackTrace();
         }
 

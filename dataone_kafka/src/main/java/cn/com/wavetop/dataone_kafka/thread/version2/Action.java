@@ -99,7 +99,7 @@ public class Action extends Thread {
 
 
                         } else {
-                            jobProducerThread.stopMe();
+                            jobProducerThread.stopMe(true);
                             Action.jobProducerThread.put("producer_job_" + jobId, new JobProducerThread(jobId, sqlPath, 0,jobProducerThread.getSchemas()));
                             Action.jobProducerThread.get("producer_job_" + jobId).start();
                         }
@@ -119,7 +119,11 @@ public class Action extends Thread {
                     // 关闭任务线程
                     JobProducerThread jobProducerThread = Action.jobProducerThread.get("producer_job_" + jobId);
                     if (jobProducerThread != null) {
-                        Action.jobProducerThread.get("producer_job_" + jobId).stopMe();
+                        if (s.split("_")[1].equals("stop")) {
+                            Action.jobProducerThread.get("producer_job_" + jobId).stopMe(true);
+                        }else {
+                            Action.jobProducerThread.get("producer_job_" + jobId).stopMe(false);
+                        }
                         jobProducerThread = null;
                     }
                     new File(actionDir + s).delete(); // 删除文件

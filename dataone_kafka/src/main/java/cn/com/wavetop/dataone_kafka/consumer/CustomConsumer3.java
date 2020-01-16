@@ -22,13 +22,14 @@ public class CustomConsumer3 extends Thread {
     @Override
     public void run() {
         {
+            System.out.println("KAISHILE");
             startTime = System.currentTimeMillis();
             //Date date = new Date(startTime);
             boolean flag = true; // 线程终止标识
             StringBuffer result = new StringBuffer();
-            File file = new File("D:\\wangcheng\\dataone\\offset" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".txt");
+            File file = new File("E:\\yongz\\dataone\\sqltemp\\offset" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".txt");
             try {
-                InputStreamReader reader = new InputStreamReader(new FileInputStream(new File("D:\\wangcheng\\dataone\\kafka-connect.log")), "utf-8");
+                InputStreamReader reader = new InputStreamReader(new FileInputStream(new File("E:\\yongz\\dataone\\sqltemp\\kafka-connect-error.log")), "utf-8");
                 BufferedReader br = new BufferedReader(reader);
                 String payload = null;
                 if (file.exists()) {

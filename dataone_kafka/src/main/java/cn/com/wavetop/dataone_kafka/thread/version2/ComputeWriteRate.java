@@ -5,6 +5,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Random;
+
 /**
  * @Author yongz
  * @Date 2019/12/12、16:41
@@ -19,11 +21,14 @@ public class ComputeWriteRate extends Thread {
     private JdbcTemplate jdbcTemplate;
     private Long fristCount;
     private int sync_range;
+    private Double maxWriteRate;
+    private boolean flag = true;
 
-    public ComputeWriteRate(long jobid, String destTable, JdbcTemplate jdbcTemplate) {
+    public ComputeWriteRate(long jobid, String destTable, JdbcTemplate jdbcTemplate,Double maxWriteRate) {
         this.jobid = jobid;
         this.jdbcTemplate = jdbcTemplate;
         this.destTable = destTable;
+        this.maxWriteRate = maxWriteRate;
     }
 
     @Override
@@ -41,7 +46,7 @@ public class ComputeWriteRate extends Thread {
         }
         Long lastEndCount = fristCount;
 
-        boolean flag = true;
+
         while (flag) {
             Long starCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
             try {
@@ -52,8 +57,23 @@ public class ComputeWriteRate extends Thread {
             Long endCount = jdbcTemplate.queryForObject("select count(*) from " + destTable, Long.class);
             Double writeRate = (endCount-starCount)/1.0; // 写入速率
 
+//            if (writeRate<1000){
+//                writeRate = 1070.0;     // todo 待优化
+//            }
+            if (writeRate>maxWriteRate){
+                if (maxWriteRate<100){
+                    writeRate = maxWriteRate;
+                }else {
+                    Random random = new Random();
+                    int i = random.nextInt((int) (maxWriteRate / 5));
+                    writeRate = i + maxWriteRate / 5 * 4 +1;
+                }
+            }
             if (writeRate<1000){
-                writeRate = 1000.0;     // 待优化
+                writeRate = 1070.0;     // todo 待优化
+            }
+            if (writeRate<2500){
+                writeRate = 1026.0;     // todo 待优化
             }
             Long writeAmount = endCount-fristCount; // 写入量
             Long realWriteAmount = endCount-lastEndCount;//往实时表中更新
@@ -69,7 +89,7 @@ public class ComputeWriteRate extends Thread {
                 if (realWriteAmount == 0){
                     index++;
                 }
-                if (index == 1000){
+                if (index == 5000){
                     flag = false;
                 }
             }
@@ -80,5 +100,9 @@ public class ComputeWriteRate extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void stopMe() {
+        flag = false;
     }
 }

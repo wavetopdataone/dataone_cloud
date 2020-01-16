@@ -3,61 +3,21 @@
     "type": "struct",
     "fields": [
       {
-        "field": "ID",
-        "optional": true,
-        "type": "int64"
-      },
-      {
-        "field": "FNAME",
+        "field": "T_ID",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "LNAME",
+        "field": "T_IMAGE",
         "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "BIRTH",
-        "optional": true,
-        "type": "string"
-      },
-      {
-        "field": "HIRED",
-        "name": "org.apache.kafka.connect.data.Timestamp",
-        "optional": true,
-        "type": "int64",
-        "version": 1
-      },
-      {
-        "field": "SEPARATED",
-        "name": "org.apache.kafka.connect.data.Timestamp",
-        "optional": true,
-        "type": "int64",
-        "version": 1
-      },
-      {
-        "field": "JOB_CODE",
-        "optional": true,
-        "type": "int64"
-      },
-      {
-        "field": "STORE_ID",
-        "optional": true,
-        "type": "int64"
+        "type": "bytes"
       }
     ],
     "optional": false,
-    "name": "EMPLOYEES"
+    "name": "IMAGE_LOB"
   },
   "payload": {
-    "SEPARATED": 1570550400000,
-    "JOB_CODE": 1,
-    "LNAME": "haixiang30037",
-    "HIRED": 1570550400000,
-    "STORE_ID": 30037,
-    "ID": 30037,
-    "BIRTH": "2019-10-09 23:15:17",
-    "FNAME": "chen30037"
+    "T_IMAGE": "EMPTY_BLOB()",
+    "T_ID": "2"
   }
 }

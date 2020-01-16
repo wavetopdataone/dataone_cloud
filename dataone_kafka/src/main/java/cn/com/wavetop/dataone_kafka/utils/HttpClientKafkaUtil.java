@@ -22,6 +22,9 @@ import java.nio.charset.Charset;
 public class HttpClientKafkaUtil {
     private static CloseableHttpClient httpClient = null;
 
+    public static void main(String[] args) {
+        getConnectRestart("192.168.1.156",8083,"connect-sink-225-file2_148");
+    }
     static {
         httpClient = HttpClients.createDefault();
     }
