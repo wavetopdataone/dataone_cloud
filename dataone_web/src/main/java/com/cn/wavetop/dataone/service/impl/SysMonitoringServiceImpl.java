@@ -427,6 +427,20 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                         }
                         //todo 判断有问题，如果一张表完了
                         if (sysMonitoringList1.get(0).getJobStatus() != 4) {
+
+                           if(sysMonitoringList1.get(0).getReadData()==null||sysMonitoringList1.get(0).getReadData().equals("null")){
+                               sysMonitoringList1.get(0).setReadData(0L);
+                           }
+                            if(sysMonitoringList1.get(0).getErrorData()==null||sysMonitoringList1.get(0).getErrorData().equals("null")){
+                                sysMonitoringList1.get(0).setErrorData(0L);
+                            }
+                            if(sysMonitoringList1.get(0).getWriteData()==null||sysMonitoringList1.get(0).getWriteData().equals("null")){
+                                sysMonitoringList1.get(0).setWriteData(0L);
+                            }
+                            if(sysMonitoringList1.get(0).getJobStatus()==null||sysMonitoringList1.get(0).getJobStatus().equals("null")){
+                                sysMonitoringList1.get(0).setJobStatus(0);
+                            }
+
                             if (sysMonitoringList1.get(0).getErrorData() + sysMonitoringList1.get(0).getWriteData() < sysMonitoringList1.get(0).getReadData() && ("1".equals(sysJobrela.getJobStatus()) || "11".equals(sysJobrela.getJobStatus()))) {
                                 sysMonitoringList1.get(0).setJobStatus(1);//运行中
                             }else if (sysMonitoringList1.get(0).getSqlCount()!=0&&sysMonitoringList1.get(0).getReadData()==0) {
@@ -469,6 +483,8 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("*",e);
             return ToDataMessage.builder().status("0").message("发生错误").build();
 
         }

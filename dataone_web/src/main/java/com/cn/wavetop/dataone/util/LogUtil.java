@@ -1,15 +1,15 @@
 package com.cn.wavetop.dataone.util;
 
 import com.alibaba.fastjson.JSON;
-import com.cn.wavetop.dataone.dao.*;
+import com.cn.wavetop.dataone.dao.SysDeptRepository;
+import com.cn.wavetop.dataone.dao.SysLogRepository;
+import com.cn.wavetop.dataone.dao.SysUserRepository;
+import com.cn.wavetop.dataone.dao.SysUserlogRepository;
 import com.cn.wavetop.dataone.entity.*;
 import org.apache.shiro.SecurityUtils;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -135,7 +135,7 @@ public class LogUtil {
         SysDept  sysDept=(SysDept) o;
         SysDept sysDeptOld=(SysDept)o1;
         StringBuffer stringBuffer=new StringBuffer("");
-        String deptName=null;
+        String deptName=sysDept.getDeptName();
         if("添加小组".equals(Operation)){
             deptName=sysDept.getDeptName();
             deail="无";

@@ -19,14 +19,14 @@ public interface SysDbinfoRespository  extends JpaRepository<SysDbinfo,Long> {
 
 
     //根据部门查询数据源
-    @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.deptId=:deptId and d.sourDest=:dest")
+    @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.userId=:deptId and d.sourDest=:dest")
     List<SysDbinfo> findBySourDestUser(long dest,Long deptId);
      //查询该部门下的数据源名称是否存在
-     @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.deptId=:deptId and d.name=:name")
+     @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.userId=:deptId and d.name=:name")
      List<SysDbinfo> findNameByUser(String name,Long deptId);
 
     //查询该部门下的数据源名称是否存在
-    @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.deptId=:deptId and d.id=:id")
+    @Query("select d from SysDbinfo d,SysUserDbinfo sd where d.id=sd.dbinfoId and sd.userId=:deptId and d.id=:id")
     List<SysDbinfo> findDbNameByUser(Long id,Long deptId);
 
     boolean existsByIdOrName(long id, String name);

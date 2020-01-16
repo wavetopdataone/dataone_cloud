@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/sys_user")
-public class SysUserController {
+public class  SysUserController {
     @Autowired
     private SysUserService sysUserService;
 
@@ -33,7 +33,8 @@ public class SysUserController {
 
     @ApiOperation(value = "根据用户权限查询用户",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "查询用户")
     @PostMapping("/alluser")
-    public Object findAll(){
+    public Object findAll()
+    {
         return sysUserService.findAll();
     }
     @ApiOperation(value = "删除用户",httpMethod = "POST",protocols = "HTTP", produces ="application/json", notes = "删除用户")

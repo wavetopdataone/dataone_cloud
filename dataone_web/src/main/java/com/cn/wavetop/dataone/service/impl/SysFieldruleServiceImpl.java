@@ -352,16 +352,6 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                     sysFiledType.setDestFiledType(ziduan[6]);
                     sysFiledTypeList.add(sysFiledType);
                 }
-                System.out.println(sysDbinfo2+"----------------");
-                System.out.println(sysDbinfo.getType()+"-------"+sysDbinfo2.getType()+"-----"+ziduan[6]);
-                System.out.println(sysFiledTypeList.get(0).getDestFiledType()+"字段类型");
-                System.out.println(ziduan[0]+"------------------"+ziduan[1]+"------1");
-                System.out.println(ziduan[3]+"------------------"+ziduan[7]+"--------2");
-                System.out.println(ziduan[4]+"------------------"+ziduan[8]+"--------3");
-                System.out.println(ziduan[5]+"------------------"+ziduan[9]+"--------4");
-                System.out.println(ziduan[0]+"------------------"+ziduan[1]+"--------5");
-                System.out.println(sysFiledTypeList.get(0).getDestFiledType().toUpperCase() +"------------------"+ziduan[2].toUpperCase()+"--------6");
-                System.out.println(ziduan[1] +"------------------"+primaryKey+"--------7");
 
                 if (!ziduan[0].equals(ziduan[1]) || !ziduan[3].equals(ziduan[7]) || !ziduan[4].equals(ziduan[8]) || !ziduan[5].equals(ziduan[9]) || !sysFiledTypeList.get(0).getDestFiledType().toUpperCase().equals(ziduan[2].toUpperCase()) || (!"".equals(primaryKey) && primaryKey != null && !"undefined".equals(primaryKey) && primaryKey.equals(ziduan[1]))) {
 //                if (!ziduan[0].equals(ziduan[1])) {
@@ -768,6 +758,10 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
             } else {
                 //todo 这是没有新增字段的删除
                 //fieldrule表  为了前端展示
+              List<SysFieldrule> sysFieldruleList1=  sysFieldruleRepository.findByJobIdAndSourceNameAndFieldName(job_id,source_name,filedNames[0]);
+                if(sysFieldruleList1!=null&&sysFieldruleList1.size()>0){
+                    sysFieldruleRepository.deleteByJobIdAndSourceNameAndFieldName(job_id,source_name,filedNames[0]);
+                }
                 sysFieldrule = new SysFieldrule();
                 sysFieldrule.setDestFieldName(filedNames[1]);
                 sysFieldrule.setFieldName(filedNames[0]);
@@ -798,6 +792,10 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                         sysDesensitizations = sysDesensitizationRepository.findByJobIdAndSourceTableAndSourceField(sysJobrelaRelated.getSlaveJobId(), source_name, filedNames[0]);
                         if (sysDesensitizations != null && sysDesensitizations.size() > 0) {
                             sysDesensitizationRepository.delete(sysDesensitizations.get(0));
+                        }
+                        sysFieldruleList1=  sysFieldruleRepository.findByJobIdAndSourceNameAndFieldName(sysJobrelaRelated.getSlaveJobId(),source_name,filedNames[0]);
+                        if(sysFieldruleList1!=null&&sysFieldruleList1.size()>0){
+                            sysFieldruleRepository.deleteByJobIdAndSourceNameAndFieldName(sysJobrelaRelated.getSlaveJobId(),source_name,filedNames[0]);
                         }
                         sysFieldrule = new SysFieldrule();
                         sysFieldrule.setDestFieldName(filedNames[1]);

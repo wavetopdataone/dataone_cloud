@@ -1,23 +1,16 @@
 package com.cn.wavetop.dataone.util;
 
-import com.alibaba.druid.pool.DruidDataSourceFactory;
-import com.cn.wavetop.dataone.config.ResponseModel;
 import com.cn.wavetop.dataone.entity.SysDbinfo;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysTablerule;
-import com.cn.wavetop.dataone.entity.vo.ToData;
-import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 
 public class DBConns {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private  final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 获取Mysql对象

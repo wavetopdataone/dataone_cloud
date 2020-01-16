@@ -48,7 +48,14 @@ public class EmailUtils {
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, emailPropert.getForm());  //发送邮件的邮箱和发件人
             mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
+            System.setProperty("mail.smtp.ssl.enable", "true");
+             mail.setSmtpPort(465);
             mail.setSSLOnConnect(true); //使用安全链接
+            //todo 安全连接我关掉了
+//             mail.setSSLOnConnect(false);
+
+
+
             //mail.setTLS(true);
 //             mail.setSSL(true);
 
@@ -89,6 +96,8 @@ public class EmailUtils {
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, "上海浪擎科技技术有限公司");  //发送邮件的邮箱和发件人
             mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
+            System.setProperty("mail.smtp.ssl.enable", "true");
+            mail.setSmtpPort(465);
             mail.setSSLOnConnect(true); //使用安全链接
 
             mail.addTo(email);//接收的邮箱
@@ -119,6 +128,8 @@ public class EmailUtils {
             mail.setAuthentication(username, password);//登录邮箱的密码，是开启SMTP的密码
             mail.setFrom(username, emailPropert.getForm());  //发送邮件的邮箱和发件人
             mail.addHeader("X-Mailer", "Microsoft Outlook Express 6.00.2900.2869");
+            System.setProperty("mail.smtp.ssl.enable", "true");
+            mail.setSmtpPort(465);
             mail.setSSLOnConnect(true); //使用安全链接
             if (email != null && email.size() > 0) {
                 for (int i = 0; i < email.size(); i++) {

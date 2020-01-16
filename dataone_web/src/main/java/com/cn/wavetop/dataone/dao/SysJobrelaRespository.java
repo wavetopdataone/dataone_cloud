@@ -1,7 +1,6 @@
 package com.cn.wavetop.dataone.dao;
 
 import com.cn.wavetop.dataone.entity.SysDbinfo;
-import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysJobrela;
 import com.cn.wavetop.dataone.entity.vo.EmailJobrelaVo;
 import com.cn.wavetop.dataone.entity.vo.SysJobrelaUser;
@@ -11,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-import java.awt.print.Book;
 import java.util.List;
 
 
@@ -27,10 +25,10 @@ public interface SysJobrelaRespository   extends JpaRepository<SysJobrela,Long>
 
     boolean existsByDestNameOrSourceName(String name, String name1);
     //查询数据源是否被使用and j.jobStatus not in('0','5')
-    @Query(value = "select j from SysJobrela j,SysUserJobrela uj where  uj.jobrelaId=j.id and uj.deptId=:deptId  and j.sourceName=:name or j.destName=:name1 ")
+    @Query(value = "select j from SysJobrela j,SysUserJobrela uj where  uj.jobrelaId=j.id and uj.deptId=:deptId  and (j.sourceName=:name or j.destName=:name1) ")
     List<SysJobrela> findDestNameOrSourceName(String name,String name1,Long deptId);
     //查询数据源是否被使用 and j.jobStatus not in('0','5')
-    @Query(value = "select j from SysJobrela j,SysUserJobrela uj where  uj.jobrelaId=j.id and uj.deptId=:deptId and j.sourceId=:id or j.destId=:id1 ")
+    @Query(value = "select j from SysJobrela j,SysUserJobrela uj where  uj.jobrelaId=j.id and uj.deptId=:deptId and (j.sourceId=:id or j.destId=:id1) ")
     List<SysJobrela> findDestIdOrSourceId(Long id,Long id1,Long deptId);
 
     boolean existsByDestIdOrSourceId(long id, long id1);

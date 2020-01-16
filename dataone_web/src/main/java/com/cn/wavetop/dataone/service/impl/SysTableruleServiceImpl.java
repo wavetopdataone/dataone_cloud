@@ -5,22 +5,20 @@ import com.cn.wavetop.dataone.entity.*;
 import com.cn.wavetop.dataone.entity.vo.ToData;
 import com.cn.wavetop.dataone.entity.vo.ToDataMessage;
 import com.cn.wavetop.dataone.service.SysTableruleService;
-import com.cn.wavetop.dataone.util.DBConn;
 import com.cn.wavetop.dataone.util.DBConns;
-import com.cn.wavetop.dataone.util.DBHelper;
-import com.cn.wavetop.dataone.util.PermissionUtils;
-import org.apache.poi.ss.formula.functions.Today;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.transaction.Transactional;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -203,7 +201,7 @@ public class SysTableruleServiceImpl implements SysTableruleService {
             List<SysJobrelaRelated> sysJobrelaRelateds = sysJobrelaRelatedRespository.findByMasterJobId(sysTablerule.getJobId());
             if (sysTableruleList != null && sysTableruleList.size() > 0) {
                 //若是修改主任务则先删除标规则字段规则
-                int a = sysTableruleRepository.deleteByJobId(sysTablerule.getJobId());
+                sysTableruleRepository.deleteByJobId(sysTablerule.getJobId());
                 sysFilterTableRepository.deleteByJobId(sysTablerule.getJobId());
 //                if(PermissionUtils.isPermitted("3")) {
                 if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {

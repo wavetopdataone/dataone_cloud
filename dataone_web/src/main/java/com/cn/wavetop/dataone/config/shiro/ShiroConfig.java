@@ -87,6 +87,7 @@ public class ShiroConfig {
 //        前端react的路由
         filterChainDefinitionMap.put("**.js", "anon");
         filterChainDefinitionMap.put("//at.alicdn.com/t/font_1537367_enrqpjp2dab.js", "anon");
+        filterChainDefinitionMap.put("/register*", "anon");
 
         filterChainDefinitionMap.put("/busList**", "anon");
         filterChainDefinitionMap.put("/busList/**", "anon");
@@ -113,7 +114,7 @@ public class ShiroConfig {
 //        filterChainDefinitionMap.put("/sys_monitoring/**", "anon");
 
 
-//        filterChainDefinitionMap.put("/**", "authc");
+        filterChainDefinitionMap.put("/**", "authc");
 
 
 //      filterChainDefinitionMap.put("/**", "authc,kickout");

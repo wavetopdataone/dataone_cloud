@@ -685,6 +685,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                 SysJobrela byId = repository.findById(id1);
                 String jobStatus = byId.getJobStatus();
                 //状态是待激活0和暂停中2和终止中3则启动任务
+                if(byId.getSyncRange()!=null){
                 if ("0".equals(jobStatus) || "2".equals(jobStatus) || "3".equals(jobStatus)) {
                     byId.setJobStatus("11"); // 1代表运行中，11代表开始动作
                     repository.save(byId);
@@ -711,9 +712,13 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     if(list1!=null&&list1.size()>0){
                         errorLogRespository.deleteByJobId(id);
                     }
-                } else {
+                }else{
                     map.put("status", 0);
                     map.put("message", "无法激活");
+                }
+                } else {
+                    map.put("status", 0);
+                    map.put("message", "同步类型为空,请先配置");
                 }
 
             }
@@ -1079,6 +1084,7 @@ public class SysJobrelaServiceImpl implements SysJobrelaService {
                     sysMonitoringService.showMonitoring(s.getId());
                 }
             } else {
+                pageable = new PageRequest(current - 1, size,Sort.Direction.DESC, "id");
                 Page<SysJobrela> page = repository.findAll(pageable);
                 for(SysJobrela s:page.getContent()){
                     sysMonitoringService.showMonitoring(s.getId());

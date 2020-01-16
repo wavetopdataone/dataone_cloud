@@ -64,46 +64,10 @@ String a="'IMAGE','TEXT','UNIQUEIDENTIFIER','DATE','TIME','DATETIME2','DATETIMEO
 
 
 
-        SysFieldrule sysFieldrule5=new SysFieldrule();
-        sysFieldrule5.setFieldName("test5");
-        sysFieldrule5.setVarFlag(2L);
-        sysFieldrule5.setDestFieldName("666");
-
-        sysFieldruleList.add(sysFieldrule5);
-        SysFieldrule sysFieldrule6=new SysFieldrule();
-        sysFieldrule6.setFieldName("test1");
-        sysFieldrule6.setVarFlag(1L);
-        sysFieldrule6.setDestFieldName("222");
-
-        sysFieldruleList.add(sysFieldrule6);
-        SysFieldrule sysFieldrule7=new SysFieldrule();
-        sysFieldrule7.setFieldName("test22");
-        sysFieldrule7.setDestFieldName("111");
-        sysFieldrule7.setVarFlag(2L);
-        sysFieldruleList.add(sysFieldrule7);
-        SysFieldrule sysFieldrule8=new SysFieldrule();
-        sysFieldrule8.setFieldName("test3");
-        sysFieldrule8.setDestFieldName("333");
-
-        sysFieldrule8.setVarFlag(1L);
-        sysFieldruleList.add(sysFieldrule8);
-
         for (int i = 0; i < data.size(); i++) {
-            for(int j=0;j<sysFieldruleList.size();j++){
-                if(sysFieldruleList.get(j).getVarFlag()==1){
-                    if(data.get(i).getFieldName().equals(sysFieldruleList.get(j).getFieldName())){
-                        data.remove(i);
-                        if(i==0){
-                            i=0;
-                        }else {
-                            i--;
-                        }
-                    }
-                }else if(sysFieldruleList.get(j).getVarFlag()==2){
-                    if(data.get(i).getFieldName().equals(sysFieldruleList.get(j).getFieldName())){
-                        data.get(i).setDestFieldName(sysFieldruleList.get(j).getDestFieldName());
-                    }
-                }
+            if(data.get(i).getFieldName().equals("test3")){
+                data.add(0,data.get(i));
+                data.remove(data.get(i+1));
             }
         }
         for(SysFieldrule s:data){

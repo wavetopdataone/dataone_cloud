@@ -52,14 +52,14 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
     @Override
     public Object getSourceAll() {
 //        return ToData.builder().status("1").data(repository.findBySourDest(0)).build();
-        return ToData.builder().status("1").data(repository.findBySourDestUser(0, PermissionUtils.getSysUser().getDeptId())).build();
+        return ToData.builder().status("1").data(repository.findBySourDestUser(0, PermissionUtils.getSysUser().getId())).build();
 
     }
 
     @Override
     public Object getDestAll() {
 //        return ToData.builder().status("1").data(repository.findBySourDest(1)).build();
-                return ToData.builder().status("1").data(repository.findBySourDestUser(1, PermissionUtils.getSysUser().getDeptId())).build();
+                return ToData.builder().status("1").data(repository.findBySourDestUser(1, PermissionUtils.getSysUser().getId())).build();
 
     }
 
@@ -87,7 +87,7 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
         //添加数据源也要根据权限
         if (PermissionUtils.isPermitted("2")) {
         //查询该部门下是否存在这个数据源
-       List<SysDbinfo> list=repository.findNameByUser(sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());
+       List<SysDbinfo> list=repository.findNameByUser(sysDbinfo.getName(),PermissionUtils.getSysUser().getId());
             try {
 //                if (repository.existsByName(sysDbinfo.getName())) {
                     //查询该数据源是否存在
@@ -156,7 +156,7 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
 //                if (!flag) {
                     boolean flag2 = repository.existsByName(sysDbinfo.getName());
                     //查询该部门下是否存在这个数据源
-       List<SysDbinfo> lists=repository.findDbNameByUser(sysDbinfo.getId(),PermissionUtils.getSysUser().getDeptId());
+       List<SysDbinfo> lists=repository.findDbNameByUser(sysDbinfo.getId(),PermissionUtils.getSysUser().getId());
                     if(lists!=null&&lists.size()>0){
                         if (sysDbinfo.getType() == 1) {
                             conn = DBConns.getOracleConn(sysDbinfo);
@@ -168,7 +168,7 @@ public class SysDbinfoServiceImpl implements SysDbinfoService {
                             conn=DBConns.getDaMengConn(sysDbinfo);
                         }
                         //判断修改的数据源名称该部门下已经存在了
-                        List<SysDbinfo> listss=repository.findNameByUser(sysDbinfo.getName(),PermissionUtils.getSysUser().getDeptId());
+                        List<SysDbinfo> listss=repository.findNameByUser(sysDbinfo.getName(),PermissionUtils.getSysUser().getId());
                         if(listss!=null&&listss.size()>0) {
                             if (!listss.get(0).getId().equals(sysDbinfo.getId())) {
                                 return ToDataMessage.builder().status("0").message("该部门下面已经存在该数据源名称").build();

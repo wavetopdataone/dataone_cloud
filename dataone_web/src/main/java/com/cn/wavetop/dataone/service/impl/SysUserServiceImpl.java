@@ -278,20 +278,34 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public Object findAll() {
         Map<Object, Object> map = new HashMap<>();
-        List<SysUserDept> list = new ArrayList<>();
+        List<SysUserDept> list =null;
         String perms = null;
         if (PermissionUtils.isPermitted("1")) {
             list = sysUserRepository.findUserByUserPerms("2");
-
             SysUserDept sysUserDept = new SysUserDept(PermissionUtils.getSysUser().getId(), PermissionUtils.getSysUser().getDeptId(), PermissionUtils.getSysUser().getLoginName(), PermissionUtils.getSysUser().getPassword(), PermissionUtils.getSysUser().getEmail(), "", "超级管理员", PermissionUtils.getSysUser().getStatus());
             list.add(0, sysUserDept);
-
             map.put("status", "1");
             map.put("data", list);
         } else if (PermissionUtils.isPermitted("2")) {
-            list = sysUserRepository.findUserByPerms(PermissionUtils.getSysUser().getId(), "1");
+             list= sysUserRepository.findUserByPerms(PermissionUtils.getSysUser().getId(), "1");
+            List<SysUserDept> lists=new ArrayList<>();
+             if(list!=null&&list.size()>0){
+                 for(SysUserDept sysUserDept:list){
+                     if(sysUserDept.getRoleName().equals("管理员")){
+                         lists.add(0,sysUserDept);
+                     }else{
+                         lists.add(sysUserDept);
+                     }
+                 }
+                for(int i=0;i<lists.size();i++){
+                    if(lists.get(i).getRoleName().equals("管理员")){
+                        lists.add(0,lists.get(i));
+                        lists.remove(lists.get(i+1));
+                    }
+                }
+            }
             map.put("status", "1");
-            map.put("data", list);
+            map.put("data", lists);
         } else {
             map.put("status", "0");
             map.put("message", "权限不足");
@@ -530,6 +544,7 @@ public class SysUserServiceImpl implements SysUserService {
                 SysUserDept sysUserDept = new SysUserDept(PermissionUtils.getSysUser().getId(), PermissionUtils.getSysUser().getDeptId(), PermissionUtils.getSysUser().getLoginName(), PermissionUtils.getSysUser().getPassword(), PermissionUtils.getSysUser().getEmail(), "", "超级管理员", PermissionUtils.getSysUser().getStatus());
                 list.add(0, sysUserDept);
             }
+            return ToData.builder().status("1").data(list).build();
         } else if (PermissionUtils.isPermitted("2")) {
             if (userName != null && !"".equals(userName)) {
                 //该管理员所在部门的用户的模糊查询
@@ -537,10 +552,21 @@ public class SysUserServiceImpl implements SysUserService {
             } else {
                 list = sysUserRepository.findUserByPerms(PermissionUtils.getSysUser().getId(), "1");
             }
+            List<SysUserDept> lists=new ArrayList<>();
+            if(list!=null&&list.size()>0) {
+                for (SysUserDept sysUserDept : list) {
+                    if (sysUserDept.getRoleName().equals("管理员")) {
+                        lists.add(0, sysUserDept);
+                    } else {
+                        lists.add(sysUserDept);
+                    }
+                }
+            }
+            return ToData.builder().status("1").data(lists).build();
         } else {
             return ToDataMessage.builder().status("0").message("权限不足").build();
         }
-        return ToData.builder().status("1").data(list).build();
+
     }
 
     //根据部门Id查询该部门下的用户
@@ -891,7 +917,17 @@ public class SysUserServiceImpl implements SysUserService {
             if (sysDept.get() != null) {
                 sysDeptUsers.setDeptId(sysDept.get().getId());
                 sysDeptUsers.setDeptName(sysDept.get().getDeptName());
-                sysDeptUsers.setSysUserList(sysUserRepository.findUserRoleByDeptId(sysDept.get().getId()));
+                List<SysUserByDeptVo> sysUserList= sysUserRepository.findUserRoleByDeptId(sysDept.get().getId());
+               //todo 管理员放第一位
+                if(sysUserList!=null&&sysUserList.size()>0){
+                    for(int i=0;i<sysUserList.size();i++){
+                        if(sysUserList.get(i).getRoleName().equals("管理员")){
+                            sysUserList.add(0,sysUserList.get(i));
+                            sysUserList.remove(sysUserList.get(i+1));
+                        }
+                    }
+                }
+                sysDeptUsers.setSysUserList(sysUserList);
                 list.add(sysDeptUsers);
             }
             return ToData.builder().status("1").data(list).build();
@@ -955,9 +991,14 @@ public class SysUserServiceImpl implements SysUserService {
         if (sysUser1.get().getPassword().equals(ciphertext)) {
 //                String emailType="smtp."+newEmail.split("@")[1];
 //                sysUser1.get().setEmailType(emailType);
-            sysUser1.get().setEmail(newEmail);
-            sysUserRepository.save(sysUser1.get());
-            return ToDataMessage.builder().status("1").message("邮箱修改成功").build();
+            SysUser sysUser=sysUserRepository.findByEmail(newEmail);
+            if(sysUser!=null&&userId!=sysUser.getId()){
+                return ToDataMessage.builder().status("0").message("该邮箱其他用户已使用").build();
+            }else {
+                sysUser1.get().setEmail(newEmail);
+                sysUserRepository.save(sysUser1.get());
+                return ToDataMessage.builder().status("1").message("邮箱修改成功").build();
+            }
         } else {
             return ToDataMessage.builder().status("0").message("登录密码不正确").build();
         }
