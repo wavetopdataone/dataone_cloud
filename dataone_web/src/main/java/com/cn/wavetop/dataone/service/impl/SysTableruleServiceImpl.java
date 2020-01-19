@@ -21,10 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SysTableruleServiceImpl implements SysTableruleService {
@@ -352,7 +349,7 @@ public class SysTableruleServiceImpl implements SysTableruleService {
     @Override
     public Object linkDataTable(SysDbinfo sysDbinfo, Long jobId) {
         String sql = "";
-        List<Object> list = new ArrayList<Object>();
+        List<String> list = new ArrayList<String>();
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -403,10 +400,16 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         //
         ValueOperations<String, Object> opsForValue = null;
         opsForValue = redisTemplate.opsForValue();
+        //按照首字符排序
+        Collections.sort(list, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         opsForValue.set(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName(), list);
         return ToData.builder().status("1").data(list).build();
     }
-
     public Object findByAllTableName(Long jobId, String tableName) {
         SysDbinfo sysDbinfo = null;
         //查詢关联的数据库连接表jobrela
@@ -424,7 +427,7 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         List<String> list = (List<String>) opsForValue.get(sysDbinfo.getHost() + sysDbinfo.getDbname() + sysDbinfo.getName());
         if (list != null && list.size() > 0) {
             for (String name : list) {
-                if (name.contains(tableName)) {
+                if (name.toUpperCase().contains(tableName.toUpperCase())) {
                     stringList.add(name);
                 }
             }
@@ -476,7 +479,7 @@ public class SysTableruleServiceImpl implements SysTableruleService {
 
           if(stringList!=null&&stringList.size()>0){
             for (String name : stringList) {
-                if (name.contains(tableName)) {
+                if (name.toUpperCase().contains(tableName.toUpperCase())) {
                     sysMapTable=new SysMapTable();
                     sysMapTable.setSourceTable(name);
                     list.add(sysMapTable);
