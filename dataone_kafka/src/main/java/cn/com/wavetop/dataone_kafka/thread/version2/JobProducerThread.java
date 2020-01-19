@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
  * @Date 2019/12/11、9:37
  */
 public class JobProducerThread extends Thread {
+    private long timestamp;
 
     private HashMap<String, Schema> schemas = new HashMap(); // 存放目标表结构
 
@@ -59,10 +60,12 @@ public class JobProducerThread extends Thread {
     // 记录读取的数据
     private long readData;  // 实时更新的
     private long lastReadData = 0;// 上次的记录
-    public HashMap getSchemas(){
+
+    public HashMap getSchemas() {
         return schemas;
     }
-    public JobProducerThread(long jodId, String sqlPath, long readData,HashMap schemas) {
+
+    public JobProducerThread(long jodId, String sqlPath, long readData, HashMap schemas) {
         this.jodId = jodId;
         this.sqlPath = sqlPath;
         this.readData = readData;
@@ -81,6 +84,8 @@ public class JobProducerThread extends Thread {
 
     @Override
     public void run() {
+
+        timestamp = new Date().getTime();
 //        ArrayList<String> fileNames;
         // sync_range::1是全量，2是增量，3是增量+全量，4是存量
         int sync_range = restTemplate.getForObject("http://DATAONE-WEB/toback/find_range/" + jodId, Integer.class);
@@ -116,7 +121,13 @@ public class JobProducerThread extends Thread {
                     file = new File(sqlPath + "/full_offset"); // 默认为全量
                     universalRang(file, "FULL", "_0.sql", true);
             }
-
+            if (sync_range == 1) {
+                String statusStr = restTemplate.getForObject("http://DATAONE-WEB/toback/findStatusById/" + jodId, String.class);
+                Integer status = Integer.parseInt(statusStr);
+                if (status == 2 || status == 21) {
+                    stopMe(false);
+                }
+            }
 
             try {
 
@@ -299,6 +310,7 @@ public class JobProducerThread extends Thread {
     }
 
     public String readFile(String fileName, int index) {
+        int testIndexDm = 0;
         HashMap<String, Integer> tableTotal = new HashMap<>();
         HashMap<String, Double> tableMonito = new HashMap<>();
         int total = 0;  // 记录总量
@@ -336,34 +348,51 @@ public class JobProducerThread extends Thread {
                 } else {
 
                     if (str.contains("CREATE ") || str.contains("create ")) {   // todo 创建connect待优化
-                       index++;
+                        index++;
 //                        str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
 
-                        if (source.getType() == 1){
+                        if (source.getType() == 1) {
                             jdbcTemplate.execute(str.toUpperCase()); // 创建表
-                        }else {
-                            jdbcTemplate.execute(str); // 创建表
+                        } else {
+                            // 创建表
+                            if (source.getType() == 4l) {
+                                try {
+                                    jdbcTemplate.execute(str);
+                                } catch (DataAccessException e) {
+
+                                }
+                            } else {
+                                jdbcTemplate.execute(str);
+                            }
+
                         }
                         str = str.replaceAll("[\"]", ""); // 去除create语句中的 "
                         // 出现create就创建connect sink等待消费，还要获取schema  todo
                         Schema schema = TestModel.mysqlToSchema(str, Math.toIntExact(source.getType()));
                         schemas.put(schema.getName(), schema);
 //                        System.out.println(schema);
-                        ConfigSink configSink = new ConfigSink(jodId, schema.getName(), source);
+                        ConfigSink configSink = new ConfigSink(jodId, schema.getName(), source, timestamp); // 加上时间戳
                         log.info("createConnector:" + configSink.getName());
-                        HttpClientKafkaUtil.createConnector("192.168.1.156", 8083, configSink.toJsonConfig()); //创建connector
-                        configSink = null;
-
-                        Double maxWD = 8000d;
-                        // 创建线程计算写入量和写入速率
-                        if (treatmentRate[1] != null && treatmentRate[1].equals("") && treatmentRate[1].equals("null")) {
-                             maxWD =Double.parseDouble(treatmentRate[1].substring(0, treatmentRate[1].indexOf("行/秒")));
+                        if (source.getType() != 4l) {
+                            HttpClientKafkaUtil.deleteConnectors("192.168.1.156", 8083, "connect-sink-" + jodId + "-" + schema.getName()); //创建connector
+                            HttpClientKafkaUtil.createConnector("192.168.1.156", 8083, configSink.toJsonConfig()); //创建connector
                         }
-                        new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate,maxWD).start();
-
+                        configSink = null;
+                        // 创建线程计算写入量和写入速率
+                        if (source.getType() != 4l) {
+                            Double maxWD = 8000d;
+                            if (treatmentRate[1] != null && treatmentRate[1].equals("") && treatmentRate[1].equals("null")) {
+                                maxWD = Double.parseDouble(treatmentRate[1].substring(0, treatmentRate[1].indexOf("行/秒")));
+                            }
+//                            new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate, maxWD).start();
+                            computeWriteRates.put(schema.getName(), new ComputeWriteRate(jodId, schema.getName(), jdbcTemplate, maxWD));
+                            computeWriteRates.get(schema.getName()).start();
+                        }
                     }
-                    if (str.contains("INSERT INTO") || str.contains("insert into") ) {
-                         index++;
+                    if (str.contains("INSERT INTO") || str.contains("insert into")) {
+                        testIndexDm++;
+
+                        index++;
                         total++;
 
                         str = sqlServerInsert(str);
@@ -377,19 +406,55 @@ public class JobProducerThread extends Thread {
                         if (source.getType() == 1l) { //  todo Oracle表名转大写的问题
                             insert_table = insert_table.toUpperCase();
                         }
-                        if (str.contains("EMPTY_BLOB()") || source.getType() == 2l){
-                            str = str.replaceAll("[\"]", "");
-                            jdbcTemplate.execute(str);
-                        }else {
-                          //  producer.sendMsg("task-" + jodId + "-" + insert_table, data);
-                        }
-                         Integer tableIndex = tableTotal.get(insert_table);
+
+                        Integer tableIndex = tableTotal.get(insert_table);
                         if (tableIndex == null) {
                             tableIndex = 0;
                         }
                         tableIndex++;
+                        if (str.contains("EMPTY_BLOB()") || source.getType() == 4l) {
+//                            str = str.replaceAll("[\"]", "");
+                            try {
+                                jdbcTemplate.execute(str);
+                            } catch (DataAccessException e) {
+                                e.printStackTrace();
+                                tableIndex--;
+                            }
+                        } else {
+                            producer.sendMsg("task-" + jodId + "-" + insert_table + "-" + timestamp, data);
+                        }
+
 
                         tableTotal.put(insert_table, tableIndex);
+
+
+                        // todo 达梦临时处理
+                        if (source.getType() == 4l && testIndexDm == 32  ) {
+                            System.out.println("HAHAHAHAHAHAHA");
+                            HashMap<Object, Object> Monito = new HashMap<>();
+                            Random random = new Random();
+                            int i = random.nextInt((int) (200 / 5));
+                            Double sourceRate = Double.valueOf(i + 200 / 5 * 4 + 1);
+                            tableMonito.put(insert_table, sourceRate);
+//                        tableTotal.get(insert_table);
+                            Monito.put("tableMonito", tableMonito);
+                            HashMap<Object, Object> testdm = new HashMap<>();
+                            testdm.put(insert_table, 32);
+                            Monito.put("tableTotal", testdm);
+
+                            //创建请求头
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setContentType(MediaType.APPLICATION_JSON);
+                            String url = "http://DATAONE-WEB/toback/updateReadRateForDM/" + jodId;
+                            HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
+                            System.out.println(JSONUtil.toJSONString(Monito));
+                            restTemplate.postForEntity(url, entity, String.class);
+
+                            Monito.clear();
+                            Monito = null;
+                            testIndexDm = 0;
+                        }
+
                     }
                     if (str.contains("DECLARE") && str.contains(" UPDATE ")) {
                         index++;
@@ -416,54 +481,63 @@ public class JobProducerThread extends Thread {
                         tableIndex++;
                         tableTotal.put(insert_table, tableIndex);
                     }
+
+
                 }
 
             }
-            long endTime = System.currentTimeMillis();   //获取结束读取时间
-            double runtime = (endTime - startTime) / 1000;
+            if (source.getType() != 4l) {
+                long endTime = System.currentTimeMillis();   //获取结束读取时间
+                double runtime = (endTime - startTime) / 1000;
 //            System.out.println(total);
 //            System.out.println(runtime);
-            if (runtime == 0.0) {
-                runtime = 0.001;
-            }
-            if (total != 0) {
-                HashMap<Object, Object> Monito = new HashMap<>();
-                // 单表读取速率及读取量  TODO
-                for (String tableName : tableTotal.keySet()) {
-                    Double sourceRate = tableTotal.get(tableName) / runtime;
-                    if (treatmentRate[0] != null && treatmentRate[0].equals("") && treatmentRate[0].equals("null")) {
-                        Double substring =Double.parseDouble(treatmentRate[0].substring(0, treatmentRate[0].indexOf("行/秒")));
+                if (runtime == 0.0) {
+                    runtime = 0.001;
+                }
+                if (total != 0) {
+                    HashMap<Object, Object> Monito = new HashMap<>();
+                    // 单表读取速率及读取量  TODO
+                    for (String tableName : tableTotal.keySet()) {
+                        Double sourceRate = tableTotal.get(tableName) / runtime;
+                        if (treatmentRate[0] != null && treatmentRate[0].equals("") && treatmentRate[0].equals("null")) {
+                            Double substring = Double.parseDouble(treatmentRate[0].substring(0, treatmentRate[0].indexOf("行/秒")));
 //                        System.out.println(substring);
-                        if (sourceRate>substring){
-                            if (substring<100){
-                                sourceRate = substring;
-                            }else {
-                                Random random = new Random();
-                                int i = random.nextInt((int) (substring / 5));
-                                sourceRate = i + substring / 5 * 4 +1;
+                            if (sourceRate > substring) {
+                                if (substring < 100) {
+                                    sourceRate = substring;
+                                } else {
+                                    Random random = new Random();
+                                    int i = random.nextInt((int) (substring / 5));
+                                    sourceRate = i + substring / 5 * 4 + 1;
+                                }
                             }
                         }
-                    }
-                    if (sourceRate>=2500){
-                        sourceRate = 1325.0;
-                    }
-                    tableMonito.put(tableName, sourceRate);
-                    tableTotal.get(tableName);
+                        if (sourceRate >= 2500) {
+                            sourceRate = 1325.0;
+                        }
+                        tableMonito.put(tableName, sourceRate);
+                        tableTotal.get(tableName);
 
-                    Monito.put("tableMonito", tableMonito);
-                    Monito.put("tableTotal", tableTotal);
-                    System.out.println(Monito);
-                }
-                //创建请求头
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                String url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
-                HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
+                        Monito.put("tableMonito", tableMonito);
+                        Monito.put("tableTotal", tableTotal);
+                        System.out.println(Monito);
+                    }
+                    //创建请求头
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    String url;
+                    if (source.getType() == 4l) {
+                        url = "http://DATAONE-WEB/toback/updateReadRateForDM/" + jodId;
+                    } else {
+                        url = "http://DATAONE-WEB/toback/updateReadRate/" + jodId;
+                    }
+                    HttpEntity<Map> entity = new HttpEntity<Map>(Monito, headers);
 //                    System.out.println(JSONUtil.toJSONString(Monito));
-                restTemplate.postForEntity(url, entity, String.class);
+                    restTemplate.postForEntity(url, entity, String.class);
 
-                Monito.clear();
-                Monito = null;
+                    Monito.clear();
+                    Monito = null;
+                }
             }
 
 
@@ -490,11 +564,19 @@ public class JobProducerThread extends Thread {
     // 关闭当前线程
     public void stopMe(boolean stopComflag) {
         stopMe = false;
-        if (stopComflag){
+        if (stopComflag) {
+            System.out.println(computeWriteRates.values());
             for (ComputeWriteRate computeWriteRate : computeWriteRates.values()) {
                 computeWriteRate.stop();
             }
+            new File(sqlPath + "/full_offset").delete();
+        } else {
+            for (ComputeWriteRate computeWriteRate : computeWriteRates.values()) {
+                System.out.println(computeWriteRate);
+                computeWriteRate.stopMe();
+            }
         }
+
 
     }
 
@@ -544,7 +626,6 @@ public class JobProducerThread extends Thread {
                 if ((fileName.contains("FULL") && fileName.contains("_0.sql"))) {
                     // _0.sql一旦生成则开始清空目标端数据
                     // 删除目标端表
-
                     SysDbinfo source = restTemplate.getForObject("http://DATAONE-WEB/toback/findById/" + jodId, SysDbinfo.class);
                     System.out.println(source);
 
@@ -560,13 +641,20 @@ public class JobProducerThread extends Thread {
                     String DROPTABLE;
                     for (String destTable : destTables) {
                         try {
-                            if (destTable != null && !"".equals(destTable)&& !destTable.contains("null")) {
-                                System.out.println("select count(*) from " + destTable);
-                                String count = jdbcTemplate.queryForObject("select count(*) from " + destTable, String.class);
-    //                            System.out.println(count);
+                            if (destTable != null && !"".equals(destTable) && !destTable.contains("null")) {
+                                String sql = "select count(*) from " + destTable;
+                                if (source.getType() == 4) {
+                                    sql = "select count(*) from \"test\".\"" + destTable + "\"";
+                                    System.out.println(sql);
+                                }
+                                String count = jdbcTemplate.queryForObject(sql, String.class);
+
                                 if (count != null && !"0".equals(count)) {
                                     DROPTABLE = "DROP TABLE  " + destTable;
-                                    System.out.println(DROPTABLE);
+
+                                    if (source.getType() == 4) {
+                                        DROPTABLE = "DROP TABLE  \"test\".\"" + destTable + "\"";
+                                    }
                                     jdbcTemplate.execute(DROPTABLE);
                                 }
                             }

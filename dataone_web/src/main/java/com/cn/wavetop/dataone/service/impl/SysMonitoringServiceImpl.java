@@ -413,7 +413,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                     // 如果tablerule中没有则代表源表和目的表是一致的;
                     if (sysMonitoringList1 != null && sysMonitoringList1.size() > 0) {
                         if (sysTablerules != null && sysTablerules.size() > 0) {
-                            sysMonitoringList1.get(0).setDestTable(sysTablerules.get(0).getSourceTable());
+                            sysMonitoringList1.get(0).setDestTable(sysTablerules.get(0).getDestTable());
 
                         } else {
                             sysMonitoringList1.get(0).setDestTable(sysMonitoringList1.get(0).getSourceTable());
@@ -505,6 +505,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         String ab = dfs.format(date);
         String cd = dfs.format(date);
         String sum = "-" + num;
+        if(!"undefined".equals(num)) {
         Integer r = Integer.parseInt(sum) + 1;
         ab = DateUtil.dateAdd(ab, r);
         List<SysDataChange> sysDataChanges=new ArrayList<>();
@@ -520,6 +521,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             //获取每天的时间
             Date time = calendar.getTime();
             if(i<Integer.parseInt(num)-1) {
+
                 sysDataChanges = sysDataChangeRepository.findByJobIdAndTime(jobId, dfs.format(time));
                 if (sysDataChanges != null && sysDataChanges.size() > 0) {
                     //不能出现同一天同一个jobid的两条数据
@@ -544,6 +546,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         map.put("data2", list2);
         map.put("data3", list3);
         return map;
+        }else{
+            return ToDataMessage.builder().status("0").message("天数不能为空").build();
+        }
     }
 
     /**
@@ -628,11 +633,12 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 e.printStackTrace();
             }
             if (i < data) {
-                SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
-                if (null != sysDataChange) {
-                    writes.add(sysDataChange.getWriteData());
-                    reads.add(sysDataChange.getReadData());
-                    errors.add(sysDataChange.getErrorData());
+                List<SysDataChange> sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
+//                SysDataChange sysDataChange = sysDataChangeRepository.findByJobIdAndDate(job_id, parse);
+                if (sysDataChange!=null&&sysDataChange.size()>0 ) {
+                    writes.add(sysDataChange.get(0).getWriteData());
+                    reads.add(sysDataChange.get(0).getReadData());
+                    errors.add(sysDataChange.get(0).getErrorData());
                 } else {
                     writes.add(x);
                     reads.add(x);

@@ -112,7 +112,8 @@ public class UserLogController {
 
             Connection conn = LinuxLogin.login(ip);
             try {
-                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-" + date + ".0.log", out1);
+                System.out.println("/opt/dataone/java/bin/kafkacontrolerror-" + date + ".0.log");
+                LinuxLogin.copyFile(conn, "/opt/dataone/java/bin/kafkacontrolerror-" + date + ".0.log", out1);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -204,7 +205,7 @@ public class UserLogController {
                 e.printStackTrace();
             }
             try {
-                LinuxLogin.copyFile(conn, "/opt/dataone/var/log/kafkacontrolerror-" + date + ".0.log", out);
+                LinuxLogin.copyFile(conn, "/opt/dataone/java/bin/kafkacontrolerror-" + date + ".0.log", out);
             } catch (Exception e) {
                 response.setContentType("application/json; charset=utf-8");
                 byte[] b = "{\"message\": \"系统找不到指定文件！\", \"status\": \"404\"}".getBytes();

@@ -124,7 +124,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
         String sssql = "";
         if (sysDbinfo.getType() == 1) {
             //oracle
-            sssql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo2.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
+            sssql = "SELECT TABLE_NAME FROM DBA_ALL_TABLES WHERE OWNER='" + sysDbinfo.getSchema() + "'AND TEMPORARY='N' AND NESTED='NO'";
         } else if (sysDbinfo.getType() == 2) {
             //mysql
             sssql = "show tables";
@@ -418,7 +418,7 @@ public class SysFieldruleServiceImpl implements SysFieldruleService {
                 }
             }
             //表相同但是字段发生映射改变，表也要存入tablerule
-            if (flag) {
+            if (source_name.equals(dest_name)&&flag) {
                 byJobIdAndSourceTable = new SysTablerule();
                 byJobIdAndSourceTable.setDestTable(dest_name);
                 byJobIdAndSourceTable.setJobId(job_id);

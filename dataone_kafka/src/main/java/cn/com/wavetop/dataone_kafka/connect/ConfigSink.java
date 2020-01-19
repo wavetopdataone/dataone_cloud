@@ -51,6 +51,28 @@ public class ConfigSink {
 
     }
 
+    public ConfigSink(long jobId, String destTable, SysDbinfo sysDbinfo,long timestamp) {
+        this.name = "connect-sink-" + jobId + "-" + destTable;
+        this.topics = "task-" + jobId + "-" + destTable+ "-" +timestamp;
+        this.table_name_format = destTable;
+//        this.errors_deadletterqueue_topic_name = "error-logs-" + jobId + "-" + destTable;
+
+        if (sysDbinfo.getType() == 1L) {
+            this.connection_url = "jdbc:oracle:thin:@" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + ":orcl";
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
+        } else if (sysDbinfo.getType() == 2L) {
+            this.connection_url = "jdbc:mysql://" + sysDbinfo.getHost() + ":" + sysDbinfo.getPort() + "/" + sysDbinfo.getDbname() + "?user=" + sysDbinfo.getUser() + "&password=" + sysDbinfo.getPassword();
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
+        } else if (sysDbinfo.getType() == 3L) {
+            this.connection_url = "jdbc:sqlserver://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+";databaseName="+sysDbinfo.getDbname();
+            this.connection_user = sysDbinfo.getUser();
+            this.connection_password = sysDbinfo.getPassword();
+        }
+
+    }
+
     public String toJsonConfig() {
         Map<String, Object> name = new HashMap<>();
         Map<String, Object> config = new HashMap<>();

@@ -16,7 +16,7 @@ public interface SysDataChangeRepository extends JpaRepository<SysDataChange,Lon
     @Query("select s from SysDataChange s where s.jobId=:jobId and s.createTime like CONCAT(:createTime,'%')")
     List<SysDataChange> findByJobIdAndTime(Long jobId, String createTime);
     @Query(value="from SysDataChange sd where sd.jobId=:job_id and sd.createTime = :parse")
-    SysDataChange findByJobIdAndDate(long job_id,Date parse);
+    List<SysDataChange> findByJobIdAndDate(long job_id,Date parse);
     @Modifying
     @Query("delete from SysDataChange where jobId = :jobId")
     int deleteByJobId(Long jobId);

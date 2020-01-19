@@ -57,7 +57,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         if(endTime!=null&&!"null".equals(endTime)) {
             endDate= DateUtil.dateAdd(endTime,1);
         }
-        if(PermissionUtils.isPermitted("1")||PermissionUtils.isPermitted("2")){
+//        if(PermissionUtils.isPermitted("1")||PermissionUtils.isPermitted("2")){
             try {
                 String finalEndDate = endDate;
                 Specification<ErrorLog> querySpecifi = new Specification<ErrorLog>() {
@@ -111,24 +111,31 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
                 map.put("status","0");
                 map.put("message","异常");
             }
-        }else {
-            map.put("status","0");
-            map.put("message","权限不足");
-        }
+//        }else {
+//            map.put("status","0");
+//            map.put("message","权限不足");
+//        }
         return map;
     }
     @Transactional
     @Override
     public Object addErrorlog(ErrorLog errorLog) {
+        HashMap<Object, Object> map = new HashMap();
 
+        if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
         if (repository.existsById(errorLog.getId())) {
             return ToData.builder().status("0").message("任务已存在").build();
         } else {
             ErrorLog saveData = repository.save(errorLog);
-            HashMap<Object, Object> map = new HashMap();
+
             map.put("status", 1);
             map.put("message", "添加成功");
             map.put("data", saveData);
+            return map;
+        }
+        }else{
+            map.put("status", 0);
+            map.put("message", "权限不足");
             return map;
         }
     }
@@ -139,6 +146,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         HashMap<Object, Object> map = new HashMap();
 
         long id = errorLog.getId();
+        if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
 
         // 查看该任务是否存在，存在修改更新任务，不存在新建任务
         if (repository.existsById(id)) {
@@ -164,6 +172,11 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
             map.put("data", data);
         }
         return map;
+        }else{
+            map.put("status", 0);
+            map.put("message", "权限不足");
+            return map;
+        }
     }
 
     @Transactional
@@ -172,7 +185,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         HashMap<Object, Object> map = new HashMap();
         String []id=ids.split(",");
         // 查看该任务是否存在，存在删除任务，返回数据给前端
-        if(id!=null) {
+        if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
+
+            if(id!=null) {
             for (String idss : id) {
 
                 repository.deleteById(Long.valueOf(idss));
@@ -185,6 +200,11 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         Userlog  build2 = Userlog.builder().time(new Date()).user(PermissionUtils.getSysUser().getLoginName()).jobName(sysJobrela.get().getJobName()).operate(PermissionUtils.getSysUser().getLoginName()+"忽略了错误队列"+sysJobrela.get().getJobName()+"的数据").jobId(jobId).build();
         userLogRepository.save(build2);
         return map;
+        }else{
+            map.put("status", 0);
+            map.put("message", "权限不足");
+            return map;
+        }
     }
     //根据任务id查询
     @Override
@@ -270,7 +290,9 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
     public Object resetErrorlog(Long jobId,String ids) {
         HashMap<Object, Object> map = new HashMap();
         String []id=ids.split(",");
-        // 查看该任务是否存在，存在删除任务，返回数据给前端
+        if (PermissionUtils.isPermitted("2") || PermissionUtils.isPermitted("3")) {
+
+            // 查看该任务是否存在，存在删除任务，返回数据给前端
         Producer producer = new Producer(null);
         for(String idss:id) {
 
@@ -286,6 +308,11 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         userLogRepository.save(build2);
         producer.stop();
         return map;
+        }else{
+            map.put("status", 0);
+            map.put("message", "权限不足");
+            return map;
+        }
     }
 
     @Autowired

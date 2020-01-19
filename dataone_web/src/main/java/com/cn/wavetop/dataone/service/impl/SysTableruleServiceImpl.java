@@ -201,7 +201,8 @@ public class SysTableruleServiceImpl implements SysTableruleService {
             List<SysJobrelaRelated> sysJobrelaRelateds = sysJobrelaRelatedRespository.findByMasterJobId(sysTablerule.getJobId());
             if (sysTableruleList != null && sysTableruleList.size() > 0) {
                 //若是修改主任务则先删除标规则字段规则
-                sysTableruleRepository.deleteByJobId(sysTablerule.getJobId());
+//                sysTableruleRepository.deleteByJobId(sysTablerule.getJobId());
+                sysTableruleRepository.deleteByJobIdAndVarFlag(sysTablerule.getJobId(),1L);
                 sysFilterTableRepository.deleteByJobId(sysTablerule.getJobId());
 //                if(PermissionUtils.isPermitted("3")) {
                 if (sysJobrelaRelateds != null && sysJobrelaRelateds.size() > 0) {
@@ -218,6 +219,9 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                 SysFilterTable sysFilterTable = null;
                 //添加过滤的表
                 for (int i = 0; i < stringList.size(); i++) {
+                    //todo如果修改的过得字段 下次表被过滤了 删除
+                    sysFieldruleRepository.deleteByJobIdAndSourceName(sysTablerule.getJobId(),stringList.get(i));
+                    sysTableruleRepository.deleteByJobIdAndSourceTable(sysTablerule.getJobId(),stringList.get(i));
                     sysFilterTable = new SysFilterTable();
                     sysTablerule2 = new SysTablerule();
                     sysTablerule2.setJobId(sysTablerule.getJobId());
@@ -246,6 +250,8 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                 SysFilterTable sysFilterTable = null;
                 //添加过滤的表
                 for (int i = 0; i < stringList.size(); i++) {
+                    //todo如果修改的过得字段 下次表被过滤了 删除
+                    sysFieldruleRepository.deleteByJobIdAndSourceName(sysTablerule.getJobId(),stringList.get(i));
                     sysTablerule2 = new SysTablerule();
                     sysFilterTable = new SysFilterTable();
                     sysTablerule2.setJobId(sysTablerule.getJobId());

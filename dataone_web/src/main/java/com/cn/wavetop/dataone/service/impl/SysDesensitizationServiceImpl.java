@@ -50,6 +50,7 @@ public class SysDesensitizationServiceImpl implements SysDesensitizationService 
                 if (list != null && list.size() > 0) {
 
                     list.get(0).setDestField(destName[i]);
+                    list.get(0).setDestTable(sysDesensitization.getDestTable());
                     list.get(0).setDesensitizationWay(sysDesensitization.getDesensitizationWay());
 //                   if("2".equals(sysDesensitization.getDesensitizationWay())) {
                        list.get(0).setRemark(sysDesensitization.getRemark());

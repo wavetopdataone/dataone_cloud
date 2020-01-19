@@ -26,4 +26,6 @@ public interface SysTableruleRepository extends JpaRepository<SysTablerule,Long>
 
     @Query(value = "from SysTablerule st where job_id = :jobId and dest_table = :destTable")
     List<SysTablerule> findByJobIdAndDestTable(Long jobId,String destTable);
+    int  deleteByJobIdAndVarFlag(long job_id,Long varflag);
+    int deleteByJobIdAndSourceTable(long job_id,String sourceName);
 }

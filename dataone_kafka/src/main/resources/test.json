@@ -3,21 +3,97 @@
     "type": "struct",
     "fields": [
       {
-        "field": "T_ID",
+        "field": "dept_id",
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "field": "parent_id",
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "field": "ancestors",
         "optional": true,
         "type": "string"
       },
       {
-        "field": "T_IMAGE",
+        "field": "dept_name",
         "optional": true,
-        "type": "bytes"
+        "type": "string"
+      },
+      {
+        "field": "order_num",
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "field": "leader",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "phone",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "email",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "status",
+        "optional": true,
+        "type": "char(1)"
+      },
+      {
+        "field": "del_flag",
+        "optional": true,
+        "type": "char(1)"
+      },
+      {
+        "field": "create_by",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "create_time",
+        "name": "org.apache.kafka.connect.data.Timestamp",
+        "optional": true,
+        "type": "int64",
+        "version": 1
+      },
+      {
+        "field": "update_by",
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "field": "update_time",
+        "name": "org.apache.kafka.connect.data.Timestamp",
+        "optional": true,
+        "type": "int64",
+        "version": 1
       }
     ],
     "optional": false,
-    "name": "IMAGE_LOB"
+    "name": "sys_dept"
   },
   "payload": {
-    "T_IMAGE": "EMPTY_BLOB()",
-    "T_ID": "2"
+    "leader": "??",
+    "del_flag": "0",
+    "create_time": 1521171180000,
+    "dept_name": "?????",
+    "create_by": "admin",
+    "update_time": 1521171180000,
+    "phone": "15888888888",
+    "parent_id": 100,
+    "order_num": 1,
+    "dept_id": 101,
+    "ancestors": "0,100",
+    "update_by": "ry",
+    "email": "ry@qq.com",
+    "status": "0"
   }
 }

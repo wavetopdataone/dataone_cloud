@@ -49,7 +49,15 @@ public class SpringJDBCUtils {
             dataSource.setUrl(url);
             dataSource.setUsername(sysDbinfo.getUser());
             dataSource.setPassword(sysDbinfo.getPassword());
+        }else if (sysDbinfo.getType() ==4) {
+            //1. 创建JdbcTemplate
+            String url = "jdbc:dm://"+sysDbinfo.getHost()+":"+sysDbinfo.getPort()+"/"+sysDbinfo.getDbname();
+            dataSource.setDriverClassName("dm.jdbc.driver.DmDriver");
+            dataSource.setUrl(url);
+            dataSource.setUsername(sysDbinfo.getUser());
+            dataSource.setPassword(sysDbinfo.getPassword());
         }
+
 
         return new JdbcTemplate(dataSource);
 
