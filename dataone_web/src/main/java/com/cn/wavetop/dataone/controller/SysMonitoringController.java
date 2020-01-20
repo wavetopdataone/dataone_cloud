@@ -89,8 +89,8 @@ public class SysMonitoringController {
     }
     @ApiOperation(value = "插入目标表名,显示该记录", protocols = "HTTP", produces = "application/json", notes = "插入目标表名,显示该记录")
     @RequestMapping("/table_monitoring")
-    public Object tableMonitoring(long job_id){
-        return sysMonitoringService.tableMonitoring(job_id);
+    public Object tableMonitoring(long job_id,Integer current,Integer size){
+        return sysMonitoringService.tableMonitoring(job_id, current, size);
     }
     @ApiOperation(value = "速率折线图数据", protocols = "POST", produces = "application/json", notes = "速率折线图数据")
     @PostMapping("/syncMonitoring")
@@ -130,8 +130,8 @@ public class SysMonitoringController {
      */
     @ApiOperation(value = "根据表名模糊和状态查询", protocols = "POST", produces = "application/json", notes = "根据表名模糊和状态查询")
     @PostMapping("/findTableAndStatus")
-   public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id){
-        return sysMonitoringService.findTableAndStatus(source_table,jobStatus,job_id);
+   public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id,Integer current,Integer size){
+        return sysMonitoringService.findTableAndStatus(source_table,jobStatus,job_id,current,size);
    }
 
 

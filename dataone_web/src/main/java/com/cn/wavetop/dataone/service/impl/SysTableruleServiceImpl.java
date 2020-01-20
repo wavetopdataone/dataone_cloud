@@ -119,11 +119,24 @@ public class SysTableruleServiceImpl implements SysTableruleService {
             }
         }
 
+        List<String> sortlist=new ArrayList<String>();
 
         for (String s : stringList) {
-            list.add(SysTablerule.builder().sourceTable(s).build());
+            sortlist.add(s);
+//            list.add(SysTablerule.builder().sourceTable(s).build());
         }
-        return ToData.builder().status("1").data(list).build();
+        //按照首字符排序
+        Collections.sort(sortlist, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
+//        for (String s : sortlist) {
+//
+//            list.add(SysTablerule.builder().sourceTable(s).build());
+//        }
+        return ToData.builder().status("1").data(sortlist).build();
 
     }
 
@@ -432,6 +445,13 @@ public class SysTableruleServiceImpl implements SysTableruleService {
                 }
             }
         }
+        //按照首字符排序
+        Collections.sort(stringList, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         return ToData.builder().status("1").data(stringList).build();
     }
 
@@ -474,18 +494,23 @@ public class SysTableruleServiceImpl implements SysTableruleService {
         } else {
             stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
         }
-        List<SysMapTable> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         SysMapTable sysMapTable=null;
 
           if(stringList!=null&&stringList.size()>0){
             for (String name : stringList) {
                 if (name.toUpperCase().contains(tableName.toUpperCase())) {
-                    sysMapTable=new SysMapTable();
-                    sysMapTable.setSourceTable(name);
-                    list.add(sysMapTable);
+                    list.add(name);
                 }
             }
         }
+        //按照首字符排序
+        Collections.sort(list, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         return ToData.builder().status("1").data(list).build();
     }
 

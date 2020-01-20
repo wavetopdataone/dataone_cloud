@@ -13,7 +13,7 @@ public interface SysMonitoringService {
     Object findLike(String source_table,long job_id);
     Object dataRate(long job_id);
     Object showMonitoring(long job_id);
-    Object tableMonitoring(long job_id);
+    Object tableMonitoring(long job_id,Integer current,Integer size);
     Object SyncMonitoring(Long jobId,String num);
 
     void updateReadMonitoring(long id, Long readData,String table);
@@ -24,5 +24,5 @@ public interface SysMonitoringService {
     //写入设置查询表名
     Object selTable(Long jobId);
       //根据状态和表名查询
-    Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id);
+    Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id,Integer current,Integer size);
 }

@@ -3,6 +3,7 @@ package com.cn.wavetop.dataone.dao;
 import com.cn.wavetop.dataone.entity.SysMonitoring;
 import com.cn.wavetop.dataone.entity.SysRela;
 import com.cn.wavetop.dataone.entity.Userlog;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -17,6 +18,7 @@ import java.util.List;
 public interface SysMonitoringRepository extends JpaRepository<SysMonitoring,Long>, JpaSpecificationExecutor<SysMonitoring> {
 
     List<SysMonitoring> findByJobId(long job_id);
+    List<SysMonitoring> findByJobId(long job_id, Pageable pageable);
     List<SysMonitoring> findById(long id);
     List<SysMonitoring> findBySourceTableContainingAndJobId(String source_table,long job_id);
     List<SysMonitoring> findBySourceTableAndJobId(String source_table,long job_id);

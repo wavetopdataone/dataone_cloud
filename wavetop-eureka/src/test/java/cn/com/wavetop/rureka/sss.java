@@ -7,7 +7,29 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class sss {
+@Test
+public void ss(){
+    int index=1;
 
+    String c;
+    for(int i=0;i<1000;i++){
+         index++;
+        StringBuffer  stringBuffer=new StringBuffer("CREATE TABLE ");
+        c="`index"+index+"`";
+        stringBuffer.append(c);
+        stringBuffer.append("(\n" +
+                "  `id` int(11) NOT NULL AUTO_INCREMENT,\n" +
+                "  `job_id` int(11) NULL DEFAULT NULL,\n" +
+                "  `delete_syncing_source` int(11) NULL DEFAULT NULL,\n" +
+                "  `delete_sync` int(11) NULL DEFAULT NULL,\n" +
+                "  `new_sync` int(11) NULL DEFAULT NULL,\n" +
+                "  `newtable_source` int(11) NULL DEFAULT NULL,\n" +
+                "  PRIMARY KEY (`id`) USING BTREE\n" +
+                ") ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;\n" );
+
+        System.out.println(stringBuffer);
+    }
+}
     @Test
     public void show(){
         Set<String> set=new TreeSet<>();

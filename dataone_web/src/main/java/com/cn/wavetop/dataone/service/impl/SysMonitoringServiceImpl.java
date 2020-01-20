@@ -11,6 +11,10 @@ import com.cn.wavetop.dataone.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -151,7 +155,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
     }
 
     //根据状态和表名查询table
-    public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id){
+    public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id,Integer current,Integer size){
+        Pageable pageable = new PageRequest(current - 1, size, Sort.Direction.DESC, "id");
+
         Map<Object, Object> map = new HashMap<>();
         List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
         List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
@@ -176,9 +182,9 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 return criteriaQuery.getRestriction();
             }
         };
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findAll(querySpecifi);
-        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
-            for (SysMonitoring sysMonitoring : sysMonitoringList) {
+        Page<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findAll(querySpecifi,pageable);
+        if (sysMonitoringList != null && sysMonitoringList.getContent().size() > 0) {
+            for (SysMonitoring sysMonitoring : sysMonitoringList.getContent()) {
                 sysMonitoring2 = new SysMonitoring();
                 sysMonitoring3 = new SysMonitoring();
                 //源端
@@ -199,6 +205,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
             map.put("status", "1");
             map.put("data1", sysMonitoringList2);
             map.put("data2", sysMonitoringList3);
+            map.put("totalCount", sysMonitoringList.getTotalElements());
         } else {
             map.put("data1", sysMonitoringList2);
             map.put("data2", sysMonitoringList3);
@@ -394,12 +401,15 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
     @Transactional
     @Override
-    public Object tableMonitoring(long job_id) {
+    public Object tableMonitoring(long job_id,Integer current,Integer size) {
+        Pageable pageable = new PageRequest(current - 1, size, Sort.Direction.ASC, "id");
+
         Map<Object, Object> map = new HashMap<>();
         List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();
         List<SysMonitoring> sysMonitoringList3 = new ArrayList<>();
         SysMonitoring sysMonitoring2 = null;
         SysMonitoring sysMonitoring3 = null;
+
         try {
             List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
             List<SysTablerule> sysTablerules = new ArrayList<SysTablerule>();
@@ -457,8 +467,17 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                     }
 
                 }
-                sysMonitoringList = sysMonitoringRepository.findByJobId(job_id);
-                for (SysMonitoring sysMonitoring : sysMonitoringList) {
+                Specification<SysMonitoring> querySpecifi = new Specification<SysMonitoring>() {
+                    @Override
+                    public Predicate toPredicate(Root<SysMonitoring> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder cb) {
+                        List<Predicate> predicates = new ArrayList<>();
+                        predicates.add(cb.equal(root.get("jobId").as(Long.class), job_id));
+                        criteriaQuery.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+                        return criteriaQuery.getRestriction();
+                    }
+                };
+                Page<SysMonitoring> sysMonitoringPage = sysMonitoringRepository.findAll(querySpecifi,  pageable);
+                for (SysMonitoring sysMonitoring : sysMonitoringPage.getContent()) {
                     sysMonitoring2 = new SysMonitoring();
                     sysMonitoring3 = new SysMonitoring();
                     //源端
@@ -477,6 +496,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 map.put("status", "1");
                 map.put("data1", sysMonitoringList2);
                 map.put("data2", sysMonitoringList3);
+                map.put("totalCount", sysMonitoringPage.getTotalElements());
                 return map;
             } else {
                 return ToDataMessage.builder().status("0").message("没有查到数据").build();
@@ -708,7 +728,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
         String sql="";
         SysDbinfo sysDbinfo=new SysDbinfo();
         List<SysTablerule> list=new ArrayList<SysTablerule>();
-
+        List<String> sortlist=new ArrayList<String>();
         //查詢关联的数据库连接表jobrela
         SysJobrela sysJobrelaList=sysJobrelaRepository.findById((long)jobId);
         //查询到数据库连接
@@ -740,13 +760,23 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
                 stringList = DBConns.getConn(sysDbinfo, tablerule, sql);
             }
             for(String s:stringList){
-                list.add(SysTablerule.builder().sourceTable(s).build());
+                sortlist.add(s);
             }
         } catch (Exception e) {
             logger.error("异常",e);
             e.printStackTrace();
         }
-        return ToData.builder().status("1").data(list).build();
+        //按照首字符排序
+        Collections.sort(sortlist, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
+//        for(String a:sortlist){
+//            list.add(SysTablerule.builder().sourceTable(a).build());
+//        }
+        return ToData.builder().status("1").data(sortlist).build();
     }
 
 
