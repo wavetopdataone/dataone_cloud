@@ -300,6 +300,7 @@
                             <include>${project.artifactId}-${project.version}.jar</include>
                         </resource>
                     </resources>
+                    <dockerHost>http://192.168.1.143:2375</dockerHost>
                 </configuration>
             </plugin>
         </plugins>
