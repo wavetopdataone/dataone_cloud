@@ -83,14 +83,14 @@
 
 
         <!--        <dependency>-->
-<!--            <groupId>log4j</groupId>-->
-<!--            <artifactId>log4j</artifactId>-->
-<!--            <version>1.2.17</version>-->
-<!--        </dependency>-->
-<!--        <dependency> &lt;!&ndash; 引入log4j2依赖 &ndash;&gt;-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
-<!--        </dependency>-->
+        <!--            <groupId>log4j</groupId>-->
+        <!--            <artifactId>log4j</artifactId>-->
+        <!--            <version>1.2.17</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency> &lt;!&ndash; 引入log4j2依赖 &ndash;&gt;-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
+        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
         <dependency>
@@ -254,10 +254,10 @@
         </dependency>
 
         <!--        <dependency>-->
-<!--            <groupId>mysql</groupId>-->
-<!--            <artifactId>mysql-connector-java</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--        </dependency>-->
+        <!--            <groupId>mysql</groupId>-->
+        <!--            <artifactId>mysql-connector-java</artifactId>-->
+        <!--            <scope>runtime</scope>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>com.dameng</groupId>
             <artifactId>Dm7JdbcDriver17</artifactId>
@@ -272,10 +272,38 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <!--docker镜像相关的配置信息-->
+                <configuration>
+                    <!--镜像名，这里用工程名-->
+                    <imageName>${project.artifactId}-${project.version}</imageName>
+                    <!--Dockerfile文件所在目录-->
+                    <dockerDirectory>${project.basedir}/src/main/resources</dockerDirectory>
+                    <!--TAG,这里用工程版本号-->
+                    <imageTags>
+                        <imageTag>${project.version}</imageTag>
+                    </imageTags>
+                    <registryUrl>192.168.1.143:5000</registryUrl>
+                    <pushImage>true</pushImage>
+                    <imageName>192.168.1.143:5000/${project.artifactId}:${project.version}</imageName>
+                    <!--构建镜像的配置信息-->
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.artifactId}-${project.version}.jar</include>
+                        </resource>
+                    </resources>
+                </configuration>
             </plugin>
         </plugins>
     </build>
