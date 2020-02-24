@@ -338,9 +338,9 @@ public class ToBackController {
      */
     @PostMapping("/insertErrorLog")
     public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
-                            @RequestParam String message){
+                            @RequestParam String message/*,@RequestParam Long offset*/){
 
-        errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message);
+        errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message/*,offset*/);
     }
 
     /**

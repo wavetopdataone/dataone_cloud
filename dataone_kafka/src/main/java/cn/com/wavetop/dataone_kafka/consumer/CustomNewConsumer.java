@@ -36,9 +36,9 @@ public class CustomNewConsumer {
 			records = consumer.poll(100);
 			if(!records.isEmpty()) {
 				break;
-			}/*else {
+			}else {
 				return null;
-			}*/
+			}
 			//这里可以加一个records为空的情况
 		}
 		//System.out.println(records.count());
