@@ -98,7 +98,7 @@ public interface ToBackClient {
      */
     @PostMapping("/toback/insertErrorLog")
     public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
-                            @RequestParam String message);
+                            @RequestParam String message/*,@RequestParam Long offset*/);
 
 
     /**

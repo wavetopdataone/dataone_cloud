@@ -138,7 +138,7 @@ public class CustomConsumer3 extends Thread {
                                             System.out.println("sourceTable = " + sourceTable);
                                             //远程调用插入错误日志信息
                                             if (message != null) {
-                                                toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
+                                                toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message/*,offset*/);
                                             }
                                         }
                                     }
@@ -181,7 +181,7 @@ public class CustomConsumer3 extends Thread {
                                     //远程调用插入错误日志信息
                                     if (message != null) {
 
-                                        toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
+                                        toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message/*,offset*/);
                                     }
                                 }
                             }
@@ -314,6 +314,7 @@ public class CustomConsumer3 extends Thread {
                                                 //远程调用插入错误日志信息
                                                 if (message != null) {
                                                     toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message);
+                                                    toBackClient.insertError(jobId, sourceTable, destTable, time, errortype, message/*,offset*/);
                                                 }
                                             }
                                         }

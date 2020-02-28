@@ -323,7 +323,7 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
      */
     @Transactional
     @Override
-    public void insertError(Long jobId,String sourceTable, String destTable, String time,String errortype,String message) {
+    public void insertError(Long jobId,String sourceTable, String destTable, String time,String errortype,String message/*,Long offset*/) {
         ErrorLog errorLog = new ErrorLog();
         errorLog.setJobId(jobId);
         errorLog.setSourceName(sourceTable);
@@ -338,22 +338,25 @@ public class ErrorLogServiceImpl  implements ErrorLogService {
         errorLog.setOptTime(parse);
         errorLog.setOptType(errortype);
         errorLog.setContent(message);
-        long count = errorLogRespository.count();
         Optional<SysJobrela> sysJobrela= sysJobrelaRespository.findById(jobId);
         String jobName = sysJobrela.get().getJobName();
-        if (count>=100000) {
-            Userlog build2 = Userlog.builder().time(new Date()).jobName(jobName).operate("错误队列"+jobName+"已达上限，请处理后重启").jobId(jobId).build();
-            String jobStatus = sysJobrela.get().getJobStatus();
-            //0是待激活,1是运行,2是暂停,3是终止,4是异常,5是待完善,11运行状态,21是暂停状态
-            if (!"2".equals(jobStatus) && !"21".equals(jobStatus) && !"4".equals(jobStatus)){
-                sysJobrela.get().setJobStatus("21");//改为暂停
-                sysJobrelaRespository.save(sysJobrela.get());
+        //每一千次判断一次总数
+        //if (offset % 1000 == 0) {
+            long count = errorLogRespository.count();
+            if (count >= 100000) {
+                Userlog build2 = Userlog.builder().time(new Date()).jobName(jobName).operate("错误队列" + jobName + "已达上限，请处理后重启").jobId(jobId).build();
+                String jobStatus = sysJobrela.get().getJobStatus();
+                //0是待激活,1是运行,2是暂停,3是终止,4是异常,5是待完善,11运行状态,21是暂停状态
+                if (!"2".equals(jobStatus) && !"21".equals(jobStatus) && !"4".equals(jobStatus)) {
+                    sysJobrela.get().setJobStatus("21");//改为暂停
+                    sysJobrelaRespository.save(sysJobrela.get());
+                    userLogRepository.save(build2);
+                }
+            } else if (count >= 90000 && count < 100000) {
+                Userlog build2 = Userlog.builder().time(new Date()).jobName(jobName).operate("错误队列" + jobName + "已接近上限").jobId(jobId).build();
                 userLogRepository.save(build2);
             }
-        }else if(count>=90000 && count<100000){
-            Userlog build2 = Userlog.builder().time(new Date()).jobName(jobName).operate("错误队列"+jobName+"已接近上限").jobId(jobId).build();
-            userLogRepository.save(build2);
-        }
+        //}
         repository.save(errorLog);
     }
 }

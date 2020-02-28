@@ -43,10 +43,6 @@ public class ToBackController {
     private KafkaDestTableRepository kafkaDestTableRepository;
     @Autowired
     private SysRealTimeMonitoringRepository sysRealTimeMonitoringRepository;
-    @Autowired
-    private SysJobrelaRespository jobrelaRespository;
-    @Autowired
-    private SysTableruleRespository sysTableruleRespository;
 
     /**
      * 根据jobid查询数据信息
@@ -54,7 +50,7 @@ public class ToBackController {
      * @param jobId
      * @return
      */
-    @ApiOperation(value = "后台查询job状态", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "后台查询")
+    @ApiOperation(value = "后台查询", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "后台查询")
     @GetMapping("/findById/{jobId}")
     public Object findDbinfoById(@PathVariable Long jobId) {
 
@@ -107,10 +103,8 @@ public class ToBackController {
     @ApiOperation(value = "查询监控目的表", httpMethod = "GET", protocols = "HTTP", produces = "application/json", notes = "查询监控目的表")
     @GetMapping("/find_destTable/{Id}")
     public Object monitoringTable(@PathVariable long Id) {
-        // todo
         String str = "";
         String dbName = "";
-        String destTable;
         List<String> list = new ArrayList<>();
         SysJobrela sysJobrela = sysJobrelaRespository.findById(Id);
         Optional<SysDbinfo> sysDbinfo = sysDbinfoRespository.findById(sysJobrela.getDestId());
@@ -122,28 +116,11 @@ public class ToBackController {
         List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(Id);
         if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
             for (SysMonitoring sysMonitoring : sysMonitoringList) {
-                destTable = sysMonitoring.getDestTable();
                 if (!"".equals(dbName) && dbName != null) {
-                    if (destTable == null || "".equals(destTable)) {
-                        List<SysTablerule> SysTablerules = sysTableruleRespository.findByJobIdAndSourceTableAndVarFlag(Id, sysMonitoring.getSourceTable(), 2l);
-                        if (SysTablerules == null || SysTablerules.size() <= 0) {
-                            destTable = sysMonitoring.getSourceTable();
-                        } else {
-                            destTable = SysTablerules.get(0).getDestTable();
-                        }
-                    }
-                    str = dbName + "." + destTable;
+                    str = dbName + "." + sysMonitoring.getDestTable();
                     list.add(str);
                 } else {
-                    if (destTable == null || "".equals(destTable)) {
-                        List<SysTablerule> SysTablerules = sysTableruleRespository.findByJobIdAndSourceTableAndVarFlag(Id, sysMonitoring.getSourceTable(), 2l);
-                        if (SysTablerules == null || SysTablerules.size() <= 0) {
-                            destTable = sysMonitoring.getSourceTable();
-                        } else {
-                            destTable = SysTablerules.get(0).getDestTable();
-                        }
-                    }
-                    list.add(destTable);
+                    list.add(sysMonitoring.getDestTable());
                 }
             }
         }
@@ -190,13 +167,6 @@ public class ToBackController {
         }
     }
 
-    @GetMapping("/findStatusById/{jobId}")
-    public String findStatusById(@PathVariable Long jobId) {
-        long jobid = jobId;
-        SysJobrela sysJobrela = jobrelaRespository.findById(jobid);
-        return sysJobrela.getJobStatus();
-    }
-
     /**
      * 分表更新读监听数据
      *
@@ -220,45 +190,15 @@ public class ToBackController {
                 for (SysMonitoring sysMonitoring : sysMonitoringList) {
 
                     String destTable = sysMonitoring.getDestTable();
-                    String SourceTable;
                     if (destTable == null || "".equals(destTable)) {
-                        SourceTable = sysMonitoring.getSourceTable();
-
-                        List<SysTablerule> findresult = sysTableruleRespository.findByJobIdAndSourceTableAndVarFlag(sysMonitoring.getJobId(), SourceTable, 2L);
-
-
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-                        System.out.println(findresult);
-
-
-                        if (findresult == null) {
-                            destTable = SourceTable;
-                        } else {
-                            destTable = findresult.get(0).getDestTable();
-                        }
-
-//                        sysMonitoring.setDestTable(destTable);
+                        destTable = sysMonitoring.getSourceTable();
+                        sysMonitoring.setDestTable(destTable);
                     }
                     if (table.equalsIgnoreCase(destTable)) {
                         Double readRate = Double.parseDouble(tableMonito.get(table).toString());
 //                        System.out.println(tableTotal.get(table));
                         long readData = Long.parseLong(tableTotal.get(table).toString());
-                        sysMonitoringRepository.updateReadMonitoring2(sysMonitoring.getId(), sysMonitoring.getReadData() + readData, new Date(), new Double(readRate).longValue(), destTable);
+                        sysMonitoringRepository.updateReadMonitoring2(sysMonitoring.getId(),sysMonitoring.getReadData() + readData,new Date(),new Double(readRate).longValue(), sysMonitoring.getDestTable());
                         // 更新实时表
                         SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(table).readRate(readRate).readAmount((int) readData).build();
                         sysRealTimeMonitoringRepository.save(sysRealTimeMonitoring);
@@ -294,43 +234,6 @@ public class ToBackController {
 
     }
 
-    @ApiOperation(value = "new读取速率", httpMethod = "POST", protocols = "HTTP", produces = "application/json", notes = "插入读取速率")
-    @PostMapping("/updateReadRateForDM/{jobId}")
-    public void updateReadRateForDM(@PathVariable Long jobId, @RequestBody Map<String, Map> Monito) {
-        //todo 后面要分表
-        Map<String, Object> tableMonito = Monito.get("tableMonito");
-        Map<String, Object> tableTotal = Monito.get("tableTotal");
-        System.out.println(Monito);
-        System.out.println(tableTotal);
-        List<SysMonitoring> sysMonitoringList = sysMonitoringRepository.findByJobId(jobId);
-
-        if (sysMonitoringList != null && sysMonitoringList.size() > 0) {
-            for (String table : tableTotal.keySet()) {
-                for (SysMonitoring sysMonitoring : sysMonitoringList) {
-
-                    String destTable = sysMonitoring.getDestTable();
-                    if (destTable == null || "".equals(destTable)) {
-                        destTable = sysMonitoring.getSourceTable();
-//                        sysMonitoring.setDestTable(destTable);
-                    }
-                    if (table.equalsIgnoreCase(destTable)) {
-                        Double readRate = Double.parseDouble(tableMonito.get(table).toString());
-//                        System.out.println(tableTotal.get(table));
-                        long readData = Long.parseLong(tableTotal.get(table).toString());
-                        sysMonitoringRepository.updateReadMonitoring2ForDm(sysMonitoring.getId(), sysMonitoring.getReadData() + readData, new Date(), new Double(readRate).longValue(), destTable);
-                        // 更新实时表
-                        SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(table).writeRate(readRate).readRate(readRate).readAmount((int) readData).writeAmount((int) readData).build();
-                        sysRealTimeMonitoringRepository.save(sysRealTimeMonitoring);
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
-
     /**
      * 分表更新读监听数据
      *
@@ -342,7 +245,7 @@ public class ToBackController {
     @PostMapping("/getTreatmentRate/{jobId}")
     public String getTreatmentRate(@PathVariable Long jobId) {
         SysJobinfo sysJobinfo = sysJobinfoRespository.findByJobId(jobId);
-        return sysJobinfo.getMaxSourceReadTo() + "|" + sysJobinfo.getMaxDestWriteTo();
+        return sysJobinfo.getMaxSourceReadTo()+"|"+sysJobinfo.getMaxDestWriteTo();
     }
 
     /**
@@ -365,7 +268,7 @@ public class ToBackController {
 //                    sysMonitoring.setWriteData(writeAmount);
 //                    sysMonitoring.setDisposeRate(new Double(writeRate).longValue());
 //                    sysMonitoringRepository.save(sysMonitoring);
-                    sysMonitoringRepository.updateWriteMonitoring2(sysMonitoring.getId(), writeAmount, new Double(writeRate).longValue());
+                    sysMonitoringRepository.updateWriteMonitoring2(sysMonitoring.getId(),writeAmount,new Double(writeRate).longValue());
 
                     SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(destTable).readRate(writeRate).readAmount(Math.toIntExact(realWriteAmount)).build();
                     if (sysRealTimeMonitoring.getWriteAmount() != 0 && sysRealTimeMonitoring.getWriteAmount() != null)
@@ -376,7 +279,7 @@ public class ToBackController {
 //                    sysMonitoring.setWriteData(writeAmount);
 //                    sysMonitoring.setDisposeRate(new Double(writeRate).longValue());
 //                    sysMonitoringRepository.save(sysMonitoring);
-                    sysMonitoringRepository.updateWriteMonitoring2(sysMonitoring.getId(), writeAmount, new Double(writeRate).longValue());
+                    sysMonitoringRepository.updateWriteMonitoring2(sysMonitoring.getId(),writeAmount,new Double(writeRate).longValue());
 
                     SysRealTimeMonitoring sysRealTimeMonitoring = SysRealTimeMonitoring.builder().jobId(jobId).optTime(new Date()).destTable(destTable).writeRate(writeRate).writeAmount(Math.toIntExact(realWriteAmount)).build();
                     if (sysRealTimeMonitoring.getWriteAmount() != 0 && sysRealTimeMonitoring.getWriteAmount() != null)
@@ -450,35 +353,33 @@ public class ToBackController {
      * 插入错误信息
      */
     @PostMapping("/insertErrorLog")
-    public void insertError(@RequestParam Long jobId, @RequestParam String sourceTable, @RequestParam String destTable, @RequestParam String time, @RequestParam String errortype,
-                            @RequestParam String message) {
+    public void insertError(@RequestParam Long jobId,@RequestParam String sourceTable,@RequestParam String destTable,@RequestParam String time,@RequestParam String errortype,
+                            @RequestParam String message){
 
-        errorLogService.insertError(jobId, sourceTable, destTable, time, errortype, message);
+        errorLogService.insertError(jobId,sourceTable,destTable,time,errortype,message);
     }
 
     /**
      * 查询源端表名
      * 将错误状态4填入到monitoring表中
      * 将错误信息填入到userlog中
-     *
      * @param jobId
      * @param destTable
      * @param time
      * @return
      */
     @GetMapping("/selecttable")
-    public String selectTable(@RequestParam Long jobId, @RequestParam String destTable, @RequestParam String time, @RequestParam Integer errorflag) {
-        return sysTableruleService.selectTable(jobId, destTable, time, errorflag);
+    public String selectTable(@RequestParam Long jobId,@RequestParam String destTable,@RequestParam String time,@RequestParam Integer errorflag) {
+        return sysTableruleService.selectTable(jobId,destTable,time,errorflag);
     }
 
 
     /**
      * 将系统错误信息插入到系统日志表
-     *
      * @param syserror
      */
     @PostMapping("/insertsyslog")
-    void inserSyslog(@RequestParam String syserror, @RequestParam String method, @RequestParam String time) {
+    void inserSyslog(@RequestParam String syserror,@RequestParam String method,@RequestParam String time) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date format = null;
         try {
