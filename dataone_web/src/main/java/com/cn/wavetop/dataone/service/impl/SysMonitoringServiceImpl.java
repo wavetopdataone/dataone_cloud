@@ -156,7 +156,7 @@ public class SysMonitoringServiceImpl implements SysMonitoringService {
 
     //根据状态和表名查询table
     public Object findTableAndStatus(String source_table,Integer jobStatus,Long job_id,Integer current,Integer size){
-        Pageable pageable = new PageRequest(current - 1, size, Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(current - 1, size, Sort.Direction.ASC, "id");
 
         Map<Object, Object> map = new HashMap<>();
         List<SysMonitoring> sysMonitoringList2 = new ArrayList<>();

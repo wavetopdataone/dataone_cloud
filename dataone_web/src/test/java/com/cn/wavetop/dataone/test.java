@@ -3,6 +3,7 @@ package com.cn.wavetop.dataone;
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.cn.wavetop.dataone.entity.SysFieldrule;
 import com.cn.wavetop.dataone.entity.SysJobrela;
 import com.cn.wavetop.dataone.util.DateUtil;
@@ -21,6 +22,36 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class test {
+
+
+    @Test
+    public void show(){
+        HashMap<String,String> map=new HashMap<>();
+        HashMap<Object, Object> map2 = new HashMap<>();
+        HashMap<Object, Object> map3 = new HashMap<>();
+        ArrayList list=new ArrayList();
+        map.put("filed","icon");
+        map.put("optional","true");
+        map.put("type","string");
+        list.add(map);
+        map=new HashMap<>();
+        map.put("filed","id");
+        map.put("optional","false");
+        map.put("type","Integer");
+        list.add(map);
+        map2.put("type","struct");
+        map2.put("fields",list);
+        map3.put("schema", map2);
+        map3.put("payload", "hah");
+//        Map map = new HashMap();
+//        map.put("name", "json");
+//        map.put("bool", Boolean.TRUE);
+//        map.put("int", new Integer(1));
+//        map.put("arr", new String[] { "a", "b" });
+//        map.put("func", "function(i){ return this.arr[i]; }");
+        String json =  JSON.toJSONString(list);
+        System.out.println(json);
+    }
 
 @Test
 public  void ssa(){
